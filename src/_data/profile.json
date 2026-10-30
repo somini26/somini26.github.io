@@ -1,0 +1,18 @@
+{
+  "nickname": "somini",
+  "name": "최소민",
+  "affiliation": "울산대학교 ICT융합학부",
+  "tagline": "System Security · Reversing · CTF",
+  "email": "amder1144@gmail.com",
+  "tistory": "https://vegetable-m.tistory.com/",
+  "image": "",
+  "imageAlt": "somini 프로필 이미지",
+  "interests": [
+    "System Security",
+    "Reverse Engineering",
+    "CTF / Wargame",
+    "Web Security",
+    "Digital Forensics",
+    "Development"
+  ]
+}
