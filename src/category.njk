@@ -1,0 +1,14 @@
+---
+layout: base.njk
+pagination:
+  data: topics
+  size: 1
+  alias: category
+permalink: "/categories/{{ category.slug }}/"
+eleventyComputed:
+  title: "{{ category.name }}"
+  description: "{{ category.description }}"
+  activeCategory: "{{ category.name }}"
+---
+{% set eyebrow = 'TOPIC / ' + category.label %}
+{% include 'archive.njk' %}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://somini26.github.io/sitemap.xml

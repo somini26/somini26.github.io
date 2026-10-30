@@ -1,0 +1,38 @@
+[
+  {
+    "name": "개발",
+    "slug": "development",
+    "label": "Development",
+    "description": "Python, Java, 웹 개발과 프로젝트 기록"
+  },
+  {
+    "name": "CTF/Wargame",
+    "slug": "ctf-wargame",
+    "label": "CTF / Wargame",
+    "description": "CTF 문제 풀이와 리버싱, 포렌식 노트"
+  },
+  {
+    "name": "Bug Bounty",
+    "slug": "bug-bounty",
+    "label": "Bug Bounty",
+    "description": "웹 취약점 분석과 보안 연구 노트"
+  },
+  {
+    "name": "블로그/기술문서",
+    "slug": "blog-docs",
+    "label": "Blog / Documentation",
+    "description": "블로그 운영과 기술 정리"
+  },
+  {
+    "name": "논문/컨퍼런스",
+    "slug": "papers-conferences",
+    "label": "Papers / Conferences",
+    "description": "논문을 읽고 컨퍼런스에서 배운 내용"
+  },
+  {
+    "name": "공모전/자격증",
+    "slug": "competitions-certifications",
+    "label": "Competitions / Certifications",
+    "description": "대회 참가와 자격증 공부 기록"
+  }
+]

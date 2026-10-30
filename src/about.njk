@@ -1,0 +1,33 @@
+---
+layout: base.njk
+title: About
+description: 보안과 개발을 공부하는 somini입니다. CTF, 웹 보안, 디지털 포렌식에 관심이 있습니다.
+permalink: /about/
+---
+<section class="page-intro">
+  <p class="eyebrow">ABOUT SOMINI</p>
+  <h1>About<span>.</span></h1>
+  <p>보안과 개발을 공부합니다.</p>
+</section>
+<div class="about-layout">
+  <aside class="profile-card">
+    <div class="avatar" aria-hidden="true">s.</div>
+    <h2>somini</h2>
+    <p>Security · CTF · Development</p>
+    <a class="button" href="{{ site.github }}">GitHub 프로필 ↗</a>
+  </aside>
+  <div class="about-content">
+    <section>
+      <h2>안녕하세요, somini입니다.</h2>
+      <p>컴퓨터공학을 공부하며 CTF, 웹 보안, 디지털 포렌식에 관심을 두고 있습니다. 공부하며 이해한 내용과 개발 과정에서 배운 점을 이 블로그에 기록합니다.</p>
+    </section>
+    <section>
+      <h2>관심 분야</h2>
+      <div class="skill-tags">{% for skill in ['Cybersecurity','CTF / Wargame','Digital Forensics','Web Security','Reverse Engineering','Vulnerability Research'] %}<span>{{ skill }}</span>{% endfor %}</div>
+    </section>
+    <section>
+      <h2>공부하는 기술</h2>
+      <p>Python · Java · HTML / CSS / JavaScript · Git / GitHub</p>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+---
+layout: base.njk
+---
+<div class="reading-progress" aria-hidden="true"></div>
+<article class="post-page"><header class="post-header"><a class="back-link" href="/archive/">← 전체 기록</a><div class="post-meta">{% for category in categories %}<a href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}<span>·</span><time datetime="{{ date | dateISO }}">{{ date | dateISO }}</time><span>·</span><span>{{ content | readingTime }}분 읽기</span></div><h1>{{ title }}</h1><p class="post-description">{{ description }}</p><div class="tags">{% for tag in tags %}<a href="/archive/?tag={{ tag | urlencode }}">#{{ tag }}</a>{% endfor %}</div></header><div class="reading-layout"><div class="prose" id="post-content">{{ content | safe }}</div><aside class="toc" hidden><p class="micro-label">ON THIS PAGE</p><nav aria-label="게시글 목차"></nav></aside></div><footer class="post-end"><span>somini / archive</span><a class="button" href="/archive/">목록으로 돌아가기 →</a></footer></article>

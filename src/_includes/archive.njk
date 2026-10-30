@@ -1,0 +1,11 @@
+<section class="page-intro"><p class="eyebrow">{{ eyebrow or 'ALL NOTES' }}</p><h1>{{ title }}<span>.</span></h1><p>{{ description }}</p></section>
+<div class="archive-layout" data-archive data-category="{{ activeCategory or '' }}">
+  <aside class="archive-sidebar"><h2 class="micro-label">CATEGORIES</h2><a class="filter-category {% if not activeCategory %}selected{% endif %}" href="/archive/"><span>전체 기록</span><span>{{ collections.posts | length }}</span></a>{% for category in topics %}<a class="filter-category {% if activeCategory == category.name %}selected{% endif %}" href="/categories/{{ category.slug }}/"><span>{{ category.name }}</span><span>{{ collections.posts | inCategory(category.name) | length }}</span></a>{% endfor %}<div class="sidebar-note">카테고리를 선택하거나<br>검색으로 글을 찾아보세요.</div></aside>
+  <div class="archive-content">
+    <form class="search-form" role="search"><label for="search" class="sr-only">게시글 검색</label><span aria-hidden="true">⌕</span><input id="search" name="q" type="search" placeholder="제목, 태그, 본문으로 검색" autocomplete="off"><button type="submit">검색</button></form>
+    <div class="tag-filter"><label for="tag-filter">태그</label><select id="tag-filter"><option value="">전체 태그</option></select><button class="reset-button" type="button" hidden>필터 초기화 ↺</button></div>
+    <div class="results-meta"><span id="result-count" role="status" aria-live="polite">{% if activeCategory %}{{ collections.posts | inCategory(activeCategory) | length }}{% else %}{{ collections.posts | length }}{% endif %}개의 기록</span><span>최신순 ↓</span></div>
+    <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">↳</span><h2>아직 기록이 없습니다.</h2><p>다른 카테고리의 글을 둘러보세요.</p><a class="text-link" href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
+    <noscript><p class="notice">검색과 태그 필터를 사용하려면 JavaScript를 켜 주세요.</p></noscript>
+  </div>
+</div>
