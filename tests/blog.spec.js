@@ -6,7 +6,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("somini.");
+  await expect(page.locator("h1")).toHaveText("somani.");
   if (testInfo.project.name === "mobile") {
     await page.getByRole("button", { name: "메뉴" }).click();
     await expect(

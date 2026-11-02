@@ -1,16 +1,16 @@
 ---
 layout: base.njk
 title: About
-description: 보안과 개발을 공부하는 somini입니다. CTF, 시스템 보안, 리버스 엔지니어링에 관심이 있습니다.
+description: 보안과 개발을 공부하는 somani입니다. CTF, 시스템 보안, 리버스 엔지니어링에 관심이 있습니다.
 permalink: /about/
 ---
 <section class="page-intro">
-  <p class="eyebrow">ABOUT SOMINI</p>
+  <p class="eyebrow">ABOUT {{ profile.nickname | upper }}</p>
   <h1>About<span>.</span></h1>
   <p>보안과 개발을 공부합니다.</p>
 </section>
 <div class="about-layout">
-  <aside class="profile-card" aria-label="somini 프로필">
+  <aside class="profile-card" aria-label="{{ profile.nickname }} 프로필">
     <div class="avatar">
       {% if profile.image %}<img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="75" height="75">{% else %}<span aria-hidden="true">s.</span>{% endif %}
     </div>
@@ -30,7 +30,7 @@ permalink: /about/
   </aside>
   <div class="about-content">
     <section>
-      <h2>안녕하세요, somini입니다.</h2>
+      <h2>안녕하세요, {{ profile.nickname }}입니다.</h2>
       <p>컴퓨터공학을 공부하며 CTF, 시스템 보안, 리버스 엔지니어링에 관심을 두고 있습니다. 공부하며 이해한 내용과 개발 과정에서 배운 점을 이 블로그에 기록합니다.</p>
     </section>
     <section>

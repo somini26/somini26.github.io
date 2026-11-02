@@ -1,8 +1,8 @@
 # somini26.github.io
 
-somini's archive | CTF · Security · Development
+somani's archive | CTF · Security · Development
 
-**somini**가 보안과 개발을 공부하며 배운 내용을 기록하는 개인 기술 블로그입니다. Knights Frontier 3기 첫 번째 미션의 목적에 맞춰, 계속 글을 추가하고 관리할 수 있는 Markdown 기반 아카이브로 구성했습니다.
+**somani**가 보안과 개발을 공부하며 배운 내용을 기록하는 개인 기술 블로그입니다. Knights Frontier 3기 첫 번째 미션의 목적에 맞춰, 계속 글을 추가하고 관리할 수 있는 Markdown 기반 아카이브로 구성했습니다.
 
 - 블로그 주소: **https://somini26.github.io**
 - GitHub 프로필: https://github.com/somini26
@@ -80,7 +80,7 @@ description: "이 글에서 다루는 내용을 간단히 소개합니다."
 
 ````markdown
 ```python
-print("Hello, somini")
+print("Hello, somani")
 ```
 ````
 
@@ -139,13 +139,13 @@ Pull Request에서는 빌드와 검사만 실행하고 배포하지 않습니다
 1. GitHub 저장소의 **Settings → Pages**에 들어갑니다.
 2. **Build and deployment → Source → GitHub Actions**를 선택합니다. `Deploy from a branch`와 병행하지 않습니다.
 3. **Actions**에서 워크플로 실행이 허용되어 있는지 확인합니다.
-4. 로컬 변경을 커밋하고 `main`에 push합니다. 이미 push했다면 **Actions → Build and deploy somini archive → Run workflow → main**으로 실행할 수 있습니다.
+4. 로컬 변경을 커밋하고 `main`에 push합니다. 이미 push했다면 **Actions → Build and deploy somani archive → Run workflow → main**으로 실행할 수 있습니다.
 5. 작업의 `build`, `deploy` 성공 여부와 배포 URL을 확인합니다.
 6. `https://somini26.github.io` 및 `/archive/`, `/categories/blog-docs/`, `/posts/github-pages-blog/`를 직접 열어 확인합니다.
 
 ```bash
 git add .
-git commit -m "Build somini security archive"
+git commit -m "Build somani security archive"
 git push origin main
 ```
 

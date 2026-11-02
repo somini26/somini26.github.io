@@ -1,4 +1,4 @@
-name: Build and deploy somini archive
+name: Build and deploy somani archive
 on:
   push:
     branches: [main]
