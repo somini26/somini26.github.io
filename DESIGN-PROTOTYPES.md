@@ -1,7 +1,7 @@
 # somani's archive design prototypes
 
 이 작업공간은 운영 중인 `main`과 분리한 로컬 브랜치
-`prototype/editorial-desktop-v1`의 디자인 비교용 결과물이다. 두 시안은
+`prototype/editorial-desktop-v1`의 디자인 비교용 결과물이다. 세 시안은
 현재 저장소의 카테고리, 게시글, 프로젝트, 프로필 데이터와
 `profile-hachiware.jpg`만 사용한다.
 
@@ -17,6 +17,8 @@ npm run dev
 - 시안 A 게시글: <http://localhost:8080/prototypes/editorial-workspace/github-pages-blog/>
 - 시안 B: <http://localhost:8080/prototypes/creative-desktop/>
 - 시안 B 게시글: <http://localhost:8080/prototypes/creative-desktop/github-pages-blog/>
+- 시안 C: <http://localhost:8080/prototypes/integrated-archive/>
+- 시안 C 게시글: <http://localhost:8080/prototypes/integrated-archive/github-pages-blog/>
 
 ## A — Editorial Workspace
 
@@ -40,6 +42,20 @@ npm run dev
 반면 공개 글과 프로젝트가 많아지면 workspace에 무엇을 보여 줄지 선별하는
 규칙이 필요하다.
 
+## C — Integrated Editorial Desktop
+
+- B의 `somani's living archive.` 타이포그래피와 겹치는 workspace 유지
+- A의 정돈된 정보 위계와 긴 글 reading system 결합
+- 카테고리 hover·focus 시 설명, 글 개수와 실제 최신 글 미리보기
+- 비활성 창은 제목 표시줄만 남겨 뒷창 텍스트가 비치지 않도록 처리
+- 모바일은 Profile, Latest, Project 가운데 활성 창 하나만 표시
+- 모바일 DOM 순서를 소개 → 하치와레 workspace → 카테고리로 구성
+- 게시글 제목과 배경 숫자 `001`을 분리하고 본문 너비는 760px로 제한
+
+C는 A/B 비교에서 선택한 장점을 실제 운영 방향에 가장 가까운 형태로
+통합한 시안이다. 데스크톱은 에디토리얼 인덱스와 workspace를 동시에 보고,
+모바일은 콘텐츠를 한 번에 하나씩 보여 주어 길이와 탐색 부담을 줄인다.
+
 ## 공통 인터랙션과 접근성
 
 - 테마 버튼과 `localStorage` 기반 다크·라이트 선택 유지
@@ -62,6 +78,10 @@ npm run dev
 prototype-{a|b}-{desktop|mobile}-{dark|light|interaction}.png
 prototype-{a|b}-article-{desktop|mobile}.png
 prototype-{a|b}-article-{desktop|mobile}-top.png
+prototype-c-{desktop|mobile}-{dark|light|category-preview|window-project}.png
+prototype-c-article-{desktop|mobile}.png
+prototype-c-article-{desktop|mobile}-top.png
+prototype-c-mobile-scroll.png
 ```
 
 ## 검증

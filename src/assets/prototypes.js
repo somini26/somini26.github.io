@@ -37,12 +37,13 @@ for (const tablist of selectAll("[data-tablist]")) {
       tab.setAttribute("aria-selected", String(active));
       tab.tabIndex = active ? 0 : -1;
     });
-    panels.forEach((panel) =>
-      panel.classList.toggle(
-        "is-active",
-        panel.id === nextTab.getAttribute("aria-controls"),
-      ),
-    );
+    panels.forEach((panel) => {
+      const active = panel.id === nextTab.getAttribute("aria-controls");
+      panel.classList.toggle("is-active", active);
+      panel.toggleAttribute("inert", !active);
+      if (active) panel.removeAttribute("aria-hidden");
+      else panel.setAttribute("aria-hidden", "true");
+    });
     if (focus) nextTab.focus();
   };
   tabs.forEach((tab, index) => {

@@ -10,7 +10,9 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <script src="/assets/prototype-theme.js"></script>
   <link rel="stylesheet" href="/assets/prototypes.css">
+  {% if 'prototype-c' in prototypeClass %}<link rel="stylesheet" href="/assets/prototype-c.css">{% endif %}
   <script src="/assets/prototypes.js" defer></script>
+  {% if 'prototype-c' in prototypeClass %}<script src="/assets/prototype-c.js" defer></script>{% endif %}
 </head>
 <body class="prototype-page {{ prototypeClass }}">
   <a class="prototype-skip" href="#prototype-main">본문으로 건너뛰기</a>
@@ -24,6 +26,7 @@
       <nav aria-label="디자인 시안 선택">
         <a href="/prototypes/editorial-workspace/"{% if 'prototype-a' in prototypeClass %} aria-current="page"{% endif %}>A / Editorial</a>
         <a href="/prototypes/creative-desktop/"{% if 'prototype-b' in prototypeClass %} aria-current="page"{% endif %}>B / Desktop</a>
+        <a href="/prototypes/integrated-archive/"{% if 'prototype-c' in prototypeClass %} aria-current="page"{% endif %}>C / Integrated</a>
       </nav>
       <div class="prototype-actions">
         <a class="current-site-link" href="/">Current site ↗</a>
