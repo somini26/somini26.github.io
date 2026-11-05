@@ -1,21 +1,24 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const menu = $(".menu-toggle");
-menu.hidden = false;
-menu.addEventListener("click", () =>
-  menu.setAttribute(
-    "aria-expanded",
-    String(menu.getAttribute("aria-expanded") !== "true"),
-  ),
-);
+if (menu) {
+  menu.hidden = false;
+  menu.addEventListener("click", () =>
+    menu.setAttribute(
+      "aria-expanded",
+      String(menu.getAttribute("aria-expanded") !== "true"),
+    ),
+  );
+}
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && menu.getAttribute("aria-expanded") === "true") {
+  if (e.key === "Escape" && menu?.getAttribute("aria-expanded") === "true") {
     menu.setAttribute("aria-expanded", "false");
     menu.focus();
   }
 });
 const theme = $(".theme-toggle");
-theme.hidden = false;
+if (theme) theme.hidden = false;
 function updateTheme() {
+  if (!theme) return;
   const dark = document.documentElement.dataset.theme !== "light";
   theme.setAttribute(
     "aria-label",
@@ -25,7 +28,7 @@ function updateTheme() {
   $(".theme-label", theme).textContent = dark ? "Light" : "Dark";
 }
 updateTheme();
-theme.addEventListener("click", () => {
+theme?.addEventListener("click", () => {
   const next =
     document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
@@ -34,53 +37,109 @@ theme.addEventListener("click", () => {
   } catch {}
   updateTheme();
 });
-for (const pre of document.querySelectorAll(".prose pre")) {
-  const code = $("code", pre);
-  if (!code) continue;
-  const bar = document.createElement("div");
-  bar.className = "code-bar";
-  const lang = document.createElement("span");
-  lang.textContent =
-    [...code.classList].find((c) => c.startsWith("language-"))?.slice(9) ||
-    "text";
-  const button = document.createElement("button");
-  button.type = "button";
-  button.textContent = "코드 복사";
-  button.setAttribute("aria-live", "polite");
-  button.addEventListener("click", async () => {
-    try {
-      if (navigator.clipboard?.writeText)
-        await navigator.clipboard.writeText(code.textContent);
-      else {
-        const area = document.createElement("textarea");
-        area.value = code.textContent;
-        area.style.position = "fixed";
-        area.style.opacity = "0";
-        document.body.append(area);
-        area.select();
-        const copied = document.execCommand("copy");
-        area.remove();
-        if (!copied) throw new Error("copy failed");
-      }
-      button.textContent = "복사 완료 ✓";
-    } catch {
-      button.textContent = "복사 실패 · 직접 선택해 주세요";
-    }
-    setTimeout(() => {
-      button.textContent = "코드 복사";
-    }, 2500);
+for (const tablist of document.querySelectorAll("[data-tablist]")) {
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const panels = tabs.map((tab) => document.getElementById(tab.getAttribute("aria-controls"))).filter(Boolean);
+  const activate = (nextTab, focus = true) => {
+    tabs.forEach((tab) => {
+      const active = tab === nextTab;
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach((panel) => {
+      const active = panel.id === nextTab.getAttribute("aria-controls");
+      panel.classList.toggle("is-active", active);
+      panel.toggleAttribute("inert", !active);
+      if (active) panel.removeAttribute("aria-hidden");
+      else panel.setAttribute("aria-hidden", "true");
+    });
+    if (focus) nextTab.focus();
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => activate(tab, false));
+    tab.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      let next = index;
+      if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
+      if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+      if (event.key === "Home") next = 0;
+      if (event.key === "End") next = tabs.length - 1;
+      activate(tabs[next]);
+    });
   });
-  bar.append(lang, button);
-  const wrapper = document.createElement("div");
-  wrapper.className = "code-block";
-  pre.before(wrapper);
-  wrapper.append(bar, pre);
+  const selected = tabs.find((tab) => tab.getAttribute("aria-selected") === "true");
+  if (selected) activate(selected, false);
 }
-const content = $("#post-content");
+
+const categoryIndex = $("[data-category-index]");
+if (categoryIndex) {
+  const triggers = [...categoryIndex.querySelectorAll("[data-category-trigger]")];
+  const panels = [...categoryIndex.querySelectorAll("[data-category-panel]")];
+  const activateCategory = (trigger) => {
+    const targetId = trigger.dataset.previewId;
+    triggers.forEach((item) => {
+      const active = item === trigger;
+      item.closest("li")?.classList.toggle("is-active", active);
+      if (active) item.dataset.active = "true";
+      else delete item.dataset.active;
+    });
+    panels.forEach((panel) => { panel.hidden = panel.id !== targetId; });
+  };
+  triggers.forEach((trigger, index) => {
+    trigger.addEventListener("mouseenter", () => activateCategory(trigger));
+    trigger.addEventListener("focus", () => activateCategory(trigger));
+    trigger.addEventListener("keydown", (event) => {
+      if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      let next = index;
+      if (event.key === "ArrowUp") next = (index - 1 + triggers.length) % triggers.length;
+      if (event.key === "ArrowDown") next = (index + 1) % triggers.length;
+      if (event.key === "Home") next = 0;
+      if (event.key === "End") next = triggers.length - 1;
+      triggers[next].focus();
+    });
+  });
+}
+
+const content = $("[data-prototype-prose]");
 if (content) {
+  for (const [index, pre] of [...content.querySelectorAll("pre")].entries()) {
+    const code = $("code", pre);
+    if (!code) continue;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "prototype-copy-button";
+    button.textContent = "코드 복사";
+    button.setAttribute("aria-label", `${index + 1}번째 코드 복사`);
+    button.addEventListener("click", async () => {
+      try {
+        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(code.textContent);
+        else {
+          const area = document.createElement("textarea");
+          area.value = code.textContent;
+          area.style.position = "fixed";
+          area.style.opacity = "0";
+          document.body.append(area);
+          area.select();
+          if (!document.execCommand("copy")) throw new Error("copy failed");
+          area.remove();
+        }
+        button.textContent = "복사 완료 ✓";
+        button.setAttribute("aria-label", "복사 완료");
+      } catch {
+        button.textContent = "복사 실패";
+      }
+      setTimeout(() => {
+        button.textContent = "코드 복사";
+        button.setAttribute("aria-label", `${index + 1}번째 코드 복사`);
+      }, 2000);
+    });
+    pre.prepend(button);
+  }
   for (const table of content.querySelectorAll("table")) {
     const wrap = document.createElement("div");
-    wrap.className = "table-scroll";
+    wrap.className = "prototype-table-scroll";
     wrap.tabIndex = 0;
     wrap.setAttribute("role", "region");
     wrap.setAttribute("aria-label", "표 · 가로 스크롤 가능");
@@ -88,15 +147,19 @@ if (content) {
     wrap.append(table);
   }
   const headings = [...content.querySelectorAll("h2, h3")];
-  const toc = $(".toc");
-  const nav = $("nav", toc);
+  const nav = $("[data-prototype-toc]");
   if (headings.length) {
-    toc.hidden = false;
+    let section = 0;
     headings.forEach((heading) => {
+      if (heading.tagName === "H2") {
+        section += 1;
+        heading.dataset.sectionNumber = String(section).padStart(2, "0");
+      }
       const link = document.createElement("a");
       link.href = `#${heading.id}`;
       link.textContent = heading.textContent;
-      if (heading.tagName === "H3") link.className = "toc-sub";
+      link.dataset.level = heading.tagName.slice(1);
+      link.dataset.number = heading.tagName === "H2" ? String(section).padStart(2, "0") : "·";
       nav.append(link);
     });
     if ("IntersectionObserver" in window) {
@@ -122,15 +185,43 @@ if (content) {
       headings.forEach((h) => observer.observe(h));
     }
   }
-  const progress = $(".reading-progress");
+  const progress = $(".prototype-reading-progress");
   const update = () => {
-    const start = content.getBoundingClientRect().top + window.scrollY;
-    const end = start + content.offsetHeight - window.innerHeight;
-    progress.style.width = `${Math.min(100, Math.max(0, ((window.scrollY - start) / Math.max(1, end - start)) * 100))}%`;
+    const article = $("[data-prototype-article]");
+    const start = article.offsetTop;
+    const distance = article.offsetHeight - window.innerHeight;
+    const value = distance > 0 ? ((scrollY - start) / distance) * 100 : 100;
+    progress.style.width = `${Math.min(100, Math.max(0, value))}%`;
   };
   window.addEventListener("scroll", update, { passive: true });
   window.addEventListener("resize", update);
   update();
+}
+
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+const reveals = [...document.querySelectorAll("[data-reveal]")];
+if (reducedMotion.matches || !("IntersectionObserver" in window)) {
+  reveals.forEach((element) => element.classList.add("is-visible"));
+} else {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
+  reveals.forEach((element) => observer.observe(element));
+}
+
+if (!reducedMotion.matches && matchMedia("(pointer: fine)").matches) {
+  let animationFrame = 0;
+  document.addEventListener("pointermove", (event) => {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = requestAnimationFrame(() => {
+      document.body.style.setProperty("--pointer-x", `${event.clientX}px`);
+      document.body.style.setProperty("--pointer-y", `${event.clientY}px`);
+    });
+  }, { passive: true });
 }
 const archive = $("[data-archive]");
 if (archive) initArchive(archive);

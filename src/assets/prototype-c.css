@@ -918,3 +918,164 @@
     animation: none;
   }
 }
+
+/* Production integration: keep the established pages on the same editorial palette. */
+:root {
+  --bg: var(--p-bg);
+  --surface: var(--p-paper);
+  --surface-soft: var(--p-surface);
+  --text: var(--p-text);
+  --muted: var(--p-muted);
+  --accent: var(--p-accent);
+  --accent-strong: var(--p-accent-strong);
+  --accent-rgb: var(--p-accent-rgb);
+  --border: var(--p-border);
+  --code: #0d0f16;
+  --header: var(--p-header);
+  --shadow: var(--p-shadow);
+  --shadow-hover: 0 30px 72px rgba(0, 0, 0, 0.32);
+  --glow: rgba(var(--p-accent-rgb), 0.1);
+  --lavender: var(--p-accent);
+}
+
+:root[data-theme="light"] {
+  --code: #272330;
+  --shadow-hover: 0 26px 62px rgba(80, 58, 99, 0.17);
+}
+
+.production-content {
+  padding-top: 68px;
+  padding-bottom: 70px;
+}
+
+.prototype-menu-toggle {
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid var(--p-border);
+  border-radius: 999px;
+  color: var(--p-text);
+  background: var(--p-surface);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.prototype-github-link {
+  white-space: nowrap;
+}
+
+.site-production .page-intro h1,
+.site-production .about-content h2,
+.site-production .archive-sidebar > h2 {
+  color: var(--p-text);
+}
+
+.site-production .page-intro h1 {
+  font-family: Georgia, "Times New Roman", "Noto Serif KR", serif;
+}
+
+.site-production .topic-card,
+.site-production .profile-card,
+.site-production .search-form,
+.site-production .tag-filter,
+.site-production .post-card,
+.site-production .empty-state {
+  background: color-mix(in srgb, var(--p-paper) 94%, transparent);
+}
+
+/* Code blocks stay dark in both themes, so syntax colors also stay high-contrast. */
+body.prototype-article-c .prototype-prose .token.comment,
+body.prototype-article-c .prototype-prose .token.prolog,
+body.prototype-article-c .prototype-prose .token.doctype,
+body.prototype-article-c .prototype-prose .token.cdata {
+  color: #aeb7c4;
+}
+
+body.prototype-article-c .prototype-prose .token.property,
+body.prototype-article-c .prototype-prose .token.tag,
+body.prototype-article-c .prototype-prose .token.constant,
+body.prototype-article-c .prototype-prose .token.symbol,
+body.prototype-article-c .prototype-prose .token.deleted {
+  color: #f0a8c0;
+}
+
+body.prototype-article-c .prototype-prose .token.boolean,
+body.prototype-article-c .prototype-prose .token.number {
+  color: #e6bd94;
+}
+
+body.prototype-article-c .prototype-prose .token.selector,
+body.prototype-article-c .prototype-prose .token.attr-name,
+body.prototype-article-c .prototype-prose .token.string,
+body.prototype-article-c .prototype-prose .token.char,
+body.prototype-article-c .prototype-prose .token.builtin,
+body.prototype-article-c .prototype-prose .token.inserted {
+  color: #b7d9bd;
+}
+
+body.prototype-article-c .prototype-prose .token.operator,
+body.prototype-article-c .prototype-prose .token.entity,
+body.prototype-article-c .prototype-prose .token.url {
+  color: #b7d4e8;
+}
+
+body.prototype-article-c .prototype-prose .token.atrule,
+body.prototype-article-c .prototype-prose .token.attr-value,
+body.prototype-article-c .prototype-prose .token.keyword {
+  color: #c8b5e6;
+}
+
+body.prototype-article-c .prototype-prose .token.function,
+body.prototype-article-c .prototype-prose .token.class-name {
+  color: #ead3a8;
+}
+
+@media (max-width: 900px) {
+  .prototype-header-inner {
+    flex-wrap: wrap;
+  }
+
+  .prototype-menu-toggle:not([hidden]) {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .prototype-header nav {
+    order: 4;
+    width: 100%;
+    padding: 0 0 15px;
+    display: none;
+    gap: 18px;
+  }
+
+  .prototype-menu-toggle[aria-expanded="true"] + nav,
+  html:not(.has-js) .prototype-header nav {
+    display: flex;
+  }
+
+  .prototype-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .production-content {
+    padding-top: 42px;
+    padding-bottom: 50px;
+  }
+
+  .prototype-header nav {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .prototype-header nav a {
+    font-size: 11px;
+  }
+
+  .prototype-footer div {
+    flex-wrap: wrap;
+    gap: 14px 22px;
+  }
+}

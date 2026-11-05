@@ -3,11 +3,11 @@ import path from "node:path";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const previewDirectory = path.resolve("design-previews");
+const previewDirectory = path.resolve("test-results/integrated-archive");
 fs.mkdirSync(previewDirectory, { recursive: true });
 
-const mainUrl = "/prototypes/integrated-archive/";
-const articleUrl = "/prototypes/integrated-archive/github-pages-blog/";
+const mainUrl = "/";
+const articleUrl = "/posts/github-pages-blog/";
 
 const expectNoOverflow = async (page) => {
   expect(
@@ -31,7 +31,7 @@ const revealWholePage = async (page) => {
   await page.evaluate(() => window.scrollTo(0, 0));
 };
 
-test("prototype C interactive index, workspace, themes and mobile header", async ({
+test("integrated archive index, workspace, themes and mobile header", async ({
   page,
 }, testInfo) => {
   const errors = [];
@@ -218,7 +218,7 @@ test("prototype C interactive index, workspace, themes and mobile header", async
   expect(errors).toEqual([]);
 });
 
-test("prototype C editorial article preserves content and readability", async ({
+test("integrated archive article preserves content and readability", async ({
   page,
   context,
 }, testInfo) => {
@@ -241,11 +241,11 @@ test("prototype C editorial article preserves content and readability", async ({
     "GH007 이메일 공개 방지 오류",
   );
   await expect(
-    page.getByRole("navigation", { name: "프로토타입 게시글 목차" }),
+    page.getByRole("navigation", { name: "게시글 목차" }),
   ).toBeVisible();
   await expect(
     page
-      .getByRole("navigation", { name: "프로토타입 게시글 목차" })
+      .getByRole("navigation", { name: "게시글 목차" })
       .getByRole("link"),
   ).toHaveCount(22);
   await expect(page.locator(".prototype-prose table")).toHaveCount(2);

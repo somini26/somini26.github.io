@@ -22,23 +22,31 @@
   <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS" href="/feed.xml">
   <script src="/assets/theme.js"></script>
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/prototypes.css">
+  <link rel="stylesheet" href="/assets/prototype-c.css">
   <script src="/assets/app.js" defer></script>
 </head>
-<body{% if page.url == '/' %} class="home-page"{% endif %}>
-  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="wordmark" href="/" aria-label="{{ site.name }} 홈"><span class="brand-mark" aria-hidden="true">s.</span>{{ site.name }}<span class="brand-dot">/</span></a>
-      <button class="menu-toggle icon-button" aria-expanded="false" aria-controls="main-nav" hidden>메뉴</button>
+<body class="prototype-page site-production{% if page.url == '/' %} prototype-c{% endif %}{% if layout == 'post.njk' %} prototype-article-c{% endif %}">
+  <a class="prototype-skip" href="#main">본문으로 건너뛰기</a>
+  <header class="prototype-header">
+    <div class="prototype-header-inner">
+      <a class="prototype-wordmark" href="/" aria-label="{{ site.name }} 홈"><span aria-hidden="true">s.</span><strong>somani</strong><i>/archive</i></a>
+      <button class="menu-toggle prototype-menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" hidden>메뉴</button>
       <nav id="main-nav" aria-label="주 메뉴">
         {% for label, href in [['Home','/'],['Archive','/archive/'],['Categories','/categories/'],['About','/about/']] %}
-        <a href="{{ href }}" {% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %}aria-current="page"{% endif %}>{{ label }}</a>
+        <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}>{{ label }}</a>
         {% endfor %}
       </nav>
-      <div class="header-actions"><a class="github-link" href="{{ site.github }}" aria-label="{{ site.name }} GitHub 프로필">GitHub <span aria-hidden="true">↗</span></a><button class="theme-toggle icon-button" type="button" aria-label="라이트 모드로 전환" hidden><span class="theme-icon" aria-hidden="true">☼</span><span class="theme-label" aria-hidden="true">Light</span></button></div>
+      <div class="prototype-actions">
+        <a class="current-site-link prototype-github-link" href="{{ site.github }}">GitHub ↗</a>
+        <button class="theme-toggle prototype-theme-toggle" type="button" aria-label="라이트 모드로 전환" hidden><span class="theme-icon prototype-theme-icon" aria-hidden="true">☼</span><span class="theme-label prototype-theme-label" aria-hidden="true">Light</span></button>
+      </div>
     </div>
   </header>
-  <main id="main" class="container" tabindex="-1">{{ content | safe }}</main>
-  <footer class="site-footer container"><div><a class="footer-brand" href="/">{{ site.name }}<span>.</span></a><p>System Hacking · Reversing · Development</p></div><div class="footer-links"><a href="{{ site.github }}">GitHub ↗</a><a href="/feed.xml">RSS ↗</a><a href="/archive/">Archive</a><span>© {{ '2026' }} {{ site.name }}</span></div></footer>
+  <main id="main" class="prototype-main{% if page.url != '/' and layout != 'post.njk' %} production-content{% endif %}" tabindex="-1">{{ content | safe }}</main>
+  <footer class="prototype-footer">
+    <p><strong>somani's archive</strong> / things I learn and build</p>
+    <div><a href="/archive/">Archive</a><a href="/about/">About</a><a href="/feed.xml">RSS ↗</a><a href="{{ site.github }}">GitHub ↗</a></div>
+  </footer>
 </body>
 </html>

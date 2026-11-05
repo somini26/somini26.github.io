@@ -1,5 +1,19 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+
+const waitForReveals = async (page) => {
+  const reveals = page.locator("[data-reveal]");
+  if (!(await reveals.count())) return;
+  for (let index = 0; index < (await reveals.count()); index += 1)
+    await reveals.nth(index).scrollIntoViewIfNeeded();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("[data-reveal]")].every(
+      (element) => getComputedStyle(element).opacity === "1",
+    ),
+  );
+  await page.evaluate(() => window.scrollTo(0, 0));
+};
+
 test("navigation, six category pages, empty states and accessibility", async ({
   page,
 }, testInfo) => {
@@ -9,20 +23,13 @@ test("navigation, six category pages, empty states and accessibility", async ({
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("somani.");
+  await expect(page.locator("h1")).toContainText("somani's");
+  await expect(page.locator("h1")).toContainText("living");
+  await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
+  await expect(page.locator(".c-project-window")).toContainText("somani's archive");
   await expect(
-    page.locator(".interest-strip > span:not(.micro-label)"),
-  ).toHaveText([
-    "System Hacking",
-    "Reverse Engineering",
-    "CTF & Wargame",
-    "Development",
-  ]);
-  await expect(page.locator(".project-card")).toHaveCount(1);
-  await expect(page.locator(".project-card")).toContainText("somani's archive");
-  await expect(
-    page.locator('.project-card a[href="/posts/github-pages-blog/"]'),
-  ).toBeVisible();
+    page.locator('.c-project-window a[href="/posts/github-pages-blog/"]'),
+  ).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "라이트 모드로 전환" }),
   ).toContainText("Light");
@@ -34,6 +41,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: "메뉴" })).toBeFocused();
   }
+  await waitForReveals(page);
   const accessibility = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
@@ -102,7 +110,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
 }, testInfo) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/posts/github-pages-blog/");
-  await expect(page.locator(".prose .token").first()).toBeVisible();
+  await expect(page.locator(".prototype-prose .token").first()).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "게시글 목차" }),
   ).toBeVisible();
@@ -117,7 +125,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   await expect
     .poll(() =>
       page
-        .locator(".reading-progress")
+        .locator(".prototype-reading-progress")
         .evaluate((node) => parseFloat(node.style.width)),
     )
     .toBeGreaterThan(0);
@@ -174,7 +182,7 @@ test("static navigation works without JavaScript", async ({ browser }) => {
     .getByRole("link", { name: "Archive", exact: true })
     .click();
   await page.locator(".post-card h3 a").click();
-  await expect(page.locator(".prose")).toContainText(
+  await expect(page.locator(".prototype-prose")).toContainText(
     "블로그를 만든 이유",
   );
   await context.close();
@@ -202,6 +210,7 @@ test("all primary pages remain accessible in both themes and narrow layouts", as
       "/404.html",
     ]) {
       await page.goto(url);
+      await waitForReveals(page);
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
         .analyze();

@@ -1,4 +1,5 @@
 (() => {
+  document.documentElement.classList.add("has-js");
   try {
     const saved =
       localStorage.getItem("somani-theme") ||

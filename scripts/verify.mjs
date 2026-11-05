@@ -13,6 +13,10 @@ function walk(dir) {
 }
 const files = walk(root),
   html = files.filter((f) => f.endsWith(".html"));
+assert(
+  !files.some((file) => file.includes(`${path.sep}prototypes${path.sep}`)),
+  "Prototype routes must not be published",
+);
 let links = 0;
 for (const file of html) {
   const { document } = parseHTML(fs.readFileSync(file, "utf8"));
