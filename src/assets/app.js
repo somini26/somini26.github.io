@@ -102,14 +102,14 @@ if (categoryIndex) {
   });
 }
 
-const content = $("[data-prototype-prose]");
+const content = $("[data-article-prose]");
 if (content) {
   for (const [index, pre] of [...content.querySelectorAll("pre")].entries()) {
     const code = $("code", pre);
     if (!code) continue;
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "prototype-copy-button";
+    button.className = "copy-button";
     button.textContent = "코드 복사";
     button.setAttribute("aria-label", `${index + 1}번째 코드 복사`);
     button.addEventListener("click", async () => {
@@ -139,7 +139,7 @@ if (content) {
   }
   for (const table of content.querySelectorAll("table")) {
     const wrap = document.createElement("div");
-    wrap.className = "prototype-table-scroll";
+    wrap.className = "table-scroll";
     wrap.tabIndex = 0;
     wrap.setAttribute("role", "region");
     wrap.setAttribute("aria-label", "표 · 가로 스크롤 가능");
@@ -147,7 +147,7 @@ if (content) {
     wrap.append(table);
   }
   const headings = [...content.querySelectorAll("h2, h3")];
-  const nav = $("[data-prototype-toc]");
+  const nav = $("[data-article-toc]");
   if (headings.length) {
     let section = 0;
     headings.forEach((heading) => {
@@ -185,9 +185,9 @@ if (content) {
       headings.forEach((h) => observer.observe(h));
     }
   }
-  const progress = $(".prototype-reading-progress");
+  const progress = $(".reading-progress");
   const update = () => {
-    const article = $("[data-prototype-article]");
+    const article = $("[data-article]");
     const start = article.offsetTop;
     const distance = article.offsetHeight - window.innerHeight;
     const value = distance > 0 ? ((scrollY - start) / distance) * 100 : 100;

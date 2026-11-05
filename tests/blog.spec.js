@@ -23,12 +23,15 @@ test("navigation, six category pages, empty states and accessibility", async ({
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(page.locator("h1")).toContainText("somani's");
-  await expect(page.locator("h1")).toContainText("living");
+  await expect(page.locator("h1")).toContainText("안녕하세요");
+  await expect(page.locator("h1")).toContainText("somani");
+  await expect(page.locator(".intro-copy")).toContainText(
+    "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
+  );
   await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
-  await expect(page.locator(".c-project-window")).toContainText("somani's archive");
+  await expect(page.locator("#project-panel")).toContainText("somani's archive");
   await expect(
-    page.locator('.c-project-window a[href="/posts/github-pages-blog/"]'),
+    page.locator('#project-panel a[href="/posts/github-pages-blog/"]'),
   ).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "라이트 모드로 전환" }),
@@ -110,7 +113,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
 }, testInfo) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/posts/github-pages-blog/");
-  await expect(page.locator(".prototype-prose .token").first()).toBeVisible();
+  await expect(page.locator(".article-prose .token").first()).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "게시글 목차" }),
   ).toBeVisible();
@@ -125,7 +128,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   await expect
     .poll(() =>
       page
-        .locator(".prototype-reading-progress")
+        .locator(".reading-progress")
         .evaluate((node) => parseFloat(node.style.width)),
     )
     .toBeGreaterThan(0);
@@ -182,7 +185,7 @@ test("static navigation works without JavaScript", async ({ browser }) => {
     .getByRole("link", { name: "Archive", exact: true })
     .click();
   await page.locator(".post-card h3 a").click();
-  await expect(page.locator(".prototype-prose")).toContainText(
+  await expect(page.locator(".article-prose")).toContainText(
     "블로그를 만든 이유",
   );
   await context.close();
