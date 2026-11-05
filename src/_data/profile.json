@@ -5,16 +5,16 @@
   "tagline": "System Hacking · Reversing · CTF",
   "email": "amder1144@gmail.com",
   "tistory": "https://vegetable-m.tistory.com/",
-  "image": "",
-  "imageAlt": "somani 프로필 이미지",
+  "image": "/assets/images/profile-hachiware.jpg",
+  "imageAlt": "파란 귀를 가진 하치와레 캐릭터",
   "primaryInterests": [
     "System Hacking",
     "Reverse Engineering",
-    "CTF / Wargame"
+    "CTF / Wargame",
+    "Development"
   ],
   "additionalInterests": [
     "Web Security",
-    "Digital Forensics",
-    "Development"
+    "Digital Forensics"
   ]
 }

@@ -21,7 +21,8 @@ function updateTheme() {
     "aria-label",
     dark ? "라이트 모드로 전환" : "다크 모드로 전환",
   );
-  theme.firstElementChild.textContent = dark ? "☼" : "☾";
+  $(".theme-icon", theme).textContent = dark ? "☼" : "☾";
+  $(".theme-label", theme).textContent = dark ? "Light" : "Dark";
 }
 updateTheme();
 theme.addEventListener("click", () => {

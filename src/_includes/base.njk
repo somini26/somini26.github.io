@@ -35,7 +35,7 @@
         <a href="{{ href }}" {% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %}aria-current="page"{% endif %}>{{ label }}</a>
         {% endfor %}
       </nav>
-      <div class="header-actions"><a class="github-link" href="{{ site.github }}" aria-label="{{ site.name }} GitHub 프로필">GitHub <span aria-hidden="true">↗</span></a><button class="theme-toggle icon-button" aria-label="라이트 모드로 전환" hidden><span aria-hidden="true">☼</span></button></div>
+      <div class="header-actions"><a class="github-link" href="{{ site.github }}" aria-label="{{ site.name }} GitHub 프로필">GitHub <span aria-hidden="true">↗</span></a><button class="theme-toggle icon-button" type="button" aria-label="라이트 모드로 전환" hidden><span class="theme-icon" aria-hidden="true">☼</span><span class="theme-label" aria-hidden="true">Light</span></button></div>
     </div>
   </header>
   <main id="main" class="container" tabindex="-1">{{ content | safe }}</main>

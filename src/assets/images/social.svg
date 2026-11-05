@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#11131b"/>
-  <rect x="50" y="50" width="1100" height="530" rx="18" fill="none" stroke="#303443"/>
-  <text x="100" y="135" fill="#b7a3d6" font-size="16" font-family="Arial,sans-serif" letter-spacing="4">PERSONAL SECURITY ARCHIVE</text>
-  <text x="95" y="350" fill="#f0f0f5" font-size="170" font-family="Arial,sans-serif" font-weight="700">somani<tspan fill="#b7a3d6">.</tspan></text>
-  <text x="104" y="430" fill="#9da3b4" font-size="30" font-family="Arial,sans-serif">System Hacking · Reversing · Development</text>
-  <path d="M100 500H1100" stroke="#303443"/>
-  <text x="104" y="545" fill="#9da3b4" font-size="18" font-family="monospace">somini26.github.io</text>
+  <rect width="1200" height="630" fill="#081522"/>
+  <circle cx="1020" cy="70" r="250" fill="#7dd3fc" opacity=".08"/>
+  <rect x="50" y="50" width="1100" height="530" rx="28" fill="none" stroke="#29465d"/>
+  <text x="100" y="135" fill="#7dd3fc" font-size="16" font-family="Arial,sans-serif" letter-spacing="4">SOMANI'S TECH ARCHIVE</text>
+  <text x="95" y="350" fill="#eef8ff" font-size="170" font-family="Arial,sans-serif" font-weight="700">somani<tspan fill="#7dd3fc">.</tspan></text>
+  <text x="104" y="430" fill="#a8bdcc" font-size="30" font-family="Arial,sans-serif">System Hacking · Reversing · CTF · Development</text>
+  <path d="M100 500H1100" stroke="#29465d"/>
+  <text x="104" y="545" fill="#a8bdcc" font-size="18" font-family="monospace">somini26.github.io</text>
 </svg>

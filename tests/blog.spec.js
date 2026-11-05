@@ -23,6 +23,9 @@ test("navigation, six category pages, empty states and accessibility", async ({
   await expect(
     page.locator('.project-card a[href="/posts/github-pages-blog/"]'),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "라이트 모드로 전환" }),
+  ).toContainText("Light");
   if (testInfo.project.name === "mobile") {
     await page.getByRole("button", { name: "메뉴" }).click();
     await expect(
@@ -35,6 +38,19 @@ test("navigation, six category pages, empty states and accessibility", async ({
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
   expect(accessibility.violations).toEqual([]);
+  await page.goto("/about/");
+  const profileImage = page.locator('.avatar img[src="/assets/images/profile-hachiware.jpg"]');
+  await expect(profileImage).toHaveAttribute(
+    "alt",
+    "파란 귀를 가진 하치와레 캐릭터",
+  );
+  await expect
+    .poll(() =>
+      profileImage.evaluate(
+        (image) => image.complete && image.naturalWidth === 736,
+      ),
+    )
+    .toBeTruthy();
   await page.goto("/categories/");
   const cards = page.locator(".topic-card");
   await expect(cards).toHaveCount(6);
@@ -112,6 +128,9 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   );
   await page.getByRole("button", { name: "라이트 모드로 전환" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(
+    page.getByRole("button", { name: "다크 모드로 전환" }),
+  ).toContainText("Dark");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   for (const theme of ["light", "dark"]) {
@@ -141,6 +160,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
     await page.screenshot({
       path: `test-results/${testInfo.project.name}-${url === "/" ? "home" : url.split("/").filter(Boolean)[0]}.png`,
       fullPage: true,
+      animations: "disabled",
     });
   }
 });
