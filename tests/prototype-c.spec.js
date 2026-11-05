@@ -76,7 +76,7 @@ test("prototype C interactive index, workspace, themes and mobile header", async
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-${testInfo.project.name}-dark.png`,
+      `prototype-c-final-${testInfo.project.name}-dark.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -104,7 +104,7 @@ test("prototype C interactive index, workspace, themes and mobile header", async
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-${testInfo.project.name}-category-preview.png`,
+      `prototype-c-final-${testInfo.project.name}-category-preview.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -132,6 +132,15 @@ test("prototype C interactive index, workspace, themes and mobile header", async
     "visibility",
     "hidden",
   );
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: path.join(
+      previewDirectory,
+      `prototype-c-final-${testInfo.project.name}-window-latest.png`,
+    ),
+    fullPage: true,
+    animations: "disabled",
+  });
   await projectTab.click();
   await expect(projectTab).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#c-project-window")).toHaveClass(/is-active/);
@@ -141,7 +150,7 @@ test("prototype C interactive index, workspace, themes and mobile header", async
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-${testInfo.project.name}-window-project.png`,
+      `prototype-c-final-${testInfo.project.name}-window-project.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -167,7 +176,7 @@ test("prototype C interactive index, workspace, themes and mobile header", async
       )
       .toBeTruthy();
     await page.screenshot({
-      path: path.join(previewDirectory, "prototype-c-mobile-scroll.png"),
+      path: path.join(previewDirectory, "prototype-c-final-mobile-scroll.png"),
       fullPage: false,
       animations: "disabled",
     });
@@ -186,11 +195,26 @@ test("prototype C interactive index, workspace, themes and mobile header", async
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-${testInfo.project.name}-light.png`,
+      `prototype-c-final-${testInfo.project.name}-light.png`,
     ),
     fullPage: true,
     animations: "disabled",
   });
+
+  if (testInfo.project.name === "desktop") {
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(mainUrl);
+      await expectNoOverflow(page);
+      await expect(page.locator(".c-window:visible")).toHaveCount(1);
+      await page.goto(articleUrl);
+      await expectNoOverflow(page);
+      await expect(page.locator(".prototype-table-scroll").first()).toHaveAttribute(
+        "tabindex",
+        "0",
+      );
+    }
+  }
   expect(errors).toEqual([]);
 });
 
@@ -236,7 +260,7 @@ test("prototype C editorial article preserves content and readability", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-article-${testInfo.project.name}-top.png`,
+      `prototype-c-final-article-${testInfo.project.name}-top.png`,
     ),
     fullPage: false,
     animations: "disabled",
@@ -252,10 +276,19 @@ test("prototype C editorial article preserves content and readability", async ({
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
   expect(accessibility.violations).toEqual([]);
+  if (testInfo.project.name === "mobile") {
+    expect(
+      await page
+        .locator(".prototype-prose pre")
+        .evaluateAll((blocks) =>
+          blocks.some((block) => block.scrollWidth > block.clientWidth),
+        ),
+    ).toBeTruthy();
+  }
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-article-${testInfo.project.name}.png`,
+      `prototype-c-final-article-${testInfo.project.name}.png`,
     ),
     fullPage: true,
     animations: "disabled",
