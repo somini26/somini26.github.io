@@ -25,11 +25,7 @@ layout: base.njk
     </aside>
   </section>
 
-  <section class="archive-switchboard" id="archive-map" aria-labelledby="archive-map-title" data-archive-switchboard data-reveal>
-    <header class="switchboard-heading">
-      <div><span class="section-number">01</span><h2 id="archive-map-title">최근 기록</h2></div>
-      <p>새롭게 작성한 글을 모아두었습니다.</p>
-    </header>
+  <section class="archive-switchboard" id="archive-map" aria-label="카테고리 탐색" data-archive-switchboard data-reveal>
     <div class="switchboard-grid">
       <ol class="category-switches">
         {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}

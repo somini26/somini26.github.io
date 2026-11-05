@@ -62,6 +62,39 @@ const expectClusterTextClear = async (page) => {
   });
 };
 
+const expectClusterProportions = async (page) => {
+  const metrics = await page.evaluate(() => {
+    const cluster = document.querySelector(".personal-cluster");
+    const portrait = document.querySelector(".portrait-frame");
+    const outerOrbit = getComputedStyle(cluster, "::before");
+    const innerOrbit = getComputedStyle(cluster, "::after");
+    return {
+      viewportWidth: window.innerWidth,
+      clusterWidth: cluster.getBoundingClientRect().width,
+      portraitWidth: portrait.getBoundingClientRect().width,
+      outerWidth: Number.parseFloat(outerOrbit.width),
+      innerWidth: Number.parseFloat(innerOrbit.width),
+    };
+  });
+  if (metrics.viewportWidth > 620) {
+    expect(metrics.portraitWidth).toBe(198);
+    expect(metrics.outerWidth / metrics.clusterWidth).toBeGreaterThan(0.65);
+    expect(metrics.outerWidth / metrics.clusterWidth).toBeLessThan(0.75);
+    expect(metrics.innerWidth).toBeLessThan(metrics.outerWidth);
+  }
+};
+
+const expectCategoryStartClear = async (page) => {
+  const startsBehindDock = await page.evaluate(() => {
+    const list = document.querySelector(".category-switches").getBoundingClientRect();
+    const dock = document.querySelector(".mobile-dock");
+    if (getComputedStyle(dock).display === "none") return false;
+    const dockRectangle = dock.getBoundingClientRect();
+    return list.top + window.scrollY < dockRectangle.bottom;
+  });
+  expect(startsBehindDock).toBeFalsy();
+};
+
 const revealPage = async (page) => {
   const elements = page.locator("[data-reveal]");
   for (let index = 0; index < (await elements.count()); index += 1)
@@ -111,9 +144,13 @@ test("identity, direct navigation and personal cluster remain immediately visibl
 
   await expect(page.locator(".profile-orbit")).toBeVisible();
   await expect(page.locator(".latest-note")).toBeVisible();
+  await expect(page.locator(".latest-note")).toContainText("최근 기록");
   await expect(page.locator(".project-note")).toBeVisible();
   await expect(page.locator(".project-note")).toContainText("somani's archive");
-  await expect(page.getByRole("heading", { name: "최근 기록" })).toBeVisible();
+  await expect(page.locator(".switchboard-heading")).toHaveCount(0);
+  await expect(page.locator(".archive-switchboard")).not.toContainText(
+    "새롭게 작성한 글을 모아두었습니다.",
+  );
   const profileImage = page.locator(
     '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
   );
@@ -142,6 +179,8 @@ test("identity, direct navigation and personal cluster remain immediately visibl
 
   await expectNoOverflow(page);
   await expectClusterTextClear(page);
+  await expectClusterProportions(page);
+  await expectCategoryStartClear(page);
   await expectAccessible(page);
   expect(errors).toEqual([]);
 });
@@ -160,6 +199,9 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
 
   if ((await page.viewportSize()).width > 820) {
     const node = page.locator(".signal-node");
+    const listBox = await page.locator(".category-switches").boundingBox();
+    const stageBox = await page.locator(".category-stage").boundingBox();
+    expect(Math.abs(listBox.y - stageBox.y)).toBeLessThan(1);
     const before = await node.evaluate((element) => element.offsetTop);
     await page.locator("#archive-map").screenshot({
       path: path.join(reviewDirectory, "switchboard-before.png"),
@@ -238,6 +280,8 @@ test("themes and required viewport captures stay visually stable", async ({
     await revealPage(page);
     await expectNoOverflow(page);
     await expectClusterTextClear(page);
+    await expectClusterProportions(page);
+    await expectCategoryStartClear(page);
     await page.screenshot({
       path: path.join(reviewDirectory, `${viewport.name}-home-dark.png`),
       fullPage: true,
