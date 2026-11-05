@@ -1,8 +1,8 @@
 # somini26.github.io
 
-somani's archive | CTF · Security · Development
+somani's archive | System Hacking · Reversing · Development
 
-**somani**가 보안과 개발을 공부하며 배운 내용을 기록하는 개인 기술 블로그입니다. Knights Frontier 3기 첫 번째 미션의 목적에 맞춰, 계속 글을 추가하고 관리할 수 있는 Markdown 기반 아카이브로 구성했습니다.
+**somani**가 시스템 해킹과 리버스 엔지니어링을 중심으로 CTF와 개발 학습 과정을 기록하는 개인 기술 블로그입니다. Knights Frontier 3기 첫 번째 미션의 목적에 맞춰, 계속 글을 추가하고 관리할 수 있는 Markdown 기반 아카이브로 구성했습니다.
 
 - 블로그 주소: **https://somini26.github.io**
 - GitHub 프로필: https://github.com/somini26
@@ -84,7 +84,15 @@ print("Hello, somani")
 ```
 ````
 
-초기 글 `GitHub Pages 블로그 구축 기록`은 **수정 가능한 예시 문서**입니다. 실제 수행한 학습이나 배포 결과에 맞게 수정하세요.
+반복해서 사용할 수 있는 비공개 초안 템플릿도 `src/posts/draft-*.md`에 준비되어 있습니다.
+
+- CTF/Wargame Write-up
+- 개발 프로젝트 기록
+- 시스템 해킹 및 리버싱 학습 노트
+- 논문/컨퍼런스 정리
+- 공모전/자격증 활동 기록
+
+템플릿에는 모두 `draft: true`가 지정되어 있어 상세 페이지, 목록, 검색, RSS, Sitemap에 공개되지 않습니다. 복사해서 사용할 때도 작성이 끝나기 전에는 해당 값을 유지하세요.
 
 ## 카테고리 설정
 
@@ -166,6 +174,8 @@ src/
   _data/
     site.json                # 사이트 정보
     topics.json              # 카테고리 이름과 slug
+    profile.json             # About 프로필 정보
+    projects.json            # 공개 프로젝트 카드 데이터
   _includes/                 # 공통 레이아웃
   assets/                    # CSS, JavaScript, 이미지, favicon
   posts/                     # Markdown 글과 글 공통 설정

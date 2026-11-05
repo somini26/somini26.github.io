@@ -12,7 +12,7 @@
   <meta property="og:site_name" content="{{ site.name }}">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="{% if layout == 'post.njk' %}article{% else %}website{% endif %}">
-  <meta property="og:title" content="{{ title or (site.name + ' — Security · CTF · Development') }}">
+  <meta property="og:title" content="{{ title or (site.name + ' — System Hacking · Reversing · Development') }}">
   <meta property="og:description" content="{{ description or site.description }}">
   <meta property="og:url" content="{{ site.url }}{{ page.url }}">
   <meta property="og:image" content="{{ site.url }}/assets/images/social.png">
@@ -39,6 +39,6 @@
     </div>
   </header>
   <main id="main" class="container" tabindex="-1">{{ content | safe }}</main>
-  <footer class="site-footer container"><div><a class="footer-brand" href="/">{{ site.name }}<span>.</span></a><p>Security · CTF · Development</p></div><div class="footer-links"><a href="{{ site.github }}">GitHub ↗</a><a href="/feed.xml">RSS ↗</a><a href="/archive/">Archive</a><span>© {{ '2026' }} {{ site.name }}</span></div></footer>
+  <footer class="site-footer container"><div><a class="footer-brand" href="/">{{ site.name }}<span>.</span></a><p>System Hacking · Reversing · Development</p></div><div class="footer-links"><a href="{{ site.github }}">GitHub ↗</a><a href="/feed.xml">RSS ↗</a><a href="/archive/">Archive</a><span>© {{ '2026' }} {{ site.name }}</span></div></footer>
 </body>
 </html>

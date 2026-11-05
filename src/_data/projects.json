@@ -1,0 +1,9 @@
+[
+  {
+    "name": "somani's archive",
+    "description": "보안과 개발 학습 기록을 Markdown으로 작성하고 GitHub Pages에 자동 배포하는 개인 기술 블로그입니다.",
+    "stack": ["Eleventy 3", "Nunjucks", "Markdown", "CSS", "JavaScript", "GitHub Actions"],
+    "repository": "https://github.com/somini26/somini26.github.io",
+    "post": "/posts/github-pages-blog/"
+  }
+]

@@ -79,7 +79,7 @@ for (const post of posts) {
 const sample = `${root}/posts/github-pages-blog/index.html`;
 if (fs.existsSync(sample))
   assert(
-    fs.readFileSync(sample, "utf8").includes("token keyword"),
+    fs.readFileSync(sample, "utf8").includes('class="token '),
     "Syntax highlighting missing",
   );
 assert(fs.existsSync(`${root}/assets/images/social.png`));

@@ -5,8 +5,24 @@ test("navigation, six category pages, empty states and accessibility", async ({
 }, testInfo) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("somani.");
+  await expect(
+    page.locator(".interest-strip > span:not(.micro-label)"),
+  ).toHaveText([
+    "System Hacking",
+    "Reverse Engineering",
+    "CTF & Wargame",
+    "Development",
+  ]);
+  await expect(page.locator(".project-card")).toHaveCount(1);
+  await expect(page.locator(".project-card")).toContainText("somani's archive");
+  await expect(
+    page.locator('.project-card a[href="/posts/github-pages-blog/"]'),
+  ).toBeVisible();
   if (testInfo.project.name === "mobile") {
     await page.getByRole("button", { name: "메뉴" }).click();
     await expect(
@@ -38,7 +54,13 @@ test("search, tags, URL restoration and safe search input", async ({
   page,
 }) => {
   await page.goto("/archive/");
-  await expect(page.locator("#tag-filter option")).toHaveCount(4);
+  await expect(page.locator("#tag-filter option")).toContainText([
+    "전체 태그",
+    "#Eleventy",
+    "#GitHub",
+    "#GitHub Actions",
+    "#Markdown",
+  ]);
   await page.getByRole("searchbox").fill("정적");
   await expect(page.locator("#archive-results .post-card")).toHaveCount(1);
   await page.getByRole("searchbox").fill("없는검색어");
@@ -64,17 +86,17 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
 }, testInfo) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/posts/github-pages-blog/");
-  await expect(page.locator(".prose .token.keyword").first()).toBeVisible();
+  await expect(page.locator(".prose .token").first()).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "게시글 목차" }),
   ).toBeVisible();
   await page
     .getByRole("navigation", { name: "게시글 목차" })
-    .getByRole("link", { name: "새 글 작성하기" })
+    .getByRole("link", { name: "Markdown으로 게시글 작성" })
     .click();
-  await expect(page).toHaveURL(/#%EC%83%88/);
+  await expect(page).toHaveURL(/#markdown/);
   await expect(
-    page.getByRole("heading", { name: "새 글 작성하기" }),
+    page.getByRole("heading", { name: "Markdown으로 게시글 작성" }),
   ).toBeVisible();
   await expect
     .poll(() =>
@@ -132,17 +154,24 @@ test("static navigation works without JavaScript", async ({ browser }) => {
     .getByRole("link", { name: "Archive", exact: true })
     .click();
   await page.locator(".post-card h3 a").click();
-  await expect(page.locator(".prose")).toContainText("수정 가능한 예시 글");
+  await expect(page.locator(".prose")).toContainText(
+    "GitHub Pages를 선택한 이유",
+  );
   await context.close();
 });
 
 test("all primary pages remain accessible in both themes and narrow layouts", async ({
   page,
 }) => {
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
   for (const theme of ["dark", "light"]) {
     await page.goto("/");
     await page.evaluate((theme) => {
-      localStorage.setItem("somini-theme", theme);
+      localStorage.setItem("somani-theme", theme);
       document.documentElement.dataset.theme = theme;
     }, theme);
     for (const url of [
@@ -178,4 +207,5 @@ test("all primary pages remain accessible in both themes and narrow layouts", as
       ).toBeTruthy();
     }
   }
+  expect(errors).toEqual([]);
 });

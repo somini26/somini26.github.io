@@ -2,15 +2,17 @@
   "nickname": "somani",
   "name": "최소민",
   "affiliation": "울산대학교 ICT융합학부",
-  "tagline": "System Security · Reversing · CTF",
+  "tagline": "System Hacking · Reversing · CTF",
   "email": "amder1144@gmail.com",
   "tistory": "https://vegetable-m.tistory.com/",
   "image": "",
   "imageAlt": "somani 프로필 이미지",
-  "interests": [
-    "System Security",
+  "primaryInterests": [
+    "System Hacking",
     "Reverse Engineering",
-    "CTF / Wargame",
+    "CTF / Wargame"
+  ],
+  "additionalInterests": [
     "Web Security",
     "Digital Forensics",
     "Development"

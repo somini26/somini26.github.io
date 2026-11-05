@@ -29,7 +29,7 @@ theme.addEventListener("click", () => {
     document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
   try {
-    localStorage.setItem("somini-theme", next);
+    localStorage.setItem("somani-theme", next);
   } catch {}
   updateTheme();
 });
