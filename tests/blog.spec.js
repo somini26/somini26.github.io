@@ -146,6 +146,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   for (const theme of ["light", "dark"]) {
     if (theme === "dark")
       await page.getByRole("button", { name: "다크 모드로 전환" }).click();
+    await page.waitForTimeout(250);
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
       .analyze();

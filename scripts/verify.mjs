@@ -81,11 +81,17 @@ for (const post of posts) {
 }
 // Empty archives and posts without code are valid. Check the sample only while it exists.
 const sample = `${root}/posts/github-pages-blog/index.html`;
-if (fs.existsSync(sample))
+if (fs.existsSync(sample)) {
+  const sampleHtml = fs.readFileSync(sample, "utf8");
   assert(
-    fs.readFileSync(sample, "utf8").includes('class="token '),
+    sampleHtml.includes('class="token '),
     "Syntax highlighting missing",
   );
+  const { document } = parseHTML(sampleHtml);
+  const sequence = document.querySelector(".article-sequence");
+  assert.equal(sequence?.textContent.trim(), "001", "Post sequence missing");
+  assert.equal(sequence?.getAttribute("aria-hidden"), "true");
+}
 assert(fs.existsSync(`${root}/assets/images/social.png`));
 assert(fs.existsSync(`${root}/.nojekyll`));
 const sitemap = fs.readFileSync(`${root}/sitemap.xml`, "utf8");

@@ -66,6 +66,14 @@ export default function (config) {
     (name) => categories.find((c) => c.name === name)?.slug || "",
   );
   config.addFilter("take", (items, count) => items.slice(0, count));
+  config.addFilter("postSequence", (posts, pageUrl) => {
+    const ordered = [...posts].sort(
+      (a, b) =>
+        new Date(a.date) - new Date(b.date) || a.url.localeCompare(b.url),
+    );
+    const index = ordered.findIndex((post) => post.url === pageUrl);
+    return String(index >= 0 ? index + 1 : 1).padStart(3, "0");
+  });
   config.addFilter("json", (value) =>
     JSON.stringify(value).replace(/</g, "\\u003c"),
   );

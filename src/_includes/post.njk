@@ -4,6 +4,7 @@ layout: base.njk
 <div class="reading-progress" aria-hidden="true"></div>
 <article class="article" data-article>
   <header class="article-header">
+    <span class="article-sequence" aria-hidden="true">{{ collections.posts | postSequence(page.url) }}</span>
     <a class="article-back" href="/archive/">← 전체 기록</a>
     <p class="article-label">기술 기록 · {{ date | dateISO }}</p>
     <h1>{{ title }}</h1>

@@ -31,6 +31,37 @@ const expectNoOverflow = async (page) => {
   ).toBeTruthy();
 };
 
+const expectClusterTextClear = async (page) => {
+  const overlaps = await page.evaluate(() => {
+    const selectors = [
+      ".profile-orbit-copy",
+      ".latest-note",
+      ".project-note",
+    ];
+    const rectangles = selectors.map((selector) =>
+      document.querySelector(selector).getBoundingClientRect(),
+    );
+    const intersects = (a, b) =>
+      a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    const dock = document.querySelector(".mobile-dock");
+    const dockRectangle = dock?.getBoundingClientRect();
+    return {
+      profileLatest: intersects(rectangles[0], rectangles[1]),
+      profileProject: intersects(rectangles[0], rectangles[2]),
+      noteCards: intersects(rectangles[1], rectangles[2]),
+      projectDock:
+        getComputedStyle(dock).display !== "none" &&
+        intersects(rectangles[2], dockRectangle),
+    };
+  });
+  expect(overlaps).toEqual({
+    profileLatest: false,
+    profileProject: false,
+    noteCards: false,
+    projectDock: false,
+  });
+};
+
 const revealPage = async (page) => {
   const elements = page.locator("[data-reveal]");
   for (let index = 0; index < (await elements.count()); index += 1)
@@ -82,6 +113,7 @@ test("identity, direct navigation and personal cluster remain immediately visibl
   await expect(page.locator(".latest-note")).toBeVisible();
   await expect(page.locator(".project-note")).toBeVisible();
   await expect(page.locator(".project-note")).toContainText("somani's archive");
+  await expect(page.getByRole("heading", { name: "최근 기록" })).toBeVisible();
   const profileImage = page.locator(
     '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
   );
@@ -109,6 +141,7 @@ test("identity, direct navigation and personal cluster remain immediately visibl
   }
 
   await expectNoOverflow(page);
+  await expectClusterTextClear(page);
   await expectAccessible(page);
   expect(errors).toEqual([]);
 });
@@ -204,6 +237,7 @@ test("themes and required viewport captures stay visually stable", async ({
     await page.reload();
     await revealPage(page);
     await expectNoOverflow(page);
+    await expectClusterTextClear(page);
     await page.screenshot({
       path: path.join(reviewDirectory, `${viewport.name}-home-dark.png`),
       fullPage: true,
@@ -252,8 +286,19 @@ test("about, archive, categories and article preserve content and usability", as
   await expect(page.locator(".post-card")).toContainText(
     "GitHub Pages 블로그 구축 기록",
   );
-
+  await page.goto("/about/");
+  const aboutIntroduction = page.locator(".about-content section").first();
+  await expect(aboutIntroduction.getByRole("heading", { level: 2 })).toHaveText(
+    "안녕하세요, somani입니다.",
+  );
+  await expect(aboutIntroduction.locator("p")).toHaveText([
+    "울산대학교 ICT융합학부에서 컴퓨터공학을 공부하고 있습니다. 보안뿐 아니라 다양한 분야에 경계를 두지 않고 폭넓게 배우고 싶습니다.",
+    "시스템 해킹과 리버스 엔지니어링, CTF/Wargame도 여러 관심 분야 가운데 하나입니다. 배운 내용을 다시 설명할 수 있을 만큼 이해하고, 프로젝트와 학습 과정에서 직접 겪은 문제를 다음에 꺼내 볼 수 있는 기록으로 차근차근 쌓아 가고 싶습니다.",
+  ]);
   await page.goto("/posts/github-pages-blog/");
+  const sequence = page.locator(".article-sequence");
+  await expect(sequence).toHaveText("001");
+  await expect(sequence).toHaveAttribute("aria-hidden", "true");
   await expect(page.locator("[data-article-prose]")).toContainText(
     "Everything up-to-date",
   );
