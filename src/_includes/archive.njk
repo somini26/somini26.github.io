@@ -1,4 +1,4 @@
-<section class="page-intro"><p class="eyebrow">{{ eyebrow or 'ALL NOTES' }}</p><h1>{{ title }}<span>.</span></h1><p>{{ description }}</p></section>
+<section class="page-intro"><p class="eyebrow">{{ eyebrow or '모든 기록' }}</p><h1>{{ title }}<span>.</span></h1><p>{{ description }}</p></section>
 <div class="archive-layout" data-archive data-category="{{ activeCategory or '' }}">
   <aside class="archive-sidebar"><h2 class="micro-label">CATEGORIES</h2><a class="filter-category {% if not activeCategory %}selected{% endif %}" href="/archive/"><span>전체 기록</span><span>{{ collections.posts | length }}</span></a>{% for category in topics %}<a class="filter-category {% if activeCategory == category.name %}selected{% endif %}" href="/categories/{{ category.slug }}/"><span>{{ category.name }}</span><span>{{ collections.posts | inCategory(category.name) | length }}</span></a>{% endfor %}<div class="sidebar-note">카테고리를 선택하거나<br>검색으로 글을 찾아보세요.</div></aside>
   <div class="archive-content">

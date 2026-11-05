@@ -10,5 +10,5 @@ eleventyComputed:
   description: "{{ category.description }}"
   activeCategory: "{{ category.name }}"
 ---
-{% set eyebrow = 'TOPIC / ' + category.label %}
+{% set eyebrow = '카테고리 · ' + category.name %}
 {% include 'archive.njk' %}

@@ -25,24 +25,23 @@ test("navigation, six category pages, empty states and accessibility", async ({
   await page.goto("/");
   await expect(page.locator("h1")).toContainText("안녕하세요");
   await expect(page.locator("h1")).toContainText("somani");
-  await expect(page.locator(".intro-copy")).toContainText(
+  await expect(page.locator(".hero-description")).toContainText(
     "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
   );
   await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
-  await expect(page.locator("#project-panel")).toContainText("somani's archive");
+  await expect(page.locator(".project-note")).toContainText("somani's archive");
   await expect(
-    page.locator('#project-panel a[href="/posts/github-pages-blog/"]'),
+    page.locator('.project-note[href="/posts/github-pages-blog/"]'),
   ).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "라이트 모드로 전환" }),
   ).toContainText("Light");
   if (testInfo.project.name === "mobile") {
-    await page.getByRole("button", { name: "메뉴" }).click();
-    await expect(
-      page.getByRole("navigation", { name: "주 메뉴" }),
-    ).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("button", { name: "메뉴" })).toBeFocused();
+    const mobileNavigation = page.getByRole("navigation", {
+      name: "모바일 주 메뉴",
+    });
+    await expect(mobileNavigation).toBeVisible();
+    await expect(mobileNavigation.getByRole("link")).toHaveCount(4);
   }
   await waitForReveals(page);
   const accessibility = await new AxeBuilder({ page })
@@ -63,7 +62,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
     )
     .toBeTruthy();
   await page.goto("/categories/");
-  const cards = page.locator(".topic-card");
+  const cards = page.locator(".topic-directory > li > a");
   await expect(cards).toHaveCount(6);
   for (const url of await cards.evaluateAll((nodes) =>
     nodes.map((n) => n.getAttribute("href")),
@@ -175,13 +174,15 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
     });
   }
 });
-test("static navigation works without JavaScript", async ({ browser }) => {
+test("static navigation works without JavaScript", async ({ browser }, testInfo) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:8080/");
-  await expect(page.getByRole("navigation", { name: "주 메뉴" })).toBeVisible();
-  await page
-    .getByRole("navigation", { name: "주 메뉴" })
+  const navigation = page.getByRole("navigation", {
+    name: testInfo.project.name === "mobile" ? "모바일 주 메뉴" : "주 메뉴",
+  });
+  await expect(navigation).toBeVisible();
+  await navigation
     .getByRole("link", { name: "Archive", exact: true })
     .click();
   await page.locator(".post-card h3 a").click();

@@ -2,77 +2,62 @@
 layout: base.njk
 ---
 <div class="home-shell">
-  <section class="home-intro" aria-labelledby="home-title" data-reveal>
-    <div class="intro-status"><span aria-hidden="true"></span><span>LEARNING LOG · ULSAN</span><time datetime="2026">2026</time></div>
-    <div class="intro-grid">
-      <div>
-        <p class="section-label">A CURIOUS LEARNING ARCHIVE</p>
-        <h1 id="home-title">안녕하세요,<br><strong>somani</strong>입니다.</h1>
-      </div>
-      <div class="intro-copy">
-        <p>다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.</p>
-        <ul aria-label="관심 분야"><li>Development</li><li>Security</li><li>AI</li><li>Data</li></ul>
-        <div class="intro-links"><a href="/archive/">최근 기록 보기 <span>↗</span></a><a href="/about/">somani 소개 <span>→</span></a></div>
+  <section class="home-hero" aria-labelledby="home-title" data-reveal>
+    <div class="hero-copy">
+      <h1 id="home-title">안녕하세요,<br><strong>somani</strong>입니다.</h1>
+      <p class="hero-description">다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.</p>
+      <ul class="interest-keywords" aria-label="관심 분야"><li>CTF</li><li>Security</li><li>AI</li><li>Development</li></ul>
+      <nav class="hero-actions" aria-label="빠른 탐색"><a href="#archive-map">카테고리 둘러보기 <span aria-hidden="true">↓</span></a><a href="/archive/">모든 기록 보기 <span aria-hidden="true">↗</span></a></nav>
+    </div>
+
+    <aside class="personal-cluster" aria-label="somani의 프로필, 최근 기록과 프로젝트">
+      <span class="cluster-path path-one" aria-hidden="true"></span><span class="cluster-path path-two" aria-hidden="true"></span>
+      <a class="profile-orbit" href="/about/">
+        <span class="portrait-frame"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781"><i aria-hidden="true"></i></span>
+        <span class="profile-orbit-copy"><small>{{ profile.name }} · 울산대학교</small><strong>somani의 프로필</strong><span>프로필 보기 ↗</span></span>
+      </a>
+      {% for post in collections.posts | take(1) %}
+      <a class="cluster-note latest-note" href="{{ post.url }}"><span>최근 기록</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><strong>{{ post.data.title }}</strong><i aria-hidden="true">↗</i></a>
+      {% endfor %}
+      {% for project in projects | take(1) %}
+      <a class="cluster-note project-note" href="{{ project.post }}"><span>프로젝트</span><strong>{{ project.name }}</strong><small>{{ project.stack | join(' · ') }}</small><i aria-hidden="true">→</i></a>
+      {% endfor %}
+    </aside>
+  </section>
+
+  <section class="archive-switchboard" id="archive-map" aria-labelledby="archive-map-title" data-archive-switchboard data-reveal>
+    <header class="switchboard-heading">
+      <div><span class="section-number">01</span><h2 id="archive-map-title">기록을 따라가 보세요.</h2></div>
+      <p>관심 있는 카테고리에 마우스를 올리거나 키보드로 이동하면 연결된 기록이 바로 나타납니다.</p>
+    </header>
+    <div class="switchboard-grid">
+      <ol class="category-switches">
+        {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
+        <li{% if loop.first %} class="is-active"{% endif %}>
+          <a href="/categories/{{ category.slug }}/" data-category-trigger data-preview-id="category-preview-{{ loop.index }}" data-index="{{ loop.index0 }}"{% if loop.first %} data-active="true"{% endif %}>
+            <span class="switch-number">0{{ loop.index }}</span>
+            <span class="switch-title"><strong>{{ category.name }}</strong><small>{{ category.description }}</small></span>
+            <span class="switch-count">{{ categoryPosts | length }}<small>개의 기록</small></span>
+            <span class="switch-arrow" aria-hidden="true">↗</span>
+            <span class="switch-mobile-note">{% for post in categoryPosts | take(1) %}최근 · {{ post.data.title }}{% else %}첫 기록을 준비하고 있습니다.{% endfor %}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ol>
+      <div class="signal-lane" aria-hidden="true"><span class="signal-node"></span><i></i></div>
+      <div class="category-stage" aria-live="polite">
+        <div class="stage-status"><span>선택한 분야</span><strong data-selected-topic>{{ topics[0].name }}</strong></div>
+        {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
+        <section id="category-preview-{{ loop.index }}" data-category-panel{% if not loop.first %} hidden{% endif %}>
+          <span class="stage-number" aria-hidden="true">0{{ loop.index }}</span>
+          <p>{{ category.description }}</p>
+          <div class="stage-record">
+            {% for post in categoryPosts | take(1) %}<span>최근 기록 · {{ post.date | dateISO }}</span><a href="{{ post.url }}">{{ post.data.title }} <i aria-hidden="true">↗</i></a>{% else %}<span>아직 공개된 기록이 없습니다.</span><p>첫 글이 추가되면 이곳에서 바로 확인할 수 있어요.</p>{% endfor %}
+          </div>
+          <a class="stage-open" href="/categories/{{ category.slug }}/">{{ category.name }} 전체 보기 <span aria-hidden="true">→</span></a>
+        </section>
+        {% endfor %}
       </div>
     </div>
   </section>
-
-  <div class="home-dashboard">
-    <section class="archive-index" aria-labelledby="archive-index-title" data-category-index data-reveal>
-      <header class="section-heading compact-heading">
-        <div><p class="section-label">ARCHIVE INDEX</p><h2 id="archive-index-title">어떤 기록을 찾고 있나요?</h2></div>
-        <p>카테고리를 선택하면 설명과 최신 기록을 미리 볼 수 있어요.</p>
-      </header>
-      <div class="index-layout">
-        <ol class="category-index-list">
-          {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
-          <li{% if loop.first %} class="is-active"{% endif %}>
-            <a href="/categories/{{ category.slug }}/" data-category-trigger data-preview-id="category-preview-{{ loop.index }}"{% if loop.first %} data-active="true"{% endif %}>
-              <span class="category-number">0{{ loop.index }}</span>
-              <span class="category-title"><strong>{{ category.name }}</strong><small>{{ category.label }}</small></span>
-              <span class="category-count">{{ categoryPosts | length }}</span><span class="category-arrow" aria-hidden="true">↗</span>
-              <span class="category-mobile-detail">{{ category.description }}{% for post in categoryPosts | take(1) %}<br>최근 기록 · {{ post.data.title }}{% endfor %}</span>
-            </a>
-          </li>
-          {% endfor %}
-        </ol>
-        <div class="category-preview" aria-live="polite">
-          {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
-          <section id="category-preview-{{ loop.index }}" data-category-panel{% if not loop.first %} hidden{% endif %}>
-            <div class="preview-meta"><span>0{{ loop.index }} · {{ category.label }}</span><span>{{ categoryPosts | length }} NOTES</span></div>
-            <h3>{{ category.name }}</h3><p>{{ category.description }}</p>
-            {% for post in categoryPosts | take(1) %}<div class="preview-latest"><span>RECENT · {{ post.date | dateISO }}</span><a href="{{ post.url }}">{{ post.data.title }} <span>↗</span></a></div>{% else %}<div class="preview-empty"><span>RECENT</span><p>첫 기록을 준비하고 있습니다.</p></div>{% endfor %}
-            <a class="preview-open" href="/categories/{{ category.slug }}/">이 카테고리 둘러보기 <span>→</span></a>
-          </section>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
-
-    <section class="personal-workspace" aria-labelledby="workspace-title" data-reveal>
-      <header class="workspace-heading"><div><p class="section-label">PERSONAL WORKSPACE</p><h2 id="workspace-title">somani's workspace</h2></div><span class="workspace-status"><i></i>OPEN</span></header>
-      <div class="workspace-tabs" role="tablist" aria-label="워크스페이스 보기" data-tablist>
-        <button type="button" role="tab" aria-selected="true" aria-controls="profile-panel" id="profile-tab">Profile</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="latest-panel" id="latest-tab" tabindex="-1">Latest</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="project-panel" id="project-tab" tabindex="-1">Project</button>
-      </div>
-      <div class="workspace-panels">
-        <article class="workspace-panel profile-panel is-active" id="profile-panel" role="tabpanel" aria-labelledby="profile-tab" data-tab-panel>
-          <div class="profile-image-wrap"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781"><span aria-hidden="true">hello!</span></div>
-          <div class="profile-summary"><p class="panel-kicker">{{ profile.name }} · ICT융합학부</p><h3>Hello, I'm somani.</h3><p>안녕하세요, somani입니다.<br>궁금한 것을 배우고 경험하며 기록해요.</p><ul>{% for interest in profile.primaryInterests | take(4) %}<li>{{ interest }}</li>{% endfor %}</ul><a href="/about/">프로필 더 보기 <span>→</span></a></div>
-        </article>
-        {% for post in collections.posts | take(1) %}
-        <article class="workspace-panel latest-panel" id="latest-panel" role="tabpanel" aria-labelledby="latest-tab" data-tab-panel aria-hidden="true" inert>
-          <div class="panel-kicker-row"><p class="panel-kicker">LATEST NOTE</p><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time></div><span class="note-category">{{ post.data.categories[0] }}</span><h3>{{ post.data.title }}</h3><p>{{ post.data.description }}</p><div class="panel-tags">{% for tag in post.data.tags %}<span>#{{ tag }}</span>{% endfor %}</div><a href="{{ post.url }}">기록 읽기 <span>↗</span></a>
-        </article>
-        {% endfor %}
-        {% for project in projects | take(1) %}
-        <article class="workspace-panel project-panel" id="project-panel" role="tabpanel" aria-labelledby="project-tab" data-tab-panel aria-hidden="true" inert>
-          <div class="panel-kicker-row"><p class="panel-kicker">SELECTED PROJECT</p><span>01</span></div><h3>{{ project.name }}</h3><p>{{ project.description }}</p><ul class="project-stack">{% for technology in project.stack %}<li>{{ technology }}</li>{% endfor %}</ul><div class="project-links"><a href="{{ project.post }}">구축 기록 <span>→</span></a><a href="{{ project.repository }}">GitHub <span>↗</span></a></div>
-        </article>
-        {% endfor %}
-      </div>
-      <p class="workspace-help">탭을 클릭하거나 좌우 방향키로 전환할 수 있어요.</p>
-    </section>
-  </div>
 </div>

@@ -28,9 +28,8 @@
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-wordmark" href="/" aria-label="{{ site.name }} 홈"><span aria-hidden="true">s.</span><strong>somani</strong><small>archive</small></a>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" hidden>메뉴</button>
-      <nav id="main-nav" aria-label="주 메뉴">
+      <a class="site-wordmark" href="/" aria-label="{{ site.name }} 홈"><span aria-hidden="true">s.</span><strong>somani</strong></a>
+      <nav id="main-nav" class="desktop-nav" aria-label="주 메뉴">
         {% for label, href in [['Home','/'],['Archive','/archive/'],['Categories','/categories/'],['About','/about/']] %}
         <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}>{{ label }}</a>
         {% endfor %}
@@ -46,5 +45,10 @@
     <div><a class="footer-brand" href="/">somani<span>.</span></a><p>새롭게 배운 내용과 직접 경험한 것을 오래 남기는 개인 아카이브</p></div>
     <nav aria-label="푸터 메뉴"><a href="/archive/">Archive</a><a href="/about/">About</a><a href="/feed.xml">RSS ↗</a><a href="{{ site.github }}">GitHub ↗</a></nav>
   </footer>
+  <nav class="mobile-dock" aria-label="모바일 주 메뉴">
+    {% for label, href, icon in [['Home','/','⌂'],['Archive','/archive/','◫'],['Categories','/categories/','⌗'],['About','/about/','◌']] %}
+    <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span><strong>{{ label }}</strong></a>
+    {% endfor %}
+  </nav>
 </body>
 </html>

@@ -5,7 +5,7 @@ layout: base.njk
 <article class="article" data-article>
   <header class="article-header">
     <a class="article-back" href="/archive/">← 전체 기록</a>
-    <p class="article-label">TECHNICAL NOTE · {{ date | dateISO }}</p>
+    <p class="article-label">기술 기록 · {{ date | dateISO }}</p>
     <h1>{{ title }}</h1>
     <p class="article-description">{{ description }}</p>
     <div class="article-meta"><span>{{ content | readingTime }}분 읽기</span>{% for category in categories %}<a href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}</div>
@@ -13,6 +13,6 @@ layout: base.njk
   </header>
   <div class="article-layout">
     <div class="article-prose" id="post-content" data-article-prose>{{ content | safe }}</div>
-    <aside class="article-rail" aria-label="게시글 보조 정보"><div class="toc-panel"><div class="toc-heading"><span>CONTENTS</span><span>ON THIS PAGE</span></div><nav data-article-toc aria-label="게시글 목차"></nav></div><a class="article-rail-link" href="/archive/">전체 기록으로 돌아가기 →</a></aside>
+    <aside class="article-rail" aria-label="게시글 보조 정보"><div class="toc-panel"><div class="toc-heading"><span>목차</span><span>이 글에서</span></div><nav data-article-toc aria-label="게시글 목차"></nav></div><a class="article-rail-link" href="/archive/">전체 기록으로 돌아가기 →</a></aside>
   </div>
 </article>

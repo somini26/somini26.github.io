@@ -1,20 +1,5 @@
 const $ = (selector, root = document) => root.querySelector(selector);
-const menu = $(".menu-toggle");
-if (menu) {
-  menu.hidden = false;
-  menu.addEventListener("click", () =>
-    menu.setAttribute(
-      "aria-expanded",
-      String(menu.getAttribute("aria-expanded") !== "true"),
-    ),
-  );
-}
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && menu?.getAttribute("aria-expanded") === "true") {
-    menu.setAttribute("aria-expanded", "false");
-    menu.focus();
-  }
-});
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const theme = $(".theme-toggle");
 if (theme) theme.hidden = false;
 function updateTheme() {
@@ -37,46 +22,25 @@ theme?.addEventListener("click", () => {
   } catch {}
   updateTheme();
 });
-for (const tablist of document.querySelectorAll("[data-tablist]")) {
-  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
-  const panels = tabs.map((tab) => document.getElementById(tab.getAttribute("aria-controls"))).filter(Boolean);
-  const activate = (nextTab, focus = true) => {
-    tabs.forEach((tab) => {
-      const active = tab === nextTab;
-      tab.setAttribute("aria-selected", String(active));
-      tab.tabIndex = active ? 0 : -1;
-    });
-    panels.forEach((panel) => {
-      const active = panel.id === nextTab.getAttribute("aria-controls");
-      panel.classList.toggle("is-active", active);
-      panel.toggleAttribute("inert", !active);
-      if (active) panel.removeAttribute("aria-hidden");
-      else panel.setAttribute("aria-hidden", "true");
-    });
-    if (focus) nextTab.focus();
-  };
-  tabs.forEach((tab, index) => {
-    tab.addEventListener("click", () => activate(tab, false));
-    tab.addEventListener("keydown", (event) => {
-      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-      event.preventDefault();
-      let next = index;
-      if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
-      if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
-      if (event.key === "Home") next = 0;
-      if (event.key === "End") next = tabs.length - 1;
-      activate(tabs[next]);
-    });
-  });
-  const selected = tabs.find((tab) => tab.getAttribute("aria-selected") === "true");
-  if (selected) activate(selected, false);
-}
 
-const categoryIndex = $("[data-category-index]");
-if (categoryIndex) {
-  const triggers = [...categoryIndex.querySelectorAll("[data-category-trigger]")];
-  const panels = [...categoryIndex.querySelectorAll("[data-category-panel]")];
+const switchboard = $("[data-archive-switchboard]");
+if (switchboard) {
+  const triggers = [...switchboard.querySelectorAll("[data-category-trigger]")];
+  const panels = [...switchboard.querySelectorAll("[data-category-panel]")];
+  const selectedTopic = $("[data-selected-topic]", switchboard);
+  const grid = $(".switchboard-grid", switchboard);
+  let activeTrigger = triggers[0];
+  const positionSignal = (trigger) => {
+    if (!grid || innerWidth <= 820) return;
+    const row = trigger.getBoundingClientRect();
+    const area = grid.getBoundingClientRect();
+    switchboard.style.setProperty(
+      "--signal-y",
+      `${row.top - area.top + row.height / 2}px`,
+    );
+  };
   const activateCategory = (trigger) => {
+    activeTrigger = trigger;
     const targetId = trigger.dataset.previewId;
     triggers.forEach((item) => {
       const active = item === trigger;
@@ -84,7 +48,21 @@ if (categoryIndex) {
       if (active) item.dataset.active = "true";
       else delete item.dataset.active;
     });
-    panels.forEach((panel) => { panel.hidden = panel.id !== targetId; });
+    panels.forEach((panel) => {
+      const active = panel.id === targetId;
+      panel.hidden = !active;
+      if (active && !reducedMotion.matches)
+        panel.animate(
+          [
+            { opacity: 0, transform: "translateY(12px) scale(.985)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 280, easing: "cubic-bezier(.2,.75,.2,1)" },
+        );
+    });
+    selectedTopic.textContent = $(".switch-title strong", trigger).textContent;
+    switchboard.dataset.focus = trigger.dataset.index;
+    positionSignal(trigger);
   };
   triggers.forEach((trigger, index) => {
     trigger.addEventListener("mouseenter", () => activateCategory(trigger));
@@ -100,6 +78,8 @@ if (categoryIndex) {
       triggers[next].focus();
     });
   });
+  requestAnimationFrame(() => positionSignal(activeTrigger));
+  addEventListener("resize", () => positionSignal(activeTrigger), { passive: true });
 }
 
 const content = $("[data-article-prose]");
@@ -198,7 +178,6 @@ if (content) {
   update();
 }
 
-const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const reveals = [...document.querySelectorAll("[data-reveal]")];
 if (reducedMotion.matches || !("IntersectionObserver" in window)) {
   reveals.forEach((element) => element.classList.add("is-visible"));

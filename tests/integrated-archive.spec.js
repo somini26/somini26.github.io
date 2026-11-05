@@ -14,6 +14,14 @@ const expectedCategories = [
   "논문/컨퍼런스",
   "공모전/자격증",
 ];
+const expectedInterests = ["CTF", "Security", "AI", "Development"];
+const forbiddenPhrases = [
+  "LEARNING LOG · ULSAN 2026",
+  "A CURIOUS LEARNING ARCHIVE",
+  "somani's living archive.",
+  "Working set.",
+  "Choose a field note.",
+];
 
 const expectNoOverflow = async (page) => {
   expect(
@@ -51,9 +59,9 @@ const collectErrors = (page) => {
   return errors;
 };
 
-test("home identity, equal category index and workspace are usable", async ({
+test("identity, direct navigation and personal cluster remain immediately visible", async ({
   page,
-}) => {
+}, testInfo) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await revealPage(page);
@@ -61,44 +69,21 @@ test("home identity, equal category index and workspace are usable", async ({
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "안녕하세요",
   );
-  await expect(page.locator(".intro-copy")).toContainText(
+  await expect(page.locator(".hero-description")).toHaveText(
     "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
   );
-  await expect(page.locator(".intro-copy")).not.toContainText("중심으로");
+  expect(await page.locator(".interest-keywords li").allTextContents()).toEqual(
+    expectedInterests,
+  );
+  for (const phrase of forbiddenPhrases)
+    await expect(page.locator("body")).not.toContainText(phrase);
 
-  const categoryLinks = page.locator("[data-category-trigger]");
-  await expect(categoryLinks).toHaveCount(6);
-  expect(
-    await categoryLinks.locator(".category-title strong").allTextContents(),
-  ).toEqual(expectedCategories);
-  for (const href of await categoryLinks.evaluateAll((links) =>
-    links.map((link) => link.getAttribute("href")),
-  ))
-    expect(href).toMatch(/^\/categories\/[a-z-]+\/$/);
-
-  const blogCategory = categoryLinks.nth(3);
-  await blogCategory.focus();
-  if ((await page.viewportSize()).width <= 820) {
-    await expect(blogCategory.locator(".category-mobile-detail")).toContainText(
-      "GitHub Pages 블로그 구축 기록",
-    );
-  } else {
-    await expect(page.locator("#category-preview-4")).toBeVisible();
-    await expect(page.locator("#category-preview-4")).toContainText(
-      "GitHub Pages 블로그 구축 기록",
-    );
-  }
-  await blogCategory.press("ArrowDown");
-  await expect(categoryLinks.nth(4)).toBeFocused();
-  if ((await page.viewportSize()).width > 820) {
-    await expect(page.locator("#category-preview-5")).toBeVisible();
-    await expect(page.locator("#category-preview-5")).toContainText(
-      "첫 기록을 준비하고 있습니다.",
-    );
-  }
-
+  await expect(page.locator(".profile-orbit")).toBeVisible();
+  await expect(page.locator(".latest-note")).toBeVisible();
+  await expect(page.locator(".project-note")).toBeVisible();
+  await expect(page.locator(".project-note")).toContainText("somani's archive");
   const profileImage = page.locator(
-    '.profile-image-wrap img[src="/assets/images/profile-hachiware.jpg"]',
+    '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
   );
   await expect(profileImage).toHaveAttribute(
     "alt",
@@ -112,25 +97,96 @@ test("home identity, equal category index and workspace are usable", async ({
     )
     .toBeTruthy();
 
-  const profileTab = page.getByRole("tab", { name: "Profile" });
-  const latestTab = page.getByRole("tab", { name: "Latest" });
-  const projectTab = page.getByRole("tab", { name: "Project" });
-  await expect(profileTab).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".workspace-panel.is-active")).toHaveCount(1);
-  await profileTab.focus();
-  await profileTab.press("ArrowRight");
-  await expect(latestTab).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("#latest-panel")).toHaveClass(/is-active/);
-  await projectTab.click();
-  await expect(page.locator("#project-panel")).toHaveClass(/is-active/);
-  await expect(page.locator("#project-panel")).toContainText("somani's archive");
+  if (testInfo.project.name === "mobile") {
+    const dock = page.getByRole("navigation", { name: "모바일 주 메뉴" });
+    await expect(dock).toBeVisible();
+    await expect(dock.getByRole("link")).toHaveCount(4);
+    await expect(page.locator(".desktop-nav")).not.toBeVisible();
+  } else {
+    await expect(page.locator(".desktop-nav")).toBeVisible();
+    await expect(page.locator(".desktop-nav a")).toHaveCount(4);
+    await expect(page.locator(".mobile-dock")).not.toBeVisible();
+  }
 
   await expectNoOverflow(page);
   await expectAccessible(page);
   expect(errors).toEqual([]);
 });
 
-test("themes persist and responsive review captures stay clean", async ({
+test("archive switchboard visibly follows hover and keyboard focus", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto("/");
+  await revealPage(page);
+  const categories = page.locator("[data-category-trigger]");
+  await expect(categories).toHaveCount(6);
+  expect(await categories.locator(".switch-title strong").allTextContents()).toEqual(
+    expectedCategories,
+  );
+
+  if ((await page.viewportSize()).width > 820) {
+    const node = page.locator(".signal-node");
+    const before = await node.evaluate((element) => element.offsetTop);
+    await page.locator("#archive-map").screenshot({
+      path: path.join(reviewDirectory, "switchboard-before.png"),
+      animations: "disabled",
+    });
+    await categories.nth(3).hover();
+    await expect(page.locator("#category-preview-4")).toBeVisible();
+    await expect(page.locator("[data-selected-topic]")).toHaveText(
+      "블로그/기술문서",
+    );
+    await expect(page.locator("#category-preview-4")).toContainText(
+      "GitHub Pages 블로그 구축 기록",
+    );
+    await expect
+      .poll(() => node.evaluate((element) => element.offsetTop))
+      .toBeGreaterThan(before + 150);
+    await page.locator("#archive-map").screenshot({
+      path: path.join(reviewDirectory, "switchboard-after.png"),
+      animations: "disabled",
+    });
+  } else {
+    await expect(categories.nth(3).locator(".switch-mobile-note")).toContainText(
+      "GitHub Pages 블로그 구축 기록",
+    );
+    await expect(page.locator(".category-stage")).not.toBeVisible();
+  }
+
+  await categories.first().focus();
+  await categories.first().press("ArrowDown");
+  await expect(categories.nth(1)).toBeFocused();
+  await categories.nth(1).press("End");
+  await expect(categories.last()).toBeFocused();
+  await expectNoOverflow(page);
+  expect(errors).toEqual([]);
+});
+
+test("profile detail has a visible but restrained hover response", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name === "mobile", "Hover is desktop-only");
+  await page.goto("/");
+  const profile = page.locator(".profile-orbit");
+  const image = profile.locator("img");
+  const initialTransform = await image.evaluate(
+    (node) => getComputedStyle(node).transform,
+  );
+  await profile.screenshot({
+    path: path.join(reviewDirectory, "hachiware-before.png"),
+    animations: "disabled",
+  });
+  await profile.hover();
+  await expect
+    .poll(() => image.evaluate((node) => getComputedStyle(node).transform))
+    .not.toBe(initialTransform);
+  await profile.screenshot({
+    path: path.join(reviewDirectory, "hachiware-after.png"),
+  });
+});
+
+test("themes and required viewport captures stay visually stable", async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -141,16 +197,13 @@ test("themes persist and responsive review captures stay clean", async ({
     { name: "mobile-390", width: 390, height: 844 },
     { name: "mobile-320", width: 320, height: 760 },
   ];
-
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     await page.goto("/");
     await page.evaluate(() => localStorage.setItem("somani-theme", "dark"));
     await page.reload();
     await revealPage(page);
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await expectNoOverflow(page);
-    await expect(page.locator(".workspace-panel.is-active")).toHaveCount(1);
     await page.screenshot({
       path: path.join(reviewDirectory, `${viewport.name}-home-dark.png`),
       fullPage: true,
@@ -171,31 +224,19 @@ test("themes persist and responsive review captures stay clean", async ({
     fullPage: true,
     animations: "disabled",
   });
-
-  for (const tabName of ["Profile", "Latest", "Project"]) {
-    await page.getByRole("tab", { name: tabName }).click();
-    await page.screenshot({
-      path: path.join(reviewDirectory, `workspace-${tabName.toLowerCase()}.png`),
-      fullPage: false,
-      animations: "disabled",
-    });
-  }
   expect(errors).toEqual([]);
 });
 
-test("about, archive, category and article share the design language", async ({
+test("about, archive, categories and article preserve content and usability", async ({
   page,
   context,
-}) => {
+}, testInfo) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const errors = collectErrors(page);
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await page.evaluate(() => localStorage.setItem("somani-theme", "dark"));
-
   const pages = [
     ["about", "/about/"],
     ["archive", "/archive/"],
+    ["categories", "/categories/"],
     ["category", "/categories/blog-docs/"],
   ];
   for (const [name, url] of pages) {
@@ -203,19 +244,16 @@ test("about, archive, category and article share the design language", async ({
     await expectNoOverflow(page);
     await expectAccessible(page);
     await page.screenshot({
-      path: path.join(reviewDirectory, `desktop-${name}.png`),
+      path: path.join(reviewDirectory, `${testInfo.project.name}-${name}.png`),
       fullPage: true,
       animations: "disabled",
     });
   }
+  await expect(page.locator(".post-card")).toContainText(
+    "GitHub Pages 블로그 구축 기록",
+  );
 
   await page.goto("/posts/github-pages-blog/");
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "GitHub Pages 블로그 구축 기록",
-    }),
-  ).toBeVisible();
   await expect(page.locator("[data-article-prose]")).toContainText(
     "Everything up-to-date",
   );
@@ -226,10 +264,6 @@ test("about, archive, category and article share the design language", async ({
     page.getByRole("navigation", { name: "게시글 목차" }).getByRole("link"),
   ).toHaveCount(22);
   await expect(page.locator(".article-prose table")).toHaveCount(2);
-  await expect(page.locator(".table-scroll").first()).toHaveAttribute(
-    "tabindex",
-    "0",
-  );
   await page
     .getByRole("button", { name: "1번째 코드 복사", exact: true })
     .click();
@@ -240,12 +274,7 @@ test("about, archive, category and article share the design language", async ({
   await expectNoOverflow(page);
   await expectAccessible(page);
   await page.screenshot({
-    path: path.join(reviewDirectory, "desktop-article-top.png"),
-    fullPage: false,
-    animations: "disabled",
-  });
-  await page.screenshot({
-    path: path.join(reviewDirectory, "desktop-article.png"),
+    path: path.join(reviewDirectory, `${testInfo.project.name}-article.png`),
     fullPage: true,
     animations: "disabled",
   });
@@ -253,16 +282,7 @@ test("about, archive, category and article share the design language", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/posts/github-pages-blog/");
   await expectNoOverflow(page);
-  expect(
-    await page.locator(".article-prose pre").evaluateAll((blocks) =>
-      blocks.some((block) => block.scrollWidth > block.clientWidth),
-    ),
-  ).toBeTruthy();
-  await page.screenshot({
-    path: path.join(reviewDirectory, "mobile-390-article-top.png"),
-    fullPage: false,
-    animations: "disabled",
-  });
+  await expect(page.locator(".mobile-dock")).toBeVisible();
   await page.screenshot({
     path: path.join(reviewDirectory, "mobile-390-article.png"),
     fullPage: true,

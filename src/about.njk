@@ -5,7 +5,7 @@ description: 개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부
 permalink: /about/
 ---
 <section class="page-intro">
-  <p class="eyebrow">ABOUT {{ profile.nickname | upper }}</p>
+  <p class="eyebrow">somani 소개</p>
   <h1>About<span>.</span></h1>
   <p>다양한 분야에 호기심을 가지고 배우며, 새롭게 알게 된 것과 직접 경험한 것을 기록합니다.</p>
 </section>
@@ -37,7 +37,7 @@ permalink: /about/
     <section>
       <h2>관심 분야</h2>
       <div class="skill-tags">{% for skill in profile.primaryInterests %}<span>{{ skill }}</span>{% endfor %}</div>
-      <p class="eyebrow interest-subheading">ALSO EXPLORING</p>
+      <p class="eyebrow interest-subheading">추가로 살펴보는 분야</p>
       <div class="skill-tags">{% for skill in profile.additionalInterests %}<span>{{ skill }}</span>{% endfor %}</div>
     </section>
     <section>

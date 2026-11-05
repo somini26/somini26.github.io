@@ -4,5 +4,5 @@ title: Categories
 description: 주제별로 글을 찾아보세요.
 permalink: /categories/
 ---
-<section class="page-intro"><p class="eyebrow">EXPLORE BY TOPIC</p><h1>Categories<span>.</span></h1><p>{{ description }}</p></section>
-<div class="topic-grid category-grid">{% for category in topics %}<a class="topic-card" href="/categories/{{ category.slug }}/"><div class="topic-top"><span class="micro-label">0{{ loop.index }} / {{ category.label }}</span><span aria-hidden="true">↗</span></div><h2>{{ category.name }}</h2><p>{{ category.description }}</p><span class="topic-count">{{ collections.posts | inCategory(category.name) | length }}개의 기록</span></a>{% endfor %}</div>
+<section class="page-intro"><p class="eyebrow">카테고리</p><h1>분야별 기록<span>.</span></h1><p>{{ description }}</p></section>
+<ol class="topic-directory">{% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}<li><a href="/categories/{{ category.slug }}/"><span class="topic-index">0{{ loop.index }}</span><span class="topic-name"><strong>{{ category.name }}</strong><small>{{ category.description }}</small></span><span class="topic-count">{{ categoryPosts | length }}개의 기록</span><span class="topic-arrow" aria-hidden="true">↗</span></a></li>{% endfor %}</ol>
