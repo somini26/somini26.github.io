@@ -1,0 +1,13 @@
+---
+layout: prototype-base.njk
+title: "Editorial Workspace — GitHub Pages 블로그 구축 기록"
+description: "시안 A의 에디토리얼 기술 문서 상세 화면"
+permalink: /prototypes/editorial-workspace/github-pages-blog/
+noindex: true
+prototypeClass: prototype-a prototype-article-a
+---
+{% set post = collections.posts[0] %}
+{% set articleNumber = 'A / NOTE 001' %}
+{% set prototypeHome = '/prototypes/editorial-workspace/' %}
+{% set backLabel = 'EDITORIAL WORKSPACE' %}
+{% include "prototype-article.njk" %}

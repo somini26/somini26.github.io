@@ -108,11 +108,11 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   ).toBeVisible();
   await page
     .getByRole("navigation", { name: "게시글 목차" })
-    .getByRole("link", { name: "Markdown으로 게시글 작성" })
+    .getByRole("link", { name: "Markdown 글이 공개되기까지" })
     .click();
-  await expect(page).toHaveURL(/#markdown/);
+  await expect(page).toHaveURL(/#5-markdown-/);
   await expect(
-    page.getByRole("heading", { name: "Markdown으로 게시글 작성" }),
+    page.getByRole("heading", { name: "Markdown 글이 공개되기까지" }),
   ).toBeVisible();
   await expect
     .poll(() =>
@@ -124,7 +124,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   await page.getByRole("button", { name: "코드 복사" }).first().click();
   await expect(page.getByRole("button", { name: "복사 완료" })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "title:",
+    "git clone",
   );
   await page.getByRole("button", { name: "라이트 모드로 전환" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -175,7 +175,7 @@ test("static navigation works without JavaScript", async ({ browser }) => {
     .click();
   await page.locator(".post-card h3 a").click();
   await expect(page.locator(".prose")).toContainText(
-    "GitHub Pages를 선택한 이유",
+    "블로그를 만든 이유",
   );
   await context.close();
 });

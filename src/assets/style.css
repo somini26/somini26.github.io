@@ -1404,6 +1404,28 @@ svg {
 :root[data-theme="light"] .token.tag {
   color: #a04369;
 }
+:root[data-theme="light"] .token.property,
+:root[data-theme="light"] .token.constant,
+:root[data-theme="light"] .token.symbol,
+:root[data-theme="light"] .token.deleted {
+  color: #8b3658;
+}
+:root[data-theme="light"] .token.boolean,
+:root[data-theme="light"] .token.important {
+  color: #80511f;
+}
+:root[data-theme="light"] .token.selector,
+:root[data-theme="light"] .token.attr-name,
+:root[data-theme="light"] .token.char,
+:root[data-theme="light"] .token.inserted {
+  color: #326a47;
+}
+:root[data-theme="light"] .token.comment,
+:root[data-theme="light"] .token.prolog,
+:root[data-theme="light"] .token.doctype,
+:root[data-theme="light"] .token.cdata {
+  color: #576979;
+}
 @media (min-width: 1400px) {
   .hero {
     padding-top: 110px;

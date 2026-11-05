@@ -1,0 +1,16 @@
+---
+layout: prototype-base.njk
+title: "Creative Desktop Archive — GitHub Pages 블로그 구축 기록"
+description: "시안 B의 데스크톱 아카이브 기술 문서 상세 화면"
+permalink: /prototypes/creative-desktop/github-pages-blog/
+noindex: true
+prototypeClass: prototype-b prototype-article-b
+---
+{% set post = collections.posts[0] %}
+<div class="article-desktop-heading" aria-hidden="true">
+  <span>document://build-log</span><span>READ MODE</span>
+</div>
+{% set articleNumber = 'B / DOCUMENT 001' %}
+{% set prototypeHome = '/prototypes/creative-desktop/' %}
+{% set backLabel = 'CREATIVE DESKTOP' %}
+{% include "prototype-article.njk" %}

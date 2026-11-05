@@ -1,0 +1,82 @@
+---
+layout: prototype-base.njk
+title: "Prototype A — Editorial Workspace"
+description: "Experimental editorial archive와 작은 interactive workspace를 결합한 somani 블로그 디자인 시안 A"
+permalink: /prototypes/editorial-workspace/
+prototypeClass: prototype-a
+noindex: true
+eleventyExcludeFromCollections: true
+---
+{% set editorialTopics = [topics[1], topics[0], topics[2], topics[3], topics[4], topics[5]] %}
+<div class="a-composition">
+  <div class="a-editorial-column">
+    <section class="editorial-hero" aria-labelledby="a-title" data-reveal>
+      <div class="issue-line"><span>Prototype A</span><span>Issue 01 / 2026</span><span>Ulsan, KR</span></div>
+      <h1 id="a-title"><small>Hello, I'm</small><span>somani.</span></h1>
+      <div class="hero-notes">
+        <p>시스템 해킹과 리버싱을 중심으로 CTF와 개발 과정에서 배우고 경험한 것들을 기록합니다.</p>
+        <p class="discipline-line">System Hacking <i>·</i> Reversing <i>·</i> CTF <i>·</i> Development</p>
+      </div>
+      <div class="hero-route" aria-label="빠른 이동">
+        <span>Start here</span>
+        <a href="#archive-index">Archive index ↓</a>
+        <a href="/archive/">All notes ↗</a>
+      </div>
+    </section>
+
+    <section id="archive-index" class="editorial-index-section" aria-labelledby="a-index-title" data-reveal>
+      <header class="index-heading">
+        <div><p class="prototype-kicker">INDEX / SIX FIELDS</p><h2 id="a-index-title">Archive<br>contents.</h2></div>
+        <p>번호와 주제를 따라 somani의 학습 기록을 탐색합니다. 각 항목은 기존 카테고리 URL에 그대로 연결됩니다.</p>
+      </header>
+      <ol class="editorial-index">
+        {% for category in editorialTopics %}
+        <li>
+          <a href="/categories/{{ category.slug }}/">
+            <span class="index-number">0{{ loop.index }}</span>
+            <span class="index-name"><strong>{{ category.name }}</strong><em>{{ category.label }}</em></span>
+            <span class="index-description">{{ category.description }}</span>
+            <span class="index-count">{{ collections.posts | inCategory(category.name) | length }} note{% if (collections.posts | inCategory(category.name) | length) != 1 %}s{% endif %} ↗</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
+  </div>
+
+  <aside class="a-workspace-column" aria-label="somani workspace" data-reveal>
+    <div class="workspace-caption"><span>INTERACTIVE WORKSPACE</span><span>01 — 02</span></div>
+    <section class="desktop-window profile-window" aria-labelledby="a-profile-title">
+      <header class="window-titlebar"><span>profile.card</span><a href="/about/">Open profile ↗</a></header>
+      <div class="profile-window-body">
+        <img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781">
+        <div><p class="window-overline">OWNER / STUDENT</p><h2 id="a-profile-title">somani</h2><p>{{ profile.affiliation }}</p><ul>{% for interest in profile.primaryInterests %}<li>{{ interest }}</li>{% endfor %}</ul></div>
+      </div>
+    </section>
+
+    <section class="desktop-window activity-window" aria-labelledby="a-activity-title">
+      <header class="window-titlebar"><span id="a-activity-title">archive.preview</span><span>{{ collections.posts | length }} published</span></header>
+      <div class="window-tabs" role="tablist" aria-label="아카이브 미리보기" data-tablist>
+        <button type="button" role="tab" aria-selected="true" aria-controls="a-latest-panel" id="a-latest-tab">Latest note</button>
+        <button type="button" role="tab" aria-selected="false" aria-controls="a-project-panel" id="a-project-tab">Project</button>
+      </div>
+      <div class="window-panels">
+        <div class="window-panel is-active" id="a-latest-panel" role="tabpanel" aria-labelledby="a-latest-tab" data-tab-panel>
+          {% for post in collections.posts | take(1) %}
+          <p class="preview-meta"><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time> / {{ post.data.categories[0] }}</p>
+          <h3>{{ post.data.title }}</h3><p>{{ post.data.description }}</p>
+          <a class="prototype-arrow-link" href="/prototypes/editorial-workspace/github-pages-blog/">Read latest note <span>↗</span></a>
+          {% else %}<p>아직 공개된 기록이 없습니다.</p>{% endfor %}
+        </div>
+        <div class="window-panel" id="a-project-panel" role="tabpanel" aria-labelledby="a-project-tab" data-tab-panel>
+          {% for project in projects | take(1) %}
+          <p class="preview-meta">SELECTED WORK / 01</p><h3>{{ project.name }}</h3><p>{{ project.description }}</p>
+          <div class="mini-stack">{% for technology in project.stack %}<span>{{ technology }}</span>{% endfor %}</div>
+          <a class="prototype-arrow-link" href="{{ project.post }}">Read build note <span>↗</span></a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    <p class="workspace-footnote">A small personal desktop inside an editorial archive — functional, not decorative.</p>
+  </aside>
+</div>
