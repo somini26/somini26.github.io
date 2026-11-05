@@ -76,7 +76,7 @@ test("integrated archive index, workspace, themes and mobile header", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-${testInfo.project.name}-dark.png`,
+      `integrated-archive-${testInfo.project.name}-dark.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -104,7 +104,7 @@ test("integrated archive index, workspace, themes and mobile header", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-${testInfo.project.name}-category-preview.png`,
+      `integrated-archive-${testInfo.project.name}-category-preview.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -136,7 +136,7 @@ test("integrated archive index, workspace, themes and mobile header", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-${testInfo.project.name}-window-latest.png`,
+      `integrated-archive-${testInfo.project.name}-window-latest.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -150,7 +150,7 @@ test("integrated archive index, workspace, themes and mobile header", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-${testInfo.project.name}-window-project.png`,
+      `integrated-archive-${testInfo.project.name}-window-project.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -176,7 +176,7 @@ test("integrated archive index, workspace, themes and mobile header", async ({
       )
       .toBeTruthy();
     await page.screenshot({
-      path: path.join(previewDirectory, "prototype-c-final-mobile-scroll.png"),
+      path: path.join(previewDirectory, "integrated-archive-mobile-scroll.png"),
       fullPage: false,
       animations: "disabled",
     });
@@ -195,7 +195,7 @@ test("integrated archive index, workspace, themes and mobile header", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-${testInfo.project.name}-light.png`,
+      `integrated-archive-${testInfo.project.name}-light.png`,
     ),
     fullPage: true,
     animations: "disabled",
@@ -260,7 +260,7 @@ test("integrated archive article preserves content and readability", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-article-${testInfo.project.name}-top.png`,
+      `integrated-archive-article-${testInfo.project.name}-top.png`,
     ),
     fullPage: false,
     animations: "disabled",
@@ -288,7 +288,7 @@ test("integrated archive article preserves content and readability", async ({
   await page.screenshot({
     path: path.join(
       previewDirectory,
-      `prototype-c-final-article-${testInfo.project.name}.png`,
+      `integrated-archive-article-${testInfo.project.name}.png`,
     ),
     fullPage: true,
     animations: "disabled",

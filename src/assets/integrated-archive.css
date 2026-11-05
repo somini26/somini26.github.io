@@ -1,12 +1,12 @@
 @charset "UTF-8";
 
-.prototype-c .prototype-main {
+.integrated-archive .prototype-main {
   width: 100%;
   overflow: clip;
 }
 
-.prototype-c .prototype-kicker,
-.prototype-c .window-titlebar {
+.integrated-archive .prototype-kicker,
+.integrated-archive .window-titlebar {
   font-size: 11px;
 }
 
@@ -619,23 +619,23 @@
   }
 }
 
-.prototype-c .prototype-footer {
+.integrated-archive .prototype-footer {
   margin-top: 0;
 }
 
 /* C uses A's reading system with a protected area for the background number. */
-.prototype-article-c .prototype-article-header h1 {
+.integrated-article .prototype-article-header h1 {
   max-width: 760px;
 }
 
-.prototype-article-c .prototype-article-header:after {
+.integrated-article .prototype-article-header:after {
   top: 145px;
   right: 0;
   font-size: clamp(155px, 18vw, 240px);
   -webkit-text-stroke-color: rgba(var(--p-accent-rgb), 0.2);
 }
 
-.prototype-article-c .prototype-reading-grid {
+.integrated-article .prototype-reading-grid {
   grid-template-columns: minmax(0, 760px) minmax(230px, 290px);
 }
 
@@ -688,7 +688,7 @@
     grid-template-columns: minmax(0, 1fr) 260px;
   }
 
-  .prototype-article-c .prototype-reading-grid {
+  .integrated-article .prototype-reading-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -876,21 +876,21 @@
     transform: translateX(4px);
   }
 
-  .prototype-article-c .prototype-article-header {
+  .integrated-article .prototype-article-header {
     min-height: 620px;
   }
 
-  .prototype-article-c .prototype-article-header:after {
+  .integrated-article .prototype-article-header:after {
     top: 112px;
     right: 0;
     font-size: 100px;
   }
 
-  .prototype-article-c .prototype-back-link {
+  .integrated-article .prototype-back-link {
     margin-bottom: 135px;
   }
 
-  .prototype-article-c .prototype-article-header h1 {
+  .integrated-article .prototype-article-header h1 {
     max-width: 100%;
     font-size: clamp(42px, 13.2vw, 58px);
     line-height: 0.98;
@@ -983,49 +983,49 @@
 }
 
 /* Code blocks stay dark in both themes, so syntax colors also stay high-contrast. */
-body.prototype-article-c .prototype-prose .token.comment,
-body.prototype-article-c .prototype-prose .token.prolog,
-body.prototype-article-c .prototype-prose .token.doctype,
-body.prototype-article-c .prototype-prose .token.cdata {
+body.integrated-article .prototype-prose .token.comment,
+body.integrated-article .prototype-prose .token.prolog,
+body.integrated-article .prototype-prose .token.doctype,
+body.integrated-article .prototype-prose .token.cdata {
   color: #aeb7c4;
 }
 
-body.prototype-article-c .prototype-prose .token.property,
-body.prototype-article-c .prototype-prose .token.tag,
-body.prototype-article-c .prototype-prose .token.constant,
-body.prototype-article-c .prototype-prose .token.symbol,
-body.prototype-article-c .prototype-prose .token.deleted {
+body.integrated-article .prototype-prose .token.property,
+body.integrated-article .prototype-prose .token.tag,
+body.integrated-article .prototype-prose .token.constant,
+body.integrated-article .prototype-prose .token.symbol,
+body.integrated-article .prototype-prose .token.deleted {
   color: #f0a8c0;
 }
 
-body.prototype-article-c .prototype-prose .token.boolean,
-body.prototype-article-c .prototype-prose .token.number {
+body.integrated-article .prototype-prose .token.boolean,
+body.integrated-article .prototype-prose .token.number {
   color: #e6bd94;
 }
 
-body.prototype-article-c .prototype-prose .token.selector,
-body.prototype-article-c .prototype-prose .token.attr-name,
-body.prototype-article-c .prototype-prose .token.string,
-body.prototype-article-c .prototype-prose .token.char,
-body.prototype-article-c .prototype-prose .token.builtin,
-body.prototype-article-c .prototype-prose .token.inserted {
+body.integrated-article .prototype-prose .token.selector,
+body.integrated-article .prototype-prose .token.attr-name,
+body.integrated-article .prototype-prose .token.string,
+body.integrated-article .prototype-prose .token.char,
+body.integrated-article .prototype-prose .token.builtin,
+body.integrated-article .prototype-prose .token.inserted {
   color: #b7d9bd;
 }
 
-body.prototype-article-c .prototype-prose .token.operator,
-body.prototype-article-c .prototype-prose .token.entity,
-body.prototype-article-c .prototype-prose .token.url {
+body.integrated-article .prototype-prose .token.operator,
+body.integrated-article .prototype-prose .token.entity,
+body.integrated-article .prototype-prose .token.url {
   color: #b7d4e8;
 }
 
-body.prototype-article-c .prototype-prose .token.atrule,
-body.prototype-article-c .prototype-prose .token.attr-value,
-body.prototype-article-c .prototype-prose .token.keyword {
+body.integrated-article .prototype-prose .token.atrule,
+body.integrated-article .prototype-prose .token.attr-value,
+body.integrated-article .prototype-prose .token.keyword {
   color: #c8b5e6;
 }
 
-body.prototype-article-c .prototype-prose .token.function,
-body.prototype-article-c .prototype-prose .token.class-name {
+body.integrated-article .prototype-prose .token.function,
+body.integrated-article .prototype-prose .token.class-name {
   color: #ead3a8;
 }
 
