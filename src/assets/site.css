@@ -193,7 +193,7 @@ h1, h2, h3, p, ol, ul, dl { margin: 0; }
 .orbit-star-one { top: -28px; right: 12px; font-size: 19px; }
 .orbit-star-two { top: 135px; left: -42px; font-size: 10px; }
 .orbit-star-three { top: 254px; right: -13px; font-size: 9px; }
-.profile-orbit { position: relative; top: 27px; left: auto; z-index: 3; grid-area: profile; width: 238px; align-self: start; justify-self: center; pointer-events: auto; transform: none; text-align: center; }
+.profile-orbit { position: relative; top: 67px; left: auto; z-index: 3; grid-area: profile; width: 238px; align-self: start; justify-self: center; pointer-events: auto; transform: none; text-align: center; }
 .profile-space-orbits { position: absolute; inset: 0; z-index: -3; pointer-events: none; }
 .profile-space-orbits::before { content: ""; position: absolute; top: -15px; left: 50%; width: 342px; height: 286px; border: 1px solid rgba(var(--accent-rgb), 0.28); border-right-color: rgba(var(--accent-rgb), 0.58); border-bottom-color: rgba(var(--accent-rgb), 0.13); border-radius: 50%; background: radial-gradient(circle at 51% 46%, rgba(var(--accent-rgb), 0.13), transparent 62%); box-shadow: 0 0 58px rgba(var(--accent-rgb), 0.07); transform: translateX(-50%) rotate(-13deg); }
 .profile-space-orbits::after { content: ""; position: absolute; top: 19px; left: 50%; width: 286px; height: 230px; border: 1px dashed rgba(var(--accent-rgb), 0.36); border-left-color: rgba(var(--accent-rgb), 0.12); border-radius: 50%; transform: translateX(-50%) rotate(9deg); }
