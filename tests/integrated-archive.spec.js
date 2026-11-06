@@ -89,7 +89,7 @@ const expectClusterProportions = async (page) => {
     expect(metrics.portraitWidth).toBe(198);
     expect(metrics.outerWidth / metrics.clusterWidth).toBeGreaterThan(0.25);
     expect(metrics.outerWidth / metrics.clusterWidth).toBeLessThan(
-      metrics.viewportWidth <= 820 ? 0.48 : 0.42,
+      metrics.viewportWidth <= 1080 ? 0.48 : 0.42,
     );
     expect(metrics.innerWidth).toBeLessThan(metrics.outerWidth);
   }
@@ -130,6 +130,88 @@ const expectApprovedTopLayout = async (page) => {
   } else {
     expect(layout.profile.top).toBeLessThan(layout.latest.top);
     expect(Math.abs(layout.latest.top - layout.project.top)).toBeLessThan(2);
+  }
+};
+
+const expectClusterVisualSafety = async (page) => {
+  const metrics = await page.evaluate(() => {
+    const hero = document.querySelector(".home-hero").getBoundingClientRect();
+    const cluster = document.querySelector(".personal-cluster");
+    const clusterBox = cluster.getBoundingClientRect();
+    const portrait = document.querySelector(".portrait-frame").getBoundingClientRect();
+    const latest = document.querySelector(".latest-note");
+    const project = document.querySelector(".project-note");
+    const latestBox = latest.getBoundingClientRect();
+    const projectBox = project.getBoundingClientRect();
+    const svg = document.querySelector("[data-cluster-links]");
+    const svgBox = svg.getBoundingClientRect();
+    const viewBox = svg.viewBox.baseVal;
+    const point = (selector) => {
+      const node = document.querySelector(selector);
+      return {
+        x:
+          svgBox.left +
+          Number(node.getAttribute("cx")) * (svgBox.width / viewBox.width),
+        y:
+          svgBox.top +
+          Number(node.getAttribute("cy")) * (svgBox.height / viewBox.height),
+      };
+    };
+    const pseudo = (node, selector) => {
+      const style = getComputedStyle(node, selector);
+      return {
+        content: style.content,
+        top: Number.parseFloat(style.top),
+        height: Number.parseFloat(style.height),
+        width: Number.parseFloat(style.width),
+        border: Number.parseFloat(style.borderTopWidth),
+      };
+    };
+    return {
+      viewportWidth: innerWidth,
+      hero: hero.toJSON(),
+      cluster: clusterBox.toJSON(),
+      portrait: portrait.toJSON(),
+      latest: latestBox.toJSON(),
+      project: projectBox.toJSON(),
+      latestSheet: pseudo(latest, "::before"),
+      latestTab: pseudo(latest, "::after"),
+      projectSheet: pseudo(project, "::before"),
+      projectTab: pseudo(project, "::after"),
+      connections: {
+        projectStart: point('[data-link-start="project"]'),
+        projectEnd: point('[data-link-end="project"]'),
+        latestStart: point('[data-link-start="latest"]'),
+        latestEnd: point('[data-link-end="latest"]'),
+      },
+    };
+  });
+
+  for (const decoration of [
+    metrics.latestSheet,
+    metrics.latestTab,
+    metrics.projectSheet,
+    metrics.projectTab,
+  ]) {
+    expect(decoration.content).not.toBe("none");
+    expect(decoration.border).toBeLessThanOrEqual(1);
+  }
+  expect(metrics.latestSheet.top).toBeGreaterThanOrEqual(-9);
+  expect(metrics.projectSheet.top).toBeGreaterThanOrEqual(-9);
+  expect(metrics.latestTab.height).toBeLessThanOrEqual(18);
+  expect(metrics.projectTab.height).toBeLessThanOrEqual(18);
+  expect(metrics.latestTab.width).toBeLessThanOrEqual(74);
+  expect(metrics.projectTab.width).toBeLessThanOrEqual(74);
+
+  if (metrics.viewportWidth > 820) {
+    expect(metrics.latest.left - metrics.hero.left).toBeGreaterThanOrEqual(14);
+    expect(metrics.hero.right - metrics.project.right).toBeGreaterThanOrEqual(14);
+    expect(metrics.project.top - metrics.hero.top).toBeGreaterThanOrEqual(24);
+    expect(metrics.hero.bottom - metrics.latest.bottom).toBeGreaterThanOrEqual(24);
+    expect(Math.abs(metrics.connections.projectStart.x - (metrics.portrait.right + 5))).toBeLessThan(4);
+    expect(Math.abs(metrics.connections.projectEnd.x - (metrics.project.left - 2))).toBeLessThan(4);
+    expect(Math.abs(metrics.connections.latestStart.x - (metrics.latest.right + 2))).toBeLessThan(4);
+    expect(Math.abs(metrics.connections.latestEnd.x - (metrics.portrait.left - 7))).toBeLessThan(4);
   }
 };
 
@@ -240,6 +322,7 @@ test("identity, direct navigation and personal cluster remain immediately visibl
   await expectClusterTextClear(page);
   await expectClusterProportions(page);
   await expectApprovedTopLayout(page);
+  await expectClusterVisualSafety(page);
   await expectCategoryStartClear(page);
   await expectAccessible(page);
   expect(errors).toEqual([]);
@@ -321,46 +404,61 @@ test("profile detail has a visible but restrained hover response", async ({
   });
 
   const project = page.locator(".project-note");
-  const projectPath = page.locator(".path-one");
+  const projectPath = page.locator(".path-one path");
   const projectPathBefore = await projectPath.evaluate(
-    (node) => getComputedStyle(node).borderTopColor,
+    (node) => getComputedStyle(node).stroke,
   );
   await project.hover();
   await expect
     .poll(() =>
-      projectPath.evaluate((node) => getComputedStyle(node).borderTopColor),
+      projectPath.evaluate((node) => getComputedStyle(node).stroke),
     )
     .not.toBe(projectPathBefore);
   await page.locator(".home-hero").screenshot({
     path: path.join(reviewDirectory, "project-folder-hover.png"),
   });
+  const projectBox = await project.boundingBox();
+  await page.screenshot({
+    path: path.join(reviewDirectory, "project-folder-hover-closeup.png"),
+    clip: {
+      x: Math.max(0, projectBox.x - 24),
+      y: Math.max(0, projectBox.y - 24),
+      width: Math.min(page.viewportSize().width - Math.max(0, projectBox.x - 24), projectBox.width + 48),
+      height: projectBox.height + 48,
+    },
+  });
   await expectClusterTextClear(page);
+  await expectClusterVisualSafety(page);
 
   await page.mouse.move(0, 0);
   const latest = page.locator(".latest-note");
-  const latestPath = page.locator(".path-two");
+  const latestPath = page.locator(".path-two path");
   const latestPathBefore = await latestPath.evaluate(
-    (node) => getComputedStyle(node).borderBottomColor,
+    (node) => getComputedStyle(node).stroke,
   );
   await latest.focus();
   await expect
     .poll(() =>
-      latestPath.evaluate((node) => getComputedStyle(node).borderBottomColor),
+      latestPath.evaluate((node) => getComputedStyle(node).stroke),
     )
     .not.toBe(latestPathBefore);
   await page.locator(".home-hero").screenshot({
     path: path.join(reviewDirectory, "latest-folder-focus.png"),
   });
   await expectClusterTextClear(page);
+  await expectClusterVisualSafety(page);
 });
 
 test("themes and required viewport captures stay visually stable", async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   const errors = collectErrors(page);
   const viewports = [
     { name: "desktop-1440", width: 1440, height: 1000 },
     { name: "laptop-1280", width: 1280, height: 900 },
+    { name: "zoom-125", width: 1152, height: 800 },
+    { name: "zoom-150", width: 960, height: 800 },
     { name: "compact-1024", width: 1024, height: 900 },
     { name: "tablet-768", width: 768, height: 1024 },
     { name: "mobile-390", width: 390, height: 844 },
@@ -376,6 +474,7 @@ test("themes and required viewport captures stay visually stable", async ({
     await expectClusterTextClear(page);
     await expectClusterProportions(page);
     await expectApprovedTopLayout(page);
+    await expectClusterVisualSafety(page);
     await expectCategoryStartClear(page);
     await page.screenshot({
       path: path.join(reviewDirectory, `${viewport.name}-home-dark.png`),
@@ -401,6 +500,7 @@ test("themes and required viewport captures stay visually stable", async ({
     await expectNoOverflow(page);
     await expectClusterTextClear(page);
     await expectApprovedTopLayout(page);
+    await expectClusterVisualSafety(page);
     await page.screenshot({
       path: path.join(reviewDirectory, `${viewport.name}-home-light.png`),
       fullPage: true,

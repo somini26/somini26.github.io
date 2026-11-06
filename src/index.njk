@@ -11,7 +11,11 @@ layout: base.njk
     </div>
 
     <aside class="personal-cluster" aria-label="somani의 프로필, 최근 기록과 프로젝트">
-      <span class="cluster-path path-one" aria-hidden="true"></span><span class="cluster-path path-two" aria-hidden="true"></span>
+      <svg class="cluster-links" data-cluster-links viewBox="0 0 1000 570" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <g class="cluster-path path-one" data-link-group="project"><path data-link-path="project" d="M690 145 C735 145 748 112 790 112"></path><circle data-link-start="project" cx="690" cy="145" r="4"></circle><circle data-link-end="project" cx="790" cy="112" r="4"></circle></g>
+        <g class="cluster-path path-two" data-link-group="latest"><path data-link-path="latest" d="M300 440 C430 440 495 395 550 285"></path><circle data-link-start="latest" cx="300" cy="440" r="4"></circle><circle data-link-end="latest" cx="550" cy="285" r="4"></circle></g>
+      </svg>
+      <span class="orbit-star orbit-star-one" aria-hidden="true">✦</span><span class="orbit-star orbit-star-two" aria-hidden="true">✦</span><span class="orbit-star orbit-star-three" aria-hidden="true">✦</span>
       <a class="profile-orbit" href="/about/">
         <span class="portrait-frame"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781"><i aria-hidden="true"></i></span>
         <span class="profile-orbit-copy"><small>{{ profile.name }} · 울산대학교</small><strong>somani의 프로필</strong><span>프로필 보기 ↗</span></span>

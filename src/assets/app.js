@@ -23,6 +23,88 @@ theme?.addEventListener("click", () => {
   updateTheme();
 });
 
+const cluster = $(".personal-cluster");
+const clusterLinks = $("[data-cluster-links]", cluster || document);
+if (cluster && clusterLinks) {
+  let connectionFrame = 0;
+  const setConnection = (name, start, end, controls) => {
+    const path = $(`[data-link-path="${name}"]`, clusterLinks);
+    const startNode = $(`[data-link-start="${name}"]`, clusterLinks);
+    const endNode = $(`[data-link-end="${name}"]`, clusterLinks);
+    path?.setAttribute(
+      "d",
+      `M ${start.x} ${start.y} C ${controls[0].x} ${controls[0].y}, ${controls[1].x} ${controls[1].y}, ${end.x} ${end.y}`,
+    );
+    for (const [node, point] of [[startNode, start], [endNode, end]]) {
+      node?.setAttribute("cx", point.x);
+      node?.setAttribute("cy", point.y);
+    }
+  };
+  const updateConnections = () => {
+    cancelAnimationFrame(connectionFrame);
+    connectionFrame = requestAnimationFrame(() => {
+      if (innerWidth <= 820) return;
+      const area = cluster.getBoundingClientRect();
+      const portrait = $(".portrait-frame", cluster)?.getBoundingClientRect();
+      const latest = $(".latest-note", cluster)?.getBoundingClientRect();
+      const project = $(".project-note", cluster)?.getBoundingClientRect();
+      if (!area.width || !portrait || !latest || !project) return;
+      clusterLinks.setAttribute("viewBox", `0 0 ${area.width} ${area.height}`);
+      const local = (x, y) => ({
+        x: Math.round((x - area.left) * 10) / 10,
+        y: Math.round((y - area.top) * 10) / 10,
+      });
+
+      const projectStart = local(
+        portrait.right + 5,
+        portrait.top + portrait.height * 0.3,
+      );
+      const projectEnd = local(
+        project.left - 2,
+        project.top + project.height * 0.36,
+      );
+      const projectDistance = Math.max(30, projectEnd.x - projectStart.x);
+      setConnection("project", projectStart, projectEnd, [
+        { x: projectStart.x + projectDistance * 0.48, y: projectStart.y },
+        { x: projectEnd.x - projectDistance * 0.42, y: projectEnd.y },
+      ]);
+
+      const latestStart = local(
+        latest.right + 2,
+        latest.top + latest.height * 0.54,
+      );
+      const latestEnd = local(
+        portrait.left - 7,
+        portrait.top + portrait.height * 0.74,
+      );
+      const latestDistance = Math.max(80, latestEnd.x - latestStart.x);
+      const verticalBend = Math.max(24, Math.abs(latestStart.y - latestEnd.y) * 0.2);
+      setConnection("latest", latestStart, latestEnd, [
+        { x: latestStart.x + latestDistance * 0.58, y: latestStart.y },
+        {
+          x: latestEnd.x - latestDistance * 0.25,
+          y: latestEnd.y + verticalBend,
+        },
+      ]);
+    });
+  };
+  const connectionObserver = new ResizeObserver(updateConnections);
+  connectionObserver.observe(cluster);
+  [$(".portrait-frame", cluster), $(".latest-note", cluster), $(".project-note", cluster)]
+    .filter(Boolean)
+    .forEach((element) => {
+      connectionObserver.observe(element);
+      element.addEventListener("transitionend", (event) => {
+        if (event.propertyName === "transform") updateConnections();
+      });
+      element.addEventListener("focus", updateConnections);
+      element.addEventListener("blur", updateConnections);
+    });
+  addEventListener("resize", updateConnections, { passive: true });
+  document.fonts?.ready.then(updateConnections);
+  updateConnections();
+}
+
 const switchboard = $("[data-archive-switchboard]");
 if (switchboard) {
   const triggers = [...switchboard.querySelectorAll("[data-category-trigger]")];
