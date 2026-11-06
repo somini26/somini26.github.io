@@ -7,6 +7,8 @@
   "tistory": "https://vegetable-m.tistory.com/",
   "image": "/assets/images/profile-hachiware.jpg",
   "imageAlt": "파란 귀를 가진 하치와레 캐릭터",
+  "aboutImage": "/assets/images/profile-hachiware-about.jpg",
+  "aboutImageAlt": "컴퓨터 앞에 앉아 커피를 마시는 파란 귀의 하치와레 캐릭터",
   "primaryInterests": [
     "Development",
     "Security",

@@ -23,7 +23,7 @@ theme?.addEventListener("click", () => {
   updateTheme();
 });
 
-const cluster = $(".personal-cluster");
+const cluster = $(".home-hero");
 const clusterLinks = $("[data-cluster-links]", cluster || document);
 if (cluster && clusterLinks) {
   let connectionFrame = 0;
@@ -43,7 +43,7 @@ if (cluster && clusterLinks) {
   const updateConnections = () => {
     cancelAnimationFrame(connectionFrame);
     connectionFrame = requestAnimationFrame(() => {
-      if (innerWidth <= 820) return;
+      if (innerWidth <= 1024) return;
       const area = cluster.getBoundingClientRect();
       const portrait = $(".portrait-frame", cluster)?.getBoundingClientRect();
       const latest = $(".latest-note", cluster)?.getBoundingClientRect();

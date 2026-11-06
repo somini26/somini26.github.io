@@ -29,7 +29,16 @@
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-wordmark" href="/" aria-label="{{ site.name }} 홈"><span aria-hidden="true">s.</span><strong>somani</strong></a>
+      <a class="site-wordmark" href="/" aria-label="{{ site.name }} 홈">
+        <span class="wordmark-logo" aria-hidden="true">
+          <strong>somani</strong>
+          <svg viewBox="0 0 108 46" focusable="false">
+            <ellipse cx="54" cy="23" rx="50" ry="15.5" transform="rotate(-9 54 23)"></ellipse>
+            <path d="M95 5.5l1.25 3.25L99.5 10l-3.25 1.25L95 14.5l-1.25-3.25L90.5 10l3.25-1.25z"></path>
+            <circle cx="14" cy="33" r="1.8"></circle>
+          </svg>
+        </span>
+      </a>
       <nav id="main-nav" class="desktop-nav" aria-label="주 메뉴">
         {% for label, href in [['Home','/'],['Archive','/archive/'],['Categories','/categories/'],['About','/about/']] %}
         <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}>{{ label }}</a>

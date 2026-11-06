@@ -12,7 +12,7 @@ permalink: /about/
 <div class="about-layout">
   <aside class="profile-card" aria-label="{{ profile.nickname }} 프로필">
     <div class="avatar">
-      {% if profile.image %}<img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781">{% else %}<span aria-hidden="true">s.</span>{% endif %}
+      {% if profile.aboutImage %}<img src="{{ profile.aboutImage }}" alt="{{ profile.aboutImageAlt }}" width="736" height="736">{% else %}<span aria-hidden="true">s.</span>{% endif %}
     </div>
     <h2>{{ profile.nickname }}</h2>
     <p class="profile-tagline">{{ profile.tagline }}</p>

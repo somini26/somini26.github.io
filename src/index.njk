@@ -10,23 +10,25 @@ layout: base.njk
       <nav class="hero-actions" aria-label="빠른 탐색"><a href="#archive-map">카테고리 둘러보기 <span aria-hidden="true">↓</span></a><a href="/archive/">모든 기록 보기 <span aria-hidden="true">↗</span></a></nav>
     </div>
 
-    <aside class="personal-cluster" aria-label="somani의 프로필, 최근 기록과 프로젝트">
-      <svg class="cluster-links" data-cluster-links viewBox="0 0 1000 570" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        <g class="cluster-path path-one" data-link-group="project"><path data-link-path="project" d="M690 145 C735 145 748 112 790 112"></path><circle data-link-start="project" cx="690" cy="145" r="4"></circle><circle data-link-end="project" cx="790" cy="112" r="4"></circle></g>
-        <g class="cluster-path path-two" data-link-group="latest"><path data-link-path="latest" d="M300 440 C430 440 495 395 550 285"></path><circle data-link-start="latest" cx="300" cy="440" r="4"></circle><circle data-link-end="latest" cx="550" cy="285" r="4"></circle></g>
-      </svg>
+    {% for post in collections.posts | take(1) %}
+    <a class="cluster-note latest-note" href="{{ post.url }}"><span>최근 기록</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><strong>{{ post.data.title }}</strong><p>{{ post.data.description }}</p><i aria-hidden="true">↗</i></a>
+    {% endfor %}
+
+    <a class="profile-orbit" href="/about/">
+      <span class="profile-space-orbits" aria-hidden="true"></span>
       <span class="orbit-star orbit-star-one" aria-hidden="true">✦</span><span class="orbit-star orbit-star-two" aria-hidden="true">✦</span><span class="orbit-star orbit-star-three" aria-hidden="true">✦</span>
-      <a class="profile-orbit" href="/about/">
-        <span class="portrait-frame"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781"><i aria-hidden="true"></i></span>
-        <span class="profile-orbit-copy"><small>{{ profile.name }} · 울산대학교</small><strong>somani의 프로필</strong><span>프로필 보기 ↗</span></span>
-      </a>
-      {% for post in collections.posts | take(1) %}
-      <a class="cluster-note latest-note" href="{{ post.url }}"><span>최근 기록</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><strong>{{ post.data.title }}</strong><p>{{ post.data.description }}</p><i aria-hidden="true">↗</i></a>
-      {% endfor %}
-      {% for project in projects | take(1) %}
-      <a class="cluster-note project-note" href="{{ project.repository }}" target="_blank" rel="noopener noreferrer" aria-label="{{ project.name }} GitHub 저장소 (새 탭)"><span>프로젝트</span><strong>{{ project.name }}</strong><p>{{ project.description }}</p><small>{{ project.stack | join(' · ') }}</small><i aria-hidden="true">↗</i></a>
-      {% endfor %}
-    </aside>
+      <span class="portrait-frame"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781"><i aria-hidden="true"></i></span>
+      <span class="profile-orbit-copy"><small>{{ profile.name }} · 울산대학교</small><strong>somani의 프로필</strong><span>프로필 보기 ↗</span></span>
+    </a>
+
+    {% for project in projects | take(1) %}
+    <a class="cluster-note project-note" href="{{ project.repository }}" target="_blank" rel="noopener noreferrer" aria-label="{{ project.name }} GitHub 저장소 (새 탭)"><span>프로젝트</span><strong>{{ project.name }}</strong><p>{{ project.description }}</p><small>{{ project.stack | join(' · ') }}</small><i aria-hidden="true">↗</i></a>
+    {% endfor %}
+
+    <svg class="cluster-links" data-cluster-links viewBox="0 0 1000 570" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <g class="cluster-path path-one" data-link-group="project"><path data-link-path="project" d="M690 145 C735 145 748 112 790 112"></path><circle data-link-start="project" cx="690" cy="145" r="4"></circle><circle data-link-end="project" cx="790" cy="112" r="4"></circle></g>
+      <g class="cluster-path path-two" data-link-group="latest"><path data-link-path="latest" d="M300 440 C430 440 495 395 550 285"></path><circle data-link-start="latest" cx="300" cy="440" r="4"></circle><circle data-link-end="latest" cx="550" cy="285" r="4"></circle></g>
+    </svg>
   </section>
 
   <section class="archive-switchboard" id="archive-map" aria-label="카테고리 탐색" data-archive-switchboard data-reveal>

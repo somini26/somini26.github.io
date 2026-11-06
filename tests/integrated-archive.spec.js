@@ -33,38 +33,48 @@ const expectNoOverflow = async (page) => {
 
 const expectClusterTextClear = async (page) => {
   const overlaps = await page.evaluate(() => {
-    const selectors = [
-      ".profile-orbit-copy",
-      ".latest-note",
-      ".project-note",
+    const pairs = [
+      [".hero-copy", ".portrait-frame"],
+      [".hero-copy", ".profile-orbit-copy"],
+      [".hero-copy", ".latest-note"],
+      [".hero-copy", ".project-note"],
+      [".hero-actions", ".portrait-frame"],
+      [".hero-actions", ".latest-note"],
+      [".hero-actions", ".project-note"],
+      [".portrait-frame", ".latest-note"],
+      [".portrait-frame", ".project-note"],
+      [".profile-orbit-copy", ".latest-note"],
+      [".profile-orbit-copy", ".project-note"],
+      [".latest-note", ".project-note"],
     ];
-    const rectangles = selectors.map((selector) =>
-      document.querySelector(selector).getBoundingClientRect(),
-    );
     const intersects = (a, b) =>
       a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    const contentIntersections = pairs.filter(([first, second]) =>
+      intersects(
+        document.querySelector(first).getBoundingClientRect(),
+        document.querySelector(second).getBoundingClientRect(),
+      ),
+    );
+    const latestRectangle = document.querySelector(".latest-note").getBoundingClientRect();
+    const projectRectangle = document.querySelector(".project-note").getBoundingClientRect();
     const dock = document.querySelector(".mobile-dock");
     const dockRectangle = dock?.getBoundingClientRect();
     const bodyPaddingBottom = Number.parseFloat(getComputedStyle(document.body).paddingBottom);
     return {
-      profileLatest: intersects(rectangles[0], rectangles[1]),
-      profileProject: intersects(rectangles[0], rectangles[2]),
-      noteCards: intersects(rectangles[1], rectangles[2]),
+      contentIntersections,
       latestDock:
         getComputedStyle(dock).display !== "none" &&
-        intersects(rectangles[1], dockRectangle),
+        intersects(latestRectangle, dockRectangle),
       projectDock:
         getComputedStyle(dock).display !== "none" &&
-        intersects(rectangles[2], dockRectangle),
+        intersects(projectRectangle, dockRectangle),
       dockSafeSpace:
         getComputedStyle(dock).display === "none" ||
         bodyPaddingBottom >= dockRectangle.height,
     };
   });
   expect(overlaps).toEqual({
-    profileLatest: false,
-    profileProject: false,
-    noteCards: false,
+    contentIntersections: [],
     latestDock: false,
     projectDock: false,
     dockSafeSpace: true,
@@ -73,10 +83,11 @@ const expectClusterTextClear = async (page) => {
 
 const expectClusterProportions = async (page) => {
   const metrics = await page.evaluate(() => {
-    const cluster = document.querySelector(".personal-cluster");
+    const cluster = document.querySelector(".home-hero");
     const portrait = document.querySelector(".portrait-frame");
-    const outerOrbit = getComputedStyle(cluster, "::before");
-    const innerOrbit = getComputedStyle(cluster, "::after");
+    const orbitField = document.querySelector(".profile-space-orbits");
+    const outerOrbit = getComputedStyle(orbitField, "::before");
+    const innerOrbit = getComputedStyle(orbitField, "::after");
     return {
       viewportWidth: window.innerWidth,
       clusterWidth: cluster.getBoundingClientRect().width,
@@ -87,10 +98,7 @@ const expectClusterProportions = async (page) => {
   });
   if (metrics.viewportWidth > 620) {
     expect(metrics.portraitWidth).toBe(198);
-    expect(metrics.outerWidth / metrics.clusterWidth).toBeGreaterThan(0.25);
-    expect(metrics.outerWidth / metrics.clusterWidth).toBeLessThan(
-      metrics.viewportWidth <= 1080 ? 0.48 : 0.42,
-    );
+    expect(metrics.outerWidth / metrics.clusterWidth).toBeLessThan(0.55);
     expect(metrics.innerWidth).toBeLessThan(metrics.outerWidth);
   }
 };
@@ -120,10 +128,15 @@ const expectApprovedTopLayout = async (page) => {
   expect(layout.projectBackSheet).not.toBe("none");
   expect(layout.fontLoaded).toBeTruthy();
   if (layout.viewportWidth > 820) {
-    expect(layout.latest.left).toBeLessThan(layout.profile.left);
-    expect(layout.latest.top).toBeGreaterThan(layout.hero.top + 250);
-    expect(layout.project.left).toBeGreaterThan(layout.profile.left);
-    expect(layout.project.top).toBeLessThan(layout.latest.top - 150);
+    if (layout.viewportWidth > 1024) {
+      expect(layout.latest.left).toBeLessThan(layout.profile.left);
+      expect(layout.latest.top).toBeGreaterThanOrEqual(layout.hero.bottom + 20);
+      expect(layout.project.left).toBeGreaterThan(layout.profile.left);
+      expect(layout.project.top).toBeLessThan(layout.latest.top - 100);
+    } else {
+      expect(layout.profile.top).toBeLessThan(layout.latest.top);
+      expect(Math.abs(layout.latest.top - layout.project.top)).toBeLessThan(2);
+    }
   } else if (layout.viewportWidth <= 620) {
     expect(layout.profile.top).toBeLessThan(layout.latest.top);
     expect(layout.latest.top).toBeLessThan(layout.project.top);
@@ -136,7 +149,7 @@ const expectApprovedTopLayout = async (page) => {
 const expectClusterVisualSafety = async (page) => {
   const metrics = await page.evaluate(() => {
     const hero = document.querySelector(".home-hero").getBoundingClientRect();
-    const cluster = document.querySelector(".personal-cluster");
+    const cluster = document.querySelector(".home-hero");
     const clusterBox = cluster.getBoundingClientRect();
     const portrait = document.querySelector(".portrait-frame").getBoundingClientRect();
     const latest = document.querySelector(".latest-note");
@@ -203,7 +216,7 @@ const expectClusterVisualSafety = async (page) => {
   expect(metrics.latestTab.width).toBeLessThanOrEqual(74);
   expect(metrics.projectTab.width).toBeLessThanOrEqual(74);
 
-  if (metrics.viewportWidth > 820) {
+  if (metrics.viewportWidth > 1024) {
     expect(metrics.latest.left - metrics.hero.left).toBeGreaterThanOrEqual(14);
     expect(metrics.hero.right - metrics.project.right).toBeGreaterThanOrEqual(14);
     expect(metrics.project.top - metrics.hero.top).toBeGreaterThanOrEqual(24);
@@ -213,6 +226,23 @@ const expectClusterVisualSafety = async (page) => {
     expect(Math.abs(metrics.connections.latestStart.x - (metrics.latest.right + 2))).toBeLessThan(4);
     expect(Math.abs(metrics.connections.latestEnd.x - (metrics.portrait.left - 7))).toBeLessThan(4);
   }
+};
+
+const expectOrbitalWordmark = async (page) => {
+  const wordmark = page.locator(".site-wordmark");
+  await expect(wordmark).toHaveAttribute("aria-label", "somani 홈");
+  await expect(wordmark.locator(".wordmark-logo strong")).toHaveText("somani");
+  await expect(wordmark.locator(".wordmark-logo svg ellipse")).toHaveCount(1);
+  await expect(wordmark.locator(".wordmark-logo svg path")).toHaveCount(1);
+  await expect(wordmark.locator('.wordmark-logo svg')).toHaveAttribute("focusable", "false");
+  await expect(wordmark.locator(':scope > span:not(.wordmark-logo)')).toHaveCount(0);
+  const bounds = await wordmark.evaluate((link) => {
+    const header = document.querySelector(".site-header").getBoundingClientRect();
+    const logo = link.querySelector(".wordmark-logo").getBoundingClientRect();
+    return { header: header.toJSON(), logo: logo.toJSON() };
+  });
+  expect(bounds.logo.left).toBeGreaterThanOrEqual(bounds.header.left);
+  expect(bounds.logo.right).toBeLessThanOrEqual(bounds.header.right);
 };
 
 const expectCategoryStartClear = async (page) => {
@@ -298,6 +328,7 @@ test("identity, direct navigation and personal cluster remain immediately visibl
       ),
     )
     .toBeTruthy();
+  await expectOrbitalWordmark(page);
 
   if (testInfo.project.name === "mobile") {
     const dock = page.getByRole("navigation", { name: "모바일 주 메뉴" });
@@ -340,7 +371,7 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
     expectedCategories,
   );
 
-  if ((await page.viewportSize()).width > 820) {
+  if (await page.locator(".category-stage").isVisible()) {
     const node = page.locator(".signal-node");
     const listBox = await page.locator(".category-switches").boundingBox();
     const stageBox = await page.locator(".category-stage").boundingBox();
@@ -378,6 +409,43 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
   await categories.nth(1).press("End");
   await expect(categories.last()).toBeFocused();
   await expectNoOverflow(page);
+  expect(errors).toEqual([]);
+});
+
+test("orbital wordmark and content flow remain clear at responsive boundaries", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  const boundaries = [1440, 1280, 1081, 1080, 1025, 1024, 901, 900, 881, 880, 821, 820, 768, 390, 320];
+
+  for (const width of boundaries) {
+    await page.setViewportSize({ width, height: width <= 820 ? 900 : 820 });
+    await page.goto("/");
+    await page.evaluate(async () => document.fonts.ready);
+    await revealPage(page);
+    await expectOrbitalWordmark(page);
+    await expectNoOverflow(page);
+    await expectClusterTextClear(page);
+
+    await page.locator(".project-note").hover();
+    await page.waitForTimeout(320);
+    await expectClusterTextClear(page);
+    await page.locator(".latest-note").focus();
+    await expectClusterTextClear(page);
+
+    await page.evaluate(() => {
+      document.querySelector(".hero-description").textContent +=
+        " 소개 문장이 두세 줄 더 길어지는 상황에서도 각 콘텐츠의 공간을 유지합니다.";
+      document.querySelector(".latest-note strong").textContent +=
+        " — 여러 줄로 길어진 게시글 제목";
+      document.querySelector(".latest-note p").textContent +=
+        " 설명이 길어져 카드 높이가 늘어나는 경우도 확인합니다.";
+    });
+    await page.waitForTimeout(80);
+    await expectNoOverflow(page);
+    await expectClusterTextClear(page);
+  }
   expect(errors).toEqual([]);
 });
 
@@ -452,14 +520,17 @@ test("profile detail has a visible but restrained hover response", async ({
 test("themes and required viewport captures stay visually stable", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   const errors = collectErrors(page);
   const viewports = [
     { name: "desktop-1440", width: 1440, height: 1000 },
     { name: "laptop-1280", width: 1280, height: 900 },
+    { name: "boundary-1080", width: 1080, height: 900 },
     { name: "zoom-125", width: 1152, height: 800 },
     { name: "zoom-150", width: 960, height: 800 },
     { name: "compact-1024", width: 1024, height: 900 },
+    { name: "boundary-900", width: 900, height: 900 },
+    { name: "boundary-820", width: 820, height: 1000 },
     { name: "tablet-768", width: 768, height: 1024 },
     { name: "mobile-390", width: 390, height: 844 },
     { name: "mobile-320", width: 320, height: 760 },
@@ -539,6 +610,27 @@ test("about, archive, categories and article preserve content and usability", as
     "GitHub Pages 블로그 구축 기록",
   );
   await page.goto("/about/");
+  const aboutImage = page.locator(
+    '.profile-card .avatar img[src="/assets/images/profile-hachiware-about.jpg"]',
+  );
+  await expect(aboutImage).toHaveAttribute(
+    "alt",
+    "컴퓨터 앞에 앉아 커피를 마시는 파란 귀의 하치와레 캐릭터",
+  );
+  await expect
+    .poll(() =>
+      aboutImage.evaluate(
+        (image) =>
+          image.complete &&
+          image.naturalWidth === 736 &&
+          image.naturalHeight === 736,
+      ),
+    )
+    .toBeTruthy();
+  await expect(aboutImage).not.toHaveAttribute(
+    "src",
+    "/assets/images/profile-hachiware.jpg",
+  );
   const aboutIntroduction = page.locator(".about-content section").first();
   await expect(aboutIntroduction.getByRole("heading", { level: 2 })).toHaveText(
     "안녕하세요, somani입니다.",

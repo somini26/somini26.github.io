@@ -32,6 +32,11 @@ test("navigation, six category pages, empty states and accessibility", async ({
   await expect(page.locator(".project-note")).toContainText("somani's archive");
   await expect(
     page.locator(
+      '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
+    ),
+  ).toHaveAttribute("alt", "파란 귀를 가진 하치와레 캐릭터");
+  await expect(
+    page.locator(
       '.project-note[href="https://github.com/somini26/somini26.github.io"]',
     ),
   ).toHaveCount(1);
@@ -51,15 +56,20 @@ test("navigation, six category pages, empty states and accessibility", async ({
     .analyze();
   expect(accessibility.violations).toEqual([]);
   await page.goto("/about/");
-  const profileImage = page.locator('.avatar img[src="/assets/images/profile-hachiware.jpg"]');
+  const profileImage = page.locator(
+    '.avatar img[src="/assets/images/profile-hachiware-about.jpg"]',
+  );
   await expect(profileImage).toHaveAttribute(
     "alt",
-    "파란 귀를 가진 하치와레 캐릭터",
+    "컴퓨터 앞에 앉아 커피를 마시는 파란 귀의 하치와레 캐릭터",
   );
   await expect
     .poll(() =>
       profileImage.evaluate(
-        (image) => image.complete && image.naturalWidth === 736,
+        (image) =>
+          image.complete &&
+          image.naturalWidth === 736 &&
+          image.naturalHeight === 736,
       ),
     )
     .toBeTruthy();
