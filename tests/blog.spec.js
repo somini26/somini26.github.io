@@ -31,7 +31,9 @@ test("navigation, six category pages, empty states and accessibility", async ({
   await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
   await expect(page.locator(".project-note")).toContainText("somani's archive");
   await expect(
-    page.locator('.project-note[href="/posts/github-pages-blog/"]'),
+    page.locator(
+      '.project-note[href="https://github.com/somini26/somini26.github.io"]',
+    ),
   ).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "라이트 모드로 전환" }),

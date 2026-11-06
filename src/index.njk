@@ -17,10 +17,10 @@ layout: base.njk
         <span class="profile-orbit-copy"><small>{{ profile.name }} · 울산대학교</small><strong>somani의 프로필</strong><span>프로필 보기 ↗</span></span>
       </a>
       {% for post in collections.posts | take(1) %}
-      <a class="cluster-note latest-note" href="{{ post.url }}"><span>최근 기록</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><strong>{{ post.data.title }}</strong><i aria-hidden="true">↗</i></a>
+      <a class="cluster-note latest-note" href="{{ post.url }}"><span>최근 기록</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><strong>{{ post.data.title }}</strong><p>{{ post.data.description }}</p><i aria-hidden="true">↗</i></a>
       {% endfor %}
       {% for project in projects | take(1) %}
-      <a class="cluster-note project-note" href="{{ project.post }}"><span>프로젝트</span><strong>{{ project.name }}</strong><small>{{ project.stack | join(' · ') }}</small><i aria-hidden="true">→</i></a>
+      <a class="cluster-note project-note" href="{{ project.repository }}" target="_blank" rel="noopener noreferrer" aria-label="{{ project.name }} GitHub 저장소 (새 탭)"><span>프로젝트</span><strong>{{ project.name }}</strong><p>{{ project.description }}</p><small>{{ project.stack | join(' · ') }}</small><i aria-hidden="true">↗</i></a>
       {% endfor %}
     </aside>
   </section>

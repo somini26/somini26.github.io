@@ -45,20 +45,29 @@ const expectClusterTextClear = async (page) => {
       a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     const dock = document.querySelector(".mobile-dock");
     const dockRectangle = dock?.getBoundingClientRect();
+    const bodyPaddingBottom = Number.parseFloat(getComputedStyle(document.body).paddingBottom);
     return {
       profileLatest: intersects(rectangles[0], rectangles[1]),
       profileProject: intersects(rectangles[0], rectangles[2]),
       noteCards: intersects(rectangles[1], rectangles[2]),
+      latestDock:
+        getComputedStyle(dock).display !== "none" &&
+        intersects(rectangles[1], dockRectangle),
       projectDock:
         getComputedStyle(dock).display !== "none" &&
         intersects(rectangles[2], dockRectangle),
+      dockSafeSpace:
+        getComputedStyle(dock).display === "none" ||
+        bodyPaddingBottom >= dockRectangle.height,
     };
   });
   expect(overlaps).toEqual({
     profileLatest: false,
     profileProject: false,
     noteCards: false,
+    latestDock: false,
     projectDock: false,
+    dockSafeSpace: true,
   });
 };
 
@@ -78,9 +87,49 @@ const expectClusterProportions = async (page) => {
   });
   if (metrics.viewportWidth > 620) {
     expect(metrics.portraitWidth).toBe(198);
-    expect(metrics.outerWidth / metrics.clusterWidth).toBeGreaterThan(0.65);
-    expect(metrics.outerWidth / metrics.clusterWidth).toBeLessThan(0.75);
+    expect(metrics.outerWidth / metrics.clusterWidth).toBeGreaterThan(0.25);
+    expect(metrics.outerWidth / metrics.clusterWidth).toBeLessThan(
+      metrics.viewportWidth <= 820 ? 0.48 : 0.42,
+    );
     expect(metrics.innerWidth).toBeLessThan(metrics.outerWidth);
+  }
+};
+
+const expectApprovedTopLayout = async (page) => {
+  const layout = await page.evaluate(() => {
+    const box = (selector) =>
+      document.querySelector(selector).getBoundingClientRect().toJSON();
+    const latest = document.querySelector(".latest-note");
+    const project = document.querySelector(".project-note");
+    return {
+      viewportWidth: innerWidth,
+      hero: box(".hero-copy"),
+      profile: box(".profile-orbit"),
+      latest: box(".latest-note"),
+      project: box(".project-note"),
+      latestBackSheet: getComputedStyle(latest, "::before").content,
+      latestFolderTab: getComputedStyle(latest, "::after").content,
+      projectBackSheet: getComputedStyle(project, "::before").content,
+      fontLoaded: [...document.fonts].some(
+        (font) => font.family === "Wanted Sans" && font.status === "loaded",
+      ),
+    };
+  });
+  expect(layout.latestBackSheet).not.toBe("none");
+  expect(layout.latestFolderTab).not.toBe("none");
+  expect(layout.projectBackSheet).not.toBe("none");
+  expect(layout.fontLoaded).toBeTruthy();
+  if (layout.viewportWidth > 820) {
+    expect(layout.latest.left).toBeLessThan(layout.profile.left);
+    expect(layout.latest.top).toBeGreaterThan(layout.hero.top + 250);
+    expect(layout.project.left).toBeGreaterThan(layout.profile.left);
+    expect(layout.project.top).toBeLessThan(layout.latest.top - 150);
+  } else if (layout.viewportWidth <= 620) {
+    expect(layout.profile.top).toBeLessThan(layout.latest.top);
+    expect(layout.latest.top).toBeLessThan(layout.project.top);
+  } else {
+    expect(layout.profile.top).toBeLessThan(layout.latest.top);
+    expect(Math.abs(layout.latest.top - layout.project.top)).toBeLessThan(2);
   }
 };
 
@@ -147,6 +196,8 @@ test("identity, direct navigation and personal cluster remain immediately visibl
   await expect(page.locator(".latest-note")).toContainText("최근 기록");
   await expect(page.locator(".project-note")).toBeVisible();
   await expect(page.locator(".project-note")).toContainText("somani's archive");
+  await expect(page.locator(".latest-note p")).not.toBeEmpty();
+  await expect(page.locator(".project-note p")).not.toBeEmpty();
   await expect(page.locator(".switchboard-heading")).toHaveCount(0);
   await expect(page.locator(".archive-switchboard")).not.toContainText(
     "새롭게 작성한 글을 모아두었습니다.",
@@ -175,11 +226,20 @@ test("identity, direct navigation and personal cluster remain immediately visibl
     await expect(page.locator(".desktop-nav")).toBeVisible();
     await expect(page.locator(".desktop-nav a")).toHaveCount(4);
     await expect(page.locator(".mobile-dock")).not.toBeVisible();
+    const sidebar = page.locator(".site-header");
+    await expect(sidebar).toHaveCSS("position", "fixed");
+    const navBoxes = await page.locator(".desktop-nav a").evaluateAll((links) =>
+      links.map((link) => link.getBoundingClientRect().toJSON()),
+    );
+    const navLefts = navBoxes.map((box) => box.left);
+    expect(Math.max(...navLefts) - Math.min(...navLefts)).toBeLessThanOrEqual(4);
+    expect(navBoxes[3].top).toBeGreaterThan(navBoxes[0].top + 100);
   }
 
   await expectNoOverflow(page);
   await expectClusterTextClear(page);
   await expectClusterProportions(page);
+  await expectApprovedTopLayout(page);
   await expectCategoryStartClear(page);
   await expectAccessible(page);
   expect(errors).toEqual([]);
@@ -259,6 +319,39 @@ test("profile detail has a visible but restrained hover response", async ({
   await profile.screenshot({
     path: path.join(reviewDirectory, "hachiware-after.png"),
   });
+
+  const project = page.locator(".project-note");
+  const projectPath = page.locator(".path-one");
+  const projectPathBefore = await projectPath.evaluate(
+    (node) => getComputedStyle(node).borderTopColor,
+  );
+  await project.hover();
+  await expect
+    .poll(() =>
+      projectPath.evaluate((node) => getComputedStyle(node).borderTopColor),
+    )
+    .not.toBe(projectPathBefore);
+  await page.locator(".home-hero").screenshot({
+    path: path.join(reviewDirectory, "project-folder-hover.png"),
+  });
+  await expectClusterTextClear(page);
+
+  await page.mouse.move(0, 0);
+  const latest = page.locator(".latest-note");
+  const latestPath = page.locator(".path-two");
+  const latestPathBefore = await latestPath.evaluate(
+    (node) => getComputedStyle(node).borderBottomColor,
+  );
+  await latest.focus();
+  await expect
+    .poll(() =>
+      latestPath.evaluate((node) => getComputedStyle(node).borderBottomColor),
+    )
+    .not.toBe(latestPathBefore);
+  await page.locator(".home-hero").screenshot({
+    path: path.join(reviewDirectory, "latest-folder-focus.png"),
+  });
+  await expectClusterTextClear(page);
 });
 
 test("themes and required viewport captures stay visually stable", async ({
@@ -268,6 +361,7 @@ test("themes and required viewport captures stay visually stable", async ({
   const viewports = [
     { name: "desktop-1440", width: 1440, height: 1000 },
     { name: "laptop-1280", width: 1280, height: 900 },
+    { name: "compact-1024", width: 1024, height: 900 },
     { name: "tablet-768", width: 768, height: 1024 },
     { name: "mobile-390", width: 390, height: 844 },
     { name: "mobile-320", width: 320, height: 760 },
@@ -281,6 +375,7 @@ test("themes and required viewport captures stay visually stable", async ({
     await expectNoOverflow(page);
     await expectClusterTextClear(page);
     await expectClusterProportions(page);
+    await expectApprovedTopLayout(page);
     await expectCategoryStartClear(page);
     await page.screenshot({
       path: path.join(reviewDirectory, `${viewport.name}-home-dark.png`),
@@ -289,19 +384,32 @@ test("themes and required viewport captures stay visually stable", async ({
     });
   }
 
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    await page.evaluate(() => localStorage.setItem("somani-theme", "light"));
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    expect(
+      await page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--bg")
+          .trim(),
+      ),
+    ).toBe("#f7f3ff");
+    await revealPage(page);
+    await expectNoOverflow(page);
+    await expectClusterTextClear(page);
+    await expectApprovedTopLayout(page);
+    await page.screenshot({
+      path: path.join(reviewDirectory, `${viewport.name}-home-light.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
+  }
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
-  await page.getByRole("button", { name: "라이트 모드로 전환" }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await revealPage(page);
   await expectAccessible(page);
-  await page.screenshot({
-    path: path.join(reviewDirectory, "desktop-1440-home-light.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
   expect(errors).toEqual([]);
 });
 

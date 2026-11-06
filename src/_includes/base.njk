@@ -20,6 +20,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS" href="/feed.xml">
+  <link rel="preload" href="/assets/fonts/WantedSansVariable.woff2" as="font" type="font/woff2" crossorigin>
   <script src="/assets/theme.js"></script>
   <link rel="stylesheet" href="/assets/site.css">
   <script src="/assets/app.js" defer></script>
@@ -35,7 +36,6 @@
         {% endfor %}
       </nav>
       <div class="header-actions">
-        <a class="github-link" href="{{ site.github }}" aria-label="GitHub 프로필">GitHub <span aria-hidden="true">↗</span></a>
         <button class="theme-toggle" type="button" aria-label="라이트 모드로 전환" hidden><span class="theme-icon" aria-hidden="true">☼</span><span class="theme-label" aria-hidden="true">Light</span></button>
       </div>
     </div>
