@@ -29,10 +29,13 @@ try {
   assert.equal(posts[0].url, "/posts/verification-only/");
   assert.equal(posts[0].categories.length, 2);
   assert(posts[0].tags.includes("Verification"));
+  const expectedSequence = String(posts.length).padStart(3, "0");
   assert(
     fs
       .readFileSync("_site/posts/verification-only/index.html", "utf8")
-      .includes('<span class="article-sequence" aria-hidden="true">002</span>'),
+      .includes(
+        `<span class="article-sequence" aria-hidden="true">${expectedSequence}</span>`,
+      ),
     "게시글 순번이 발행 순서에 맞게 동적으로 증가해야 합니다.",
   );
   for (const slug of ["development", "ctf-wargame"]) {

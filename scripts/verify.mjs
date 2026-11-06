@@ -27,6 +27,18 @@ for (const file of html) {
     `${file}: description`,
   );
   assert(document.querySelector("main"), `${file}: main`);
+  if (path.relative(root, file).startsWith(`posts${path.sep}`)) {
+    assert.equal(
+      document.querySelectorAll("h1").length,
+      1,
+      `${file}: posts must have one page heading`,
+    );
+    for (const code of document.querySelectorAll(".article-prose pre code"))
+      assert(
+        [...code.classList].some((name) => name.startsWith("language-")),
+        `${file}: fenced code language missing`,
+      );
+  }
   const ids = new Set();
   for (const node of document.querySelectorAll("[id]")) {
     assert(!ids.has(node.id), `${file}: duplicate id ${node.id}`);
@@ -89,7 +101,18 @@ if (fs.existsSync(sample)) {
   );
   const { document } = parseHTML(sampleHtml);
   const sequence = document.querySelector(".article-sequence");
-  assert.equal(sequence?.textContent.trim(), "001", "Post sequence missing");
+  const ordered = [...posts].sort(
+    (a, b) =>
+      new Date(a.date) - new Date(b.date) || a.url.localeCompare(b.url),
+  );
+  const expectedSequence = String(
+    ordered.findIndex((post) => post.url === "/posts/github-pages-blog/") + 1,
+  ).padStart(3, "0");
+  assert.equal(
+    sequence?.textContent.trim(),
+    expectedSequence,
+    "Post sequence missing",
+  );
   assert.equal(sequence?.getAttribute("aria-hidden"), "true");
 }
 assert(fs.existsSync(`${root}/assets/images/social.png`));

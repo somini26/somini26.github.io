@@ -387,7 +387,7 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
       "블로그/기술문서",
     );
     await expect(page.locator("#category-preview-4")).toContainText(
-      "GitHub Pages 블로그 구축 기록",
+      "2026 기술 활동 회고",
     );
     await expect
       .poll(() => node.evaluate((element) => element.offsetTop))
@@ -398,7 +398,7 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
     });
   } else {
     await expect(categories.nth(3).locator(".switch-mobile-note")).toContainText(
-      "GitHub Pages 블로그 구축 기록",
+      "2026 기술 활동 회고",
     );
     await expect(page.locator(".category-stage")).not.toBeVisible();
   }
@@ -606,9 +606,9 @@ test("about, archive, categories and article preserve content and usability", as
       animations: "disabled",
     });
   }
-  await expect(page.locator(".post-card")).toContainText(
-    "GitHub Pages 블로그 구축 기록",
-  );
+  await expect(
+    page.locator(".post-card").filter({ hasText: "GitHub Pages 블로그 구축 기록" }),
+  ).toHaveCount(1);
   await page.goto("/about/");
   const aboutImage = page.locator(
     '.profile-card .avatar img[src="/assets/images/profile-hachiware-about.jpg"]',
@@ -641,7 +641,17 @@ test("about, archive, categories and article preserve content and usability", as
   ]);
   await page.goto("/posts/github-pages-blog/");
   const sequence = page.locator(".article-sequence");
-  await expect(sequence).toHaveText("001");
+  const expectedSequence = await page.evaluate(async () => {
+    const posts = await fetch("/search.json").then((response) => response.json());
+    const ordered = [...posts].sort(
+      (a, b) =>
+        new Date(a.date) - new Date(b.date) || a.url.localeCompare(b.url),
+    );
+    return String(
+      ordered.findIndex((post) => post.url === "/posts/github-pages-blog/") + 1,
+    ).padStart(3, "0");
+  });
+  await expect(sequence).toHaveText(expectedSequence);
   await expect(sequence).toHaveAttribute("aria-hidden", "true");
   await expect(page.locator("[data-article-prose]")).toContainText(
     "Everything up-to-date",

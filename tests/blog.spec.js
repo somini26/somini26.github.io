@@ -81,10 +81,11 @@ test("navigation, six category pages, empty states and accessibility", async ({
   )) {
     await page.goto(url);
     await expect(page.locator("h1")).toBeVisible();
-    if (!url.includes("blog-docs"))
+    if (await page.locator(".empty-state").count())
       await expect(page.locator(".empty-state")).toContainText(
         "아직 기록이 없습니다",
       );
+    else await expect(page.locator(".post-card").first()).toBeVisible();
   }
   expect(errors).toEqual([]);
 });
@@ -92,14 +93,9 @@ test("search, tags, URL restoration and safe search input", async ({
   page,
 }) => {
   await page.goto("/archive/");
-  await expect(page.locator("#tag-filter option")).toContainText([
-    "전체 태그",
-    "#Eleventy",
-    "#GitHub",
-    "#GitHub Actions",
-    "#Markdown",
-  ]);
-  await page.getByRole("searchbox").fill("정적");
+  for (const tag of ["전체 태그", "#Eleventy", "#GitHub", "#CTF", "#SECTOR"])
+    await expect(page.locator("#tag-filter")).toContainText(tag);
+  await page.getByRole("searchbox").fill("GitHub Pages 블로그 구축 기록");
   await expect(page.locator("#archive-results .post-card")).toHaveCount(1);
   await page.getByRole("searchbox").fill("없는검색어");
   await expect(page.locator("#archive-results")).toContainText(
@@ -170,6 +166,7 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
     "/categories/",
     "/about/",
     "/posts/github-pages-blog/",
+    "/posts/sector-2026-overview/",
     "/404.html",
   ]) {
     await page.goto(url);
@@ -198,7 +195,7 @@ test("static navigation works without JavaScript", async ({ browser }, testInfo)
   await navigation
     .getByRole("link", { name: "Archive", exact: true })
     .click();
-  await page.locator(".post-card h3 a").click();
+  await page.locator('.post-card h3 a[href="/posts/github-pages-blog/"]').click();
   await expect(page.locator(".article-prose")).toContainText(
     "블로그를 만든 이유",
   );
@@ -224,6 +221,8 @@ test("all primary pages remain accessible in both themes and narrow layouts", as
       "/archive/",
       "/categories/",
       "/about/",
+      "/posts/joint-ctf-overview/",
+      "/posts/apeows/",
       "/404.html",
     ]) {
       await page.goto(url);
@@ -242,6 +241,9 @@ test("all primary pages remain accessible in both themes and narrow layouts", as
       "/categories/",
       "/about/",
       "/posts/github-pages-blog/",
+      "/posts/bomblab-gdb-binary-patch/",
+      "/posts/apeows/",
+      "/posts/zigzag/",
     ]) {
       await page.goto(url);
       expect(
