@@ -10,13 +10,9 @@ tags:
   - Write-up
 description: Process Hollowing으로 실행되는 숨겨진 PE와 라이선스 검증 복원
 ---
-`Hollow Notes`에서는 실행 파일에서 플래그처럼 생긴 문자열을 금방 발견했다. 그런데 문자열에 `decoy`라는 단어가 있었다. 그대로 정답이라고 생각하기보다는 왜 이런 문구가 들어 있는지 먼저 살펴봤다.
+## Hollow Notes
 
-실제 플래그는 부모 프로그램 밖, **Process Hollowing으로 실행되는 숨겨진 PE**의 검증 로직에 있었다. 페이로드를 복원하고 입력값을 역산한 과정을 남긴다.
-
----
-
-## 1. 문제 개요
+### 1. 문제 개요
 
 * 분야: Reversing
 * 점수: 500점
@@ -35,7 +31,7 @@ hollow_notes.exe
 
 ---
 
-## 2. 파일 기본 정보 확인
+### 2. 파일 기본 정보 확인
 
 먼저 `file` 명령으로 실행 파일의 형식을 확인하였다.
 
@@ -67,7 +63,7 @@ CTF{this_parent_process_is_only_a_decoy}
 
 ---
 
-## 3. 프로그램 실행 흐름 분석
+### 3. 프로그램 실행 흐름 분석
 
 프로그램은 겉으로 보기에는 단순한 콘솔 프로그램처럼 동작한다.
 
@@ -89,7 +85,7 @@ VirtualProtect
 
 ---
 
-## 4. 숨겨진 payload 발견
+### 4. 숨겨진 payload 발견
 
 실행 파일의 섹션과 내부 데이터를 분석하던 중 일반적인 코드나 문자열이 아닌 큰 데이터 블록을 확인하였다.
 
@@ -137,7 +133,7 @@ payload_decrypted.bin: PE32 executable for MS Windows, Intel i386, 8 sections
 
 ---
 
-## 5. Process Hollowing 동작
+### 5. Process Hollowing 동작
 
 부모 프로그램은 내부 payload를 단순히 파일로 생성하고 실행하지 않는다.
 
@@ -169,7 +165,7 @@ CTF{this_parent_process_is_only_a_decoy}
 
 ---
 
-## 6. 복호화된 payload 분석
+### 6. 복호화된 payload 분석
 
 복호화한 payload의 문자열을 확인하였다.
 
@@ -205,7 +201,7 @@ Access denied.
 
 ---
 
-## 7. 입력 검증 로직 분석
+### 7. 입력 검증 로직 분석
 
 검증 함수에서는 먼저 입력값의 길이를 검사한다.
 
@@ -273,7 +269,7 @@ CTF{pr0cess_h0ll0w1ng_repl4ces_the_reality}
 
 ---
 
-## 8. 정답 검증
+### 8. 정답 검증
 
 복구한 문자열을 payload에 입력하였다.
 
@@ -292,7 +288,7 @@ The hidden payload was recovered.
 
 ---
 
-## 9. 최종 Flag
+### 9. 최종 Flag
 
 ```text
 CTF{pr0cess_h0ll0w1ng_repl4ces_the_reality}
@@ -300,7 +296,7 @@ CTF{pr0cess_h0ll0w1ng_repl4ces_the_reality}
 
 ---
 
-## 10. 풀이 요약
+### 10. 풀이 요약
 
 이 문제의 핵심은 부모 실행 파일에서 바로 보이는 문자열을 정답으로 착각하지 않고, 내부에 숨겨진 payload를 추적하는 것이었다.
 
@@ -335,15 +331,3 @@ process hollowing replaces the reality
 ```
 
 즉 정상 프로세스의 실행 이미지를 다른 payload로 교체하는 Process Hollowing의 특징을 표현한 flag이다.
-
----
-
-## 풀고 나서
-
-이 문제는 `strings`에 정답처럼 보이는 값이 있다고 바로 믿으면 안 된다는 걸 보여줬다. 실행 파일이 실제로 어떤 페이로드를 실행하는지 따라가 보니 정답을 찾을 수 있었다.
-
-다음에 비슷한 문제를 만나면 보이는 문자열과 **실제로 실행되는 코드**를 구분해서 확인할 것 같다.
-
----
-
-[← K.knock × D-Alpha × CAUtion 연합 CTF 종합 글로 돌아가기](/posts/joint-ctf-overview/)
