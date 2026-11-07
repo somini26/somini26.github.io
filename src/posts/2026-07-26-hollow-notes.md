@@ -337,4 +337,6 @@ process hollowing replaces the reality
 
 즉 정상 프로세스의 실행 이미지를 다른 payload로 교체하는 Process Hollowing의 특징을 표현한 flag입니다.
 
+> 각 상세 풀이의 서버 주소와 데이터는 당시 CTF 환경을 기준으로 기록했으며, 현재 운영 상태와는 다를 수 있습니다.
+
 읽어주셔서 감사합니다. (꾸벅)
