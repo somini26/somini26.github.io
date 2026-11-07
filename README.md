@@ -1,8 +1,8 @@
 # somini26.github.io
 
-somani's archive | System Hacking · Reversing · Development
+somani's archive | CTF · Security · AI · Development
 
-**somani**가 시스템 해킹과 리버스 엔지니어링을 중심으로 CTF와 개발 학습 과정을 기록하는 개인 기술 블로그입니다. Knights Frontier 3기 첫 번째 미션의 목적에 맞춰, 계속 글을 추가하고 관리할 수 있는 Markdown 기반 아카이브로 구성했습니다.
+**somani**가 CTF, 보안, AI, 개발을 비롯해 다양한 배움과 경험을 기록하는 개인 기술 블로그입니다. 계속 글을 추가하고 관리할 수 있는 Markdown 기반 아카이브로 구성했습니다.
 
 - 블로그 주소: **https://somini26.github.io**
 - GitHub 프로필: https://github.com/somini26
@@ -60,17 +60,20 @@ npm run test:browser
 ---
 title: "첫 번째 기록"
 date: 2026-11-01
+recordOrder: 23
 categories: ["블로그/기술문서"]
 tags: ["GitHub", "Blog"]
 description: "이 글에서 다루는 내용을 간단히 소개합니다."
 ---
 ```
 
-- `title`, `date`, `categories`, `tags`, `description`은 필수입니다. 잘못된 카테고리나 누락된 필드는 빌드에서 알려줍니다.
+- 새 글은 먼저 `draft: true`인 초안으로 작성합니다. 명시적으로 발행하기로 결정했을 때만 초안 표시를 제거합니다.
+- 발행할 때 현재 공개 글의 가장 큰 `recordOrder` 다음 정수를 한 번만 부여합니다. 기존 번호는 수정하거나 다시 매기지 않습니다.
+- 공개 글의 `title`, `date`, `recordOrder`, `categories`, `tags`, `description`은 필수입니다. 잘못된 카테고리, 중복 순번, 누락된 필드는 빌드에서 알려줍니다.
 - `categories`와 `tags`는 배열이며 여러 값을 넣을 수 있습니다. 태그가 없으면 `tags: []`로 작성합니다.
-- 글 목록은 날짜 내림차순으로 자동 생성됩니다. 같은 날짜는 URL 순서로 정렬됩니다.
+- 글 목록은 고정 작성 순번(`recordOrder`)의 내림차순으로 생성되며, Archive에서 오름차순으로 전환할 수 있습니다.
 - 예시 파일의 주소는 `/posts/my-learning-note/`입니다. 게시 후 파일 이름을 바꾸면 URL도 바뀌므로 주의하세요.
-- 임시 글은 메타데이터에 `draft: true`를 추가합니다. 상세 페이지, 목록, 검색, RSS, Sitemap에 공개되지 않습니다. 발행하려면 해당 줄을 지웁니다.
+- 초안은 상세 페이지, 목록, 검색, RSS, Sitemap에 공개되지 않습니다. 발행 전에는 최종 순번을 미리 확정하지 않아도 됩니다.
 - 미래 날짜도 발행됩니다. 예약 발행 기능은 없으므로 미완성 글에는 `draft: true`를 사용하세요.
 - 새 글은 홈, 아카이브, 카테고리, 태그, 검색, RSS, Sitemap에 자동 반영됩니다.
 - `## 소제목`, `### 하위 제목`으로 목차가 자동 생성됩니다.
@@ -127,7 +130,7 @@ About 페이지의 이름, 소속, 연락처, 관심 분야는 `src/_data/profil
 
 ## 검색과 테마
 
-검색은 제목·설명·본문·태그·카테고리를 대상으로 대소문자를 구분하지 않고 찾습니다. 카테고리와 태그를 함께 필터링할 수 있습니다. 검색 조건은 URL에 저장되어 공유하거나 새로고침해도 유지됩니다. 검색 인덱스는 빌드할 때 생성되는 `search.json`입니다. 글이 많이 쌓이면 분할 인덱스나 검색 전용 도구 도입을 고려하세요.
+검색은 제목·설명·본문·태그·카테고리를 대상으로 대소문자를 구분하지 않고 찾습니다. 카테고리와 태그를 함께 필터링할 수 있고, 고정 작성 순번을 기준으로 최신순·오래된순을 전환할 수 있습니다. 검색·태그·정렬 조건은 URL에 저장되어 공유하거나 새로고침해도 유지됩니다. 검색 인덱스는 빌드할 때 생성되는 `search.json`입니다. 글이 많이 쌓이면 분할 인덱스나 검색 전용 도구 도입을 고려하세요.
 
 기본 테마는 다크 모드입니다. 헤더의 테마 버튼으로 라이트 모드를 선택할 수 있고 선택은 해당 브라우저에 저장됩니다. 외부 폰트, 분석 도구, 추적 스크립트를 사용하지 않습니다. JavaScript 없이도 페이지 이동과 글 읽기, 카테고리 탐색이 가능합니다.
 
@@ -153,7 +156,7 @@ Pull Request에서는 빌드와 검사만 실행하고 배포하지 않습니다
 
 ```bash
 git add .
-git commit -m "Build somani security archive"
+git commit -m "Update somani archive"
 git push origin main
 ```
 

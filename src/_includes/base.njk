@@ -6,13 +6,13 @@
   <meta name="color-scheme" content="dark light">
   <title>{% if title %}{{ title }} · {% endif %}{{ site.name }}</title>
   <meta name="description" content="{{ description or site.description }}">
-  <meta name="author" content="{{ site.name }}">
+  <meta name="author" content="{{ site.author }}">
   {% if noindex %}<meta name="robots" content="noindex">{% endif %}
   <link rel="canonical" href="{{ site.url }}{{ page.url }}">
   <meta property="og:site_name" content="{{ site.name }}">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="{% if layout == 'post.njk' %}article{% else %}website{% endif %}">
-  <meta property="og:title" content="{{ title or (site.name + ' — learn, make, archive') }}">
+  <meta property="og:title" content="{{ title or site.name }}">
   <meta property="og:description" content="{{ description or site.description }}">
   <meta property="og:url" content="{{ site.url }}{{ page.url }}">
   <meta property="og:image" content="{{ site.url }}/assets/images/social.png">
@@ -29,7 +29,7 @@
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-wordmark" href="/" aria-label="{{ site.name }} 홈">
+      <a class="site-wordmark" href="/" aria-label="{{ site.author }} 홈">
         <span class="wordmark-logo" aria-hidden="true">
           <strong>somani</strong>
           <svg viewBox="0 0 108 46" focusable="false">

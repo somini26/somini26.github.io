@@ -76,6 +76,11 @@ for (const category of categories) {
   assert(text.includes(category.name));
 }
 const posts = JSON.parse(fs.readFileSync(`${root}/search.json`, "utf8"));
+assert.equal(posts.length, 22, "공개 글 수가 달라졌습니다.");
+const recordOrders = posts.map((post) => post.recordOrder);
+assert(recordOrders.every((value) => Number.isInteger(value) && value > 0));
+assert.equal(new Set(recordOrders).size, recordOrders.length, "recordOrder 중복");
+assert.deepEqual(recordOrders, [...recordOrders].sort((a, b) => b - a));
 
 for (const post of posts) {
   assert(fs.existsSync(path.join(root, post.url, "index.html")));
@@ -91,6 +96,31 @@ for (const post of posts) {
       post.categories.every((c) => typeof c === "string"),
   );
 }
+const chronological = [...posts].sort((a, b) => a.recordOrder - b.recordOrder);
+for (const [index, post] of chronological.entries()) {
+  const { document } = parseHTML(
+    fs.readFileSync(path.join(root, post.url, "index.html"), "utf8"),
+  );
+  const navigation = document.querySelector('.record-navigation[aria-label="글 탐색"]');
+  assert(navigation, `${post.url}: 글 탐색 누락`);
+  assert(
+    navigation.querySelector(".current-record")?.textContent.includes(
+      String(post.recordOrder).padStart(3, "0"),
+    ),
+    `${post.url}: 현재 순번 불일치`,
+  );
+  const links = [...navigation.querySelectorAll("a")].map((link) => link.href);
+  assert.equal(
+    links.includes(chronological[index - 1]?.url),
+    index > 0,
+    `${post.url}: 이전 글 연결 오류`,
+  );
+  assert.equal(
+    links.includes(chronological[index + 1]?.url),
+    index < chronological.length - 1,
+    `${post.url}: 다음 글 연결 오류`,
+  );
+}
 // Empty archives and posts without code are valid. Check the sample only while it exists.
 const sample = `${root}/posts/github-pages-blog/index.html`;
 if (fs.existsSync(sample)) {
@@ -101,12 +131,8 @@ if (fs.existsSync(sample)) {
   );
   const { document } = parseHTML(sampleHtml);
   const sequence = document.querySelector(".article-sequence");
-  const ordered = [...posts].sort(
-    (a, b) =>
-      new Date(a.date) - new Date(b.date) || a.url.localeCompare(b.url),
-  );
   const expectedSequence = String(
-    ordered.findIndex((post) => post.url === "/posts/github-pages-blog/") + 1,
+    posts.find((post) => post.url === "/posts/github-pages-blog/").recordOrder,
   ).padStart(3, "0");
   assert.equal(
     sequence?.textContent.trim(),
@@ -114,6 +140,7 @@ if (fs.existsSync(sample)) {
     "Post sequence missing",
   );
   assert.equal(sequence?.getAttribute("aria-hidden"), "true");
+  assert(document.querySelector('.record-navigation[aria-label="글 탐색"]'));
 }
 assert(fs.existsSync(`${root}/assets/images/social.png`));
 assert(fs.existsSync(`${root}/.nojekyll`));

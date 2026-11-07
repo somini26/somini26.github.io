@@ -4,8 +4,8 @@
   <div class="archive-content">
     <form class="search-form" role="search"><label for="search" class="sr-only">게시글 검색</label><span aria-hidden="true">⌕</span><input id="search" name="q" type="search" placeholder="제목, 태그, 본문으로 검색" autocomplete="off"><button type="submit">검색</button></form>
     <div class="tag-filter"><label for="tag-filter">태그</label><select id="tag-filter"><option value="">전체 태그</option></select><button class="reset-button" type="button" hidden>필터 초기화 ↺</button></div>
-    <div class="results-meta"><span id="result-count" role="status" aria-live="polite">{% if activeCategory %}{{ collections.posts | inCategory(activeCategory) | length }}{% else %}{{ collections.posts | length }}{% endif %}개의 기록</span><span>최신순 ↓</span></div>
-    <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">↳</span><h2>아직 기록이 없습니다.</h2><p>다른 카테고리의 글을 둘러보세요.</p><a class="text-link" href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
+    <div class="results-meta"><span id="result-count" role="status" aria-live="polite">{% if activeCategory %}{{ collections.posts | inCategory(activeCategory) | length }}{% else %}{{ collections.posts | length }}{% endif %}개의 기록</span><button class="sort-toggle" id="sort-toggle" type="button" aria-label="현재 최신순, 오래된순으로 전환">최신순 ↓</button></div>
+    <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">↳</span><h2>아직 공개된 기록이 없습니다.</h2><a class="text-link" href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
     <noscript><p class="notice">검색과 태그 필터를 사용하려면 JavaScript를 켜 주세요.</p></noscript>
   </div>
 </div>

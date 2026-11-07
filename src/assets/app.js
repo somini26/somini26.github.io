@@ -291,8 +291,10 @@ async function initArchive(root) {
     tags = $("#tag-filter", root),
     results = $("#archive-results", root),
     count = $("#result-count", root),
-    reset = $(".reset-button", root);
+    reset = $(".reset-button", root),
+    sortToggle = $("#sort-toggle", root);
   const form = $(".search-form", root);
+  let sort = "latest";
   try {
     const response = await fetch("/search.json");
     if (!response.ok) throw new Error("Search index unavailable");
@@ -321,6 +323,19 @@ async function initArchive(root) {
         tags.append(option);
       }
       tags.value = selected;
+      sort = params.get("sort") === "oldest" ? "oldest" : "latest";
+      updateSortControl();
+    }
+    function updateSortControl() {
+      if (!sortToggle) return;
+      const latest = sort === "latest";
+      sortToggle.textContent = latest ? "최신순 ↓" : "오래된순 ↑";
+      sortToggle.setAttribute(
+        "aria-label",
+        latest
+          ? "현재 최신순, 오래된순으로 전환"
+          : "현재 오래된순, 최신순으로 전환",
+      );
     }
     function el(tag, className, text) {
       const node = document.createElement(tag);
@@ -328,26 +343,35 @@ async function initArchive(root) {
       if (text !== undefined) node.textContent = text;
       return node;
     }
-    function draw(syncURL = true) {
+    function draw(syncURL = true, pushHistory = false) {
       const q = search.value.trim().toLocaleLowerCase("ko"),
         tag = tags.value;
-      const found = available.filter(
-        (p) =>
-          (!tag || p.tags.includes(tag)) &&
-          (!q ||
-            [p.title, p.description, p.text, ...p.tags, ...p.categories]
-              .join(" ")
-              .toLocaleLowerCase("ko")
-              .includes(q)),
-      );
+      const found = available
+        .filter(
+          (p) =>
+            (!tag || p.tags.includes(tag)) &&
+            (!q ||
+              [p.title, p.description, p.text, ...p.tags, ...p.categories]
+                .join(" ")
+                .toLocaleLowerCase("ko")
+                .includes(q)),
+        )
+        .sort((a, b) => {
+          const direction = sort === "latest" ? -1 : 1;
+          return direction * (Number(a.recordOrder) - Number(b.recordOrder));
+        });
       if (syncURL) {
         const url = new URL(location.href);
         q
           ? url.searchParams.set("q", search.value.trim())
           : url.searchParams.delete("q");
         tag ? url.searchParams.set("tag", tag) : url.searchParams.delete("tag");
-        history.replaceState(null, "", url);
+        sort === "oldest"
+          ? url.searchParams.set("sort", "oldest")
+          : url.searchParams.delete("sort");
+        history[pushHistory ? "pushState" : "replaceState"](null, "", url);
       }
+      updateSortControl();
       results.replaceChildren();
       count.textContent = `${found.length}개의 기록`;
       reset.hidden = !q && !tag;
@@ -358,14 +382,9 @@ async function initArchive(root) {
           el(
             "h2",
             "",
-            q || tag ? "검색 결과가 없습니다." : "아직 기록이 없습니다.",
-          ),
-          el(
-            "p",
-            "",
             q || tag
-              ? "다른 검색어나 태그를 선택해 보세요."
-              : "다른 카테고리의 글을 둘러보세요.",
+              ? "조건에 맞는 기록이 없습니다."
+              : "아직 공개된 기록이 없습니다.",
           ),
         );
         results.append(empty);
@@ -376,6 +395,8 @@ async function initArchive(root) {
           time = el("time", "", post.date);
         time.dateTime = post.date;
         meta.append(
+          el("span", "", `No. ${String(post.recordOrder).padStart(3, "0")}`),
+          el("span", "", "·"),
           time,
           el("span", "", "·"),
           el("span", "", `${post.readingTime}분 읽기`),
@@ -389,7 +410,10 @@ async function initArchive(root) {
           chips = el("div", "tags");
         for (const name of post.tags) {
           const a = el("a", "", `#${name}`);
-          a.href = `/archive/?tag=${encodeURIComponent(name)}`;
+          const tagURL = new URL("/archive/", location.origin);
+          tagURL.searchParams.set("tag", name);
+          if (sort === "oldest") tagURL.searchParams.set("sort", "oldest");
+          a.href = `${tagURL.pathname}${tagURL.search}`;
           chips.append(a);
         }
         const categoryLabels = el("div", "category-links");
@@ -411,6 +435,10 @@ async function initArchive(root) {
     });
     search.addEventListener("input", () => draw());
     tags.addEventListener("change", () => draw());
+    sortToggle?.addEventListener("click", () => {
+      sort = sort === "latest" ? "oldest" : "latest";
+      draw(true, true);
+    });
     reset.addEventListener("click", () => {
       search.value = "";
       tags.value = "";

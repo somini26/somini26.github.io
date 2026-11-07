@@ -3,19 +3,19 @@
     "name": "개발",
     "slug": "development",
     "label": "Development",
-    "description": "Python, Java, 웹 개발과 프로젝트 기록"
+    "description": "프로그래밍 실습과 프로젝트 개발 기록"
   },
   {
     "name": "CTF/Wargame",
     "slug": "ctf-wargame",
     "label": "CTF / Wargame",
-    "description": "CTF 문제 풀이와 리버싱, 포렌식 노트"
+    "description": "CTF 대회와 Wargame 문제 풀이"
   },
   {
     "name": "Bug Bounty",
     "slug": "bug-bounty",
     "label": "Bug Bounty",
-    "description": "웹 취약점 분석과 보안 연구 노트"
+    "description": "취약점 분석과 보안 연구 기록"
   },
   {
     "name": "블로그/기술문서",

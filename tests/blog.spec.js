@@ -29,7 +29,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
     "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
   );
   await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
-  await expect(page.locator(".project-note")).toContainText("somani's archive");
+  await expect(page.locator(".project-note")).toContainText("다른 최근 기록");
   await expect(
     page.locator(
       '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
@@ -37,7 +37,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
   ).toHaveAttribute("alt", "파란 귀를 가진 하치와레 캐릭터");
   await expect(
     page.locator(
-      '.project-note[href="https://github.com/somini26/somini26.github.io"]',
+      '.project-note[href="/posts/retrospective-2026/"]',
     ),
   ).toHaveCount(1);
   await expect(
@@ -83,7 +83,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
     await expect(page.locator("h1")).toBeVisible();
     if (await page.locator(".empty-state").count())
       await expect(page.locator(".empty-state")).toContainText(
-        "아직 기록이 없습니다",
+        "아직 공개된 기록이 없습니다",
       );
     else await expect(page.locator(".post-card").first()).toBeVisible();
   }
@@ -99,7 +99,7 @@ test("search, tags, URL restoration and safe search input", async ({
   await expect(page.locator("#archive-results .post-card")).toHaveCount(1);
   await page.getByRole("searchbox").fill("없는검색어");
   await expect(page.locator("#archive-results")).toContainText(
-    "검색 결과가 없습니다",
+    "조건에 맞는 기록이 없습니다",
   );
   await page.getByRole("button", { name: "필터 초기화" }).click();
   await page.locator("#tag-filter").selectOption("Eleventy");
@@ -111,8 +111,52 @@ test("search, tags, URL restoration and safe search input", async ({
   await expect(page.locator("#archive-results img")).toHaveCount(0);
   await page.goto("/archive/?tag=Unknown");
   await expect(page.locator("#archive-results")).toContainText(
-    "검색 결과가 없습니다",
+    "조건에 맞는 기록이 없습니다",
   );
+});
+test("record order sorting preserves filters and URL state", async ({ page }) => {
+  await page.goto("/archive/?tag=SECTOR");
+  const numbers = page.locator("#archive-results .post-meta span:first-child");
+  await expect(numbers.first()).toHaveText("No. 006");
+  await page.getByRole("button", { name: "현재 최신순, 오래된순으로 전환" }).click();
+  await expect(page).toHaveURL(/tag=SECTOR/);
+  await expect(page).toHaveURL(/sort=oldest/);
+  await expect(page.locator("#tag-filter")).toHaveValue("SECTOR");
+  await expect(numbers.first()).toHaveText("No. 002");
+  await page.goBack();
+  await expect(numbers.first()).toHaveText("No. 006");
+  await page.goForward();
+  await expect(numbers.first()).toHaveText("No. 002");
+  await page.reload();
+  await expect(page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" })).toBeVisible();
+  await expect(numbers.first()).toHaveText("No. 002");
+  await page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" }).press("Enter");
+  await expect(numbers.first()).toHaveText("No. 006");
+  await expect(page).not.toHaveURL(/sort=oldest/);
+});
+
+test("gapped fixture keeps record numbers while reversing the list", async ({ page }) => {
+  const fixture = [3, 8, 12].map((recordOrder) => ({
+    title: `기록 ${recordOrder}`,
+    description: "격리된 정렬 검사",
+    url: `/fixture/${recordOrder}/`,
+    date: "2026-01-01",
+    recordOrder,
+    categories: ["개발"],
+    tags: ["fixture"],
+    readingTime: 1,
+    categoryLinks: [{ name: "개발", slug: "development" }],
+    text: "fixture",
+  }));
+  await page.route("**/search.json", (route) => route.fulfill({ json: fixture }));
+  await page.goto("/archive/?sort=oldest");
+  await expect(page.locator("#archive-results .post-meta span:first-child")).toHaveText([
+    "No. 003", "No. 008", "No. 012",
+  ]);
+  await page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" }).click();
+  await expect(page.locator("#archive-results .post-meta span:first-child")).toHaveText([
+    "No. 012", "No. 008", "No. 003",
+  ]);
 });
 test("post, TOC, code copy, theme persistence, overflow and accessibility", async ({
   page,
@@ -124,6 +168,9 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   await expect(
     page.getByRole("navigation", { name: "게시글 목차" }),
   ).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "글 탐색" })).toContainText(
+    "현재 글 · 001",
+  );
   await page
     .getByRole("navigation", { name: "게시글 목차" })
     .getByRole("link", { name: "Markdown 글이 공개되기까지" })

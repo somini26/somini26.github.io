@@ -21,9 +21,11 @@ layout: base.njk
       <span class="profile-orbit-copy"><small>{{ profile.name }} · 울산대학교</small><strong>somani의 프로필</strong><span>프로필 보기 ↗</span></span>
     </a>
 
-    {% for project in projects | take(1) %}
-    <a class="cluster-note project-note" href="{{ project.repository }}" target="_blank" rel="noopener noreferrer" aria-label="{{ project.name }} GitHub 저장소 (새 탭)"><span>프로젝트</span><strong>{{ project.name }}</strong><p>{{ project.description }}</p><small>{{ project.stack | join(' · ') }}</small><i aria-hidden="true">↗</i></a>
-    {% endfor %}
+    {% if collections.posts[1] %}{% set otherPost = collections.posts[1] %}
+    <a class="cluster-note project-note" href="{{ otherPost.url }}"><span>다른 최근 기록</span><time datetime="{{ otherPost.date | dateISO }}">{{ otherPost.date | dateISO }}</time><strong>{{ otherPost.data.title }}</strong><p>{{ otherPost.data.description }}</p><i aria-hidden="true">↗</i></a>
+    {% else %}
+    <a class="cluster-note project-note" href="/archive/"><span>다른 최근 기록</span><strong>전체 기록</strong><p>공개된 글을 모두 확인할 수 있습니다.</p><i aria-hidden="true">↗</i></a>
+    {% endif %}
 
     <svg class="cluster-links" data-cluster-links viewBox="0 0 1000 570" preserveAspectRatio="none" aria-hidden="true" focusable="false">
       <g class="cluster-path path-one" data-link-group="project"><path data-link-path="project" d="M690 145 C735 145 748 112 790 112"></path><circle data-link-start="project" cx="690" cy="145" r="4"></circle><circle data-link-end="project" cx="790" cy="112" r="4"></circle></g>
@@ -41,7 +43,7 @@ layout: base.njk
             <span class="switch-title"><strong>{{ category.name }}</strong><small>{{ category.description }}</small></span>
             <span class="switch-count">{{ categoryPosts | length }}<small>개의 기록</small></span>
             <span class="switch-arrow" aria-hidden="true">↗</span>
-            <span class="switch-mobile-note">{% for post in categoryPosts | take(1) %}최근 · {{ post.data.title }}{% else %}첫 기록을 준비하고 있습니다.{% endfor %}</span>
+            <span class="switch-mobile-note">{% for post in categoryPosts | take(1) %}최근 · {{ post.data.title }}{% else %}아직 공개된 기록이 없습니다.{% endfor %}</span>
           </a>
         </li>
         {% endfor %}
@@ -54,7 +56,7 @@ layout: base.njk
           <span class="stage-number" aria-hidden="true">0{{ loop.index }}</span>
           <p>{{ category.description }}</p>
           <div class="stage-record">
-            {% for post in categoryPosts | take(1) %}<span>최근 기록 · {{ post.date | dateISO }}</span><a href="{{ post.url }}">{{ post.data.title }} <i aria-hidden="true">↗</i></a>{% else %}<span>아직 공개된 기록이 없습니다.</span><p>첫 글이 추가되면 이곳에서 바로 확인할 수 있어요.</p>{% endfor %}
+            {% for post in categoryPosts | take(1) %}<span>최근 기록 · {{ post.date | dateISO }}</span><a href="{{ post.url }}">{{ post.data.title }} <i aria-hidden="true">↗</i></a>{% else %}<span>아직 공개된 기록이 없습니다.</span>{% endfor %}
           </div>
           <a class="stage-open" href="/categories/{{ category.slug }}/">{{ category.name }} 전체 보기 <span aria-hidden="true">→</span></a>
         </section>

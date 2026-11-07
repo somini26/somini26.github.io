@@ -296,6 +296,8 @@ h1, h2, h3, p, ol, ul, dl { margin: 0; }
 .tag-filter select { min-height: 36px; padding: 0 30px 0 10px; border: 1px solid var(--border); border-radius: 6px; color: var(--text); background: var(--surface); }
 .reset-button { margin-left: auto; border: 0; color: var(--accent); background: none; font-size: 11px; }
 .results-meta { min-height: 58px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.sort-toggle { min-height: 36px; padding: 5px 2px; border: 0; color: var(--muted); background: transparent; font: inherit; }
+.sort-toggle:hover, .sort-toggle:focus-visible { color: var(--accent-strong); }
 .post-list { border-top: 1px solid var(--border); }
 .post-card { position: relative; padding: 30px 4px; border-bottom: 1px solid var(--border); }
 .post-card::before { content: ""; position: absolute; top: -1px; right: 0; left: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
@@ -395,14 +397,22 @@ h1, h2, h3, p, ol, ul, dl { margin: 0; }
 .article-prose th, .article-prose td { min-width: 145px; padding: 13px 15px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
 .article-prose th { color: var(--text); background: rgba(var(--accent-rgb), 0.08); font-size: 12px; }
 .article-prose img { width: 100%; display: block; padding: 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
-.article-rail { position: sticky; top: 32px; }
+.article-rail { position: sticky; top: 32px; max-height: calc(100vh - 64px); overflow-y: auto; scrollbar-width: thin; }
 .toc-panel { overflow: hidden; border: 1px solid var(--border); border-radius: 16px 16px 5px 16px; background: var(--surface); box-shadow: var(--soft-shadow); }
 .toc-heading { min-height: 42px; padding: 0 13px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--border); color: var(--muted); font: 700 9px/1.3 ui-monospace, monospace; letter-spacing: 0.1em; }
-.toc-panel nav { max-height: calc(100vh - 240px); padding: 15px; display: grid; gap: 1px; overflow-y: auto; }
+.toc-panel nav { padding: 15px; display: grid; gap: 1px; }
 .toc-panel a { position: relative; padding: 7px 6px 7px 24px; color: var(--muted); font-size: 11px; line-height: 1.5; transition: color 0.18s ease, transform 0.18s ease; }
 .toc-panel a::before { content: attr(data-number); position: absolute; left: 0; color: var(--accent); font: 700 9px/1.7 ui-monospace, monospace; }
 .toc-panel a[data-level="3"] { padding-left: 36px; font-size: 10px; }
 .toc-panel a:hover, .toc-panel a[aria-current="location"] { color: var(--text); transform: translateX(2px); }
+.record-navigation { margin-top: 14px; overflow: hidden; border: 1px solid var(--border); border-radius: 12px 12px 4px 12px; background: var(--surface); }
+.record-navigation > a, .record-navigation > .current-record { position: relative; padding: 12px 13px; display: grid; gap: 5px; border-bottom: 1px solid var(--border); color: var(--muted); }
+.record-navigation > :last-child { border-bottom: 0; }
+.record-navigation > a:hover { color: var(--text); background: rgba(var(--accent-rgb), 0.055); }
+.record-navigation small { color: var(--accent); font: 700 9px/1.3 ui-monospace, monospace; }
+.record-navigation span { font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.record-navigation .current-record { padding-left: 18px; color: var(--text); background: rgba(var(--accent-rgb), 0.075); }
+.record-navigation .current-record::before { content: ""; position: absolute; top: 12px; bottom: 12px; left: 8px; width: 2px; border-radius: 2px; background: var(--accent); }
 .article-rail-link { width: fit-content; margin: 18px 3px 0 auto; color: var(--muted); font-size: 11px; }
 .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #aeb7c4; }
 .token.property, .token.tag, .token.constant, .token.symbol, .token.deleted { color: #f0a8c0; }
@@ -429,7 +439,7 @@ h1, h2, h3, p, ol, ul, dl { margin: 0; }
   .hero-copy h1 { font-size: clamp(39px, 4.6vw, 52px); }
   .switchboard-grid { grid-template-columns: minmax(330px, 0.92fr) 56px minmax(320px, 1.08fr); }
   .article-layout { grid-template-columns: minmax(0, 1fr); gap: 42px; }
-  .article-rail { position: static; grid-row: 1; }
+  .article-rail { position: static; max-height: none; overflow: visible; grid-row: 1; }
   .toc-panel nav { max-height: 240px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

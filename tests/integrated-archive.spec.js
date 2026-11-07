@@ -307,7 +307,7 @@ test("identity, direct navigation and personal cluster remain immediately visibl
   await expect(page.locator(".latest-note")).toBeVisible();
   await expect(page.locator(".latest-note")).toContainText("최근 기록");
   await expect(page.locator(".project-note")).toBeVisible();
-  await expect(page.locator(".project-note")).toContainText("somani's archive");
+  await expect(page.locator(".project-note")).toContainText("다른 최근 기록");
   await expect(page.locator(".latest-note p")).not.toBeEmpty();
   await expect(page.locator(".project-note p")).not.toBeEmpty();
   await expect(page.locator(".switchboard-heading")).toHaveCount(0);
@@ -387,7 +387,7 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
       "블로그/기술문서",
     );
     await expect(page.locator("#category-preview-4")).toContainText(
-      "2026 기술 활동 회고",
+      "나를 움직이는 기준, 그리고 앞으로의 7개월",
     );
     await expect
       .poll(() => node.evaluate((element) => element.offsetTop))
@@ -398,7 +398,7 @@ test("archive switchboard visibly follows hover and keyboard focus", async ({
     });
   } else {
     await expect(categories.nth(3).locator(".switch-mobile-note")).toContainText(
-      "2026 기술 활동 회고",
+      "나를 움직이는 기준, 그리고 앞으로의 7개월",
     );
     await expect(page.locator(".category-stage")).not.toBeVisible();
   }
@@ -643,12 +643,8 @@ test("about, archive, categories and article preserve content and usability", as
   const sequence = page.locator(".article-sequence");
   const expectedSequence = await page.evaluate(async () => {
     const posts = await fetch("/search.json").then((response) => response.json());
-    const ordered = [...posts].sort(
-      (a, b) =>
-        new Date(a.date) - new Date(b.date) || a.url.localeCompare(b.url),
-    );
     return String(
-      ordered.findIndex((post) => post.url === "/posts/github-pages-blog/") + 1,
+      posts.find((post) => post.url === "/posts/github-pages-blog/").recordOrder,
     ).padStart(3, "0");
   });
   await expect(sequence).toHaveText(expectedSequence);

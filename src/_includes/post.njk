@@ -4,7 +4,7 @@ layout: base.njk
 <div class="reading-progress" aria-hidden="true"></div>
 <article class="article" data-article>
   <header class="article-header">
-    <span class="article-sequence" aria-hidden="true">{{ collections.posts | postSequence(page.url) }}</span>
+    <span class="article-sequence" aria-hidden="true">{{ recordOrder | recordLabel }}</span>
     <a class="article-back" href="/archive/">← 전체 기록</a>
     <p class="article-label">기술 기록 · {{ date | dateISO }}</p>
     <h1>{{ title }}</h1>
@@ -14,6 +14,16 @@ layout: base.njk
   </header>
   <div class="article-layout">
     <div class="article-prose" id="post-content" data-article-prose>{{ content | safe }}</div>
-    <aside class="article-rail" aria-label="게시글 보조 정보"><div class="toc-panel"><div class="toc-heading"><span>목차</span><span>이 글에서</span></div><nav data-article-toc aria-label="게시글 목차"></nav></div><a class="article-rail-link" href="/archive/">전체 기록으로 돌아가기 →</a></aside>
+    {% set previousPost = collections.posts | previousRecord(recordOrder) %}{% set nextPost = collections.posts | nextRecord(recordOrder) %}
+    <aside class="article-rail" aria-label="게시글 보조 정보">
+      <div class="toc-panel"><div class="toc-heading"><span>목차</span><span>이 글에서</span></div><nav data-article-toc aria-label="게시글 목차"></nav></div>
+      <nav class="record-navigation" aria-label="글 탐색">
+        <div class="toc-heading"><span>글 탐색</span><span>전체 기록에서</span></div>
+        {% if previousPost %}<a href="{{ previousPost.url }}"><small>이전 글 · {{ previousPost.data.recordOrder | recordLabel }}</small><span>{{ previousPost.data.title }}</span></a>{% endif %}
+        <div class="current-record" aria-current="page"><small>현재 글 · {{ recordOrder | recordLabel }}</small><span>{{ title }}</span></div>
+        {% if nextPost %}<a href="{{ nextPost.url }}"><small>다음 글 · {{ nextPost.data.recordOrder | recordLabel }}</small><span>{{ nextPost.data.title }}</span></a>{% endif %}
+      </nav>
+      <a class="article-rail-link" href="/archive/">전체 기록으로 돌아가기 →</a>
+    </aside>
   </div>
 </article>

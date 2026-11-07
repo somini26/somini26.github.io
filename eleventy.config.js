@@ -50,7 +50,11 @@ export default function (config) {
     api
       .getFilteredByGlob("src/posts/*.md")
       .filter((p) => !p.data.draft)
-      .sort((a, b) => b.date - a.date || a.url.localeCompare(b.url)),
+      .sort(
+        (a, b) =>
+          Number(b.data.recordOrder) - Number(a.data.recordOrder) ||
+          a.url.localeCompare(b.url),
+      ),
   );
   config.addFilter("dateISO", (d) => new Date(d).toISOString().slice(0, 10));
   config.addFilter("dateRSS", (d) => new Date(d).toUTCString());
@@ -66,14 +70,19 @@ export default function (config) {
     (name) => categories.find((c) => c.name === name)?.slug || "",
   );
   config.addFilter("take", (items, count) => items.slice(0, count));
-  config.addFilter("postSequence", (posts, pageUrl) => {
-    const ordered = [...posts].sort(
-      (a, b) =>
-        new Date(a.date) - new Date(b.date) || a.url.localeCompare(b.url),
-    );
-    const index = ordered.findIndex((post) => post.url === pageUrl);
-    return String(index >= 0 ? index + 1 : 1).padStart(3, "0");
-  });
+  config.addFilter("recordLabel", (value) =>
+    String(Number(value) || 0).padStart(3, "0"),
+  );
+  config.addFilter("previousRecord", (posts, recordOrder) =>
+    [...posts]
+      .filter((post) => Number(post.data.recordOrder) < Number(recordOrder))
+      .sort((a, b) => b.data.recordOrder - a.data.recordOrder)[0],
+  );
+  config.addFilter("nextRecord", (posts, recordOrder) =>
+    [...posts]
+      .filter((post) => Number(post.data.recordOrder) > Number(recordOrder))
+      .sort((a, b) => a.data.recordOrder - b.data.recordOrder)[0],
+  );
   config.addFilter("json", (value) =>
     JSON.stringify(value).replace(/</g, "\\u003c"),
   );
@@ -81,6 +90,7 @@ export default function (config) {
     posts.map((p) => ({
       title: p.data.title,
       description: p.data.description || "",
+      recordOrder: Number(p.data.recordOrder),
       url: p.url,
       date: new Date(p.date).toISOString().slice(0, 10),
       categories: p.data.categories || [],
@@ -99,6 +109,7 @@ export default function (config) {
   config.on("eleventy.before", async () => {
     // Fail early on invalid metadata instead of silently losing posts from category pages.
     const { default: matter } = await import("gray-matter");
+    const seenOrders = new Map();
     for (const file of fs
       .readdirSync("src/posts")
       .filter((f) => f.endsWith(".md"))) {
@@ -121,6 +132,15 @@ export default function (config) {
         data.tags.some((t) => typeof t !== "string")
       )
         throw new Error(`${file}: tags 배열을 확인하세요.`);
+      if (!data.draft) {
+        if (!Number.isInteger(data.recordOrder) || data.recordOrder < 1)
+          throw new Error(`${file}: 공개 글에는 양의 정수 recordOrder가 필요합니다.`);
+        if (seenOrders.has(data.recordOrder))
+          throw new Error(
+            `${file}: recordOrder ${data.recordOrder}가 ${seenOrders.get(data.recordOrder)}와 중복됩니다.`,
+          );
+        seenOrders.set(data.recordOrder, file);
+      }
     }
   });
   return {
