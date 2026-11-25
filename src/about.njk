@@ -4,9 +4,9 @@ title: About
 description: 개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부하고 경험하며 기록하는 somani입니다.
 permalink: /about/
 ---
-<header class="page-heading" data-reveal><p class="section-kicker">ABOUT SOMANI</p><h1>About</h1><p>다양한 분야에 호기심을 가지고 배우며, 새롭게 알게 된 것과 직접 경험한 것을 기록합니다.</p></header>
+<header class="about-heading" data-reveal><h1>About</h1><div class="about-orbit" aria-hidden="true"><svg viewBox="0 0 600 180"><path d="M10 145C165 18 440 20 590 105"/><ellipse cx="505" cy="104" rx="67" ry="19"/></svg><span>{% set navKey = 'about' %}{% include 'nav-icon.njk' %}</span></div></header>
 <div class="about-layout" data-reveal>
-  <aside class="profile-card surface" aria-label="{{ profile.nickname }} 프로필">
+  <aside class="profile-card" aria-label="{{ profile.nickname }} 프로필">
     <div class="avatar">
       {% if profile.aboutImage %}<img src="{{ profile.aboutImage }}" alt="{{ profile.aboutImageAlt }}" width="736" height="736">{% else %}<span aria-hidden="true">s.</span>{% endif %}
     </div>
@@ -16,7 +16,7 @@ permalink: /about/
     <dl class="profile-contact"><div><dt>Email</dt><dd><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></dd></div></dl>
     <nav class="profile-links" aria-label="프로필 링크"><a href="{{ site.github }}" target="_blank" rel="noopener noreferrer" aria-label="GitHub 프로필 (새 탭)">GitHub <span aria-hidden="true">↗</span></a><a href="{{ profile.tistory }}" target="_blank" rel="noopener noreferrer" aria-label="Tistory 블로그 (새 탭)">Tistory <span aria-hidden="true">↗</span></a></nav>
   </aside>
-  <div class="about-content surface">
+  <div class="about-content">
     <section>
       <p class="section-kicker">INTRODUCTION</p>
       <h2>안녕하세요, somani입니다.</h2>

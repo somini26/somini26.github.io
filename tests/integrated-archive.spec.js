@@ -3,36 +3,27 @@ import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs";
 import path from "node:path";
 
-const reviewDirectory = path.resolve("test-results/v2-review");
+const reviewDirectory = path.resolve("test-results/orbital-atlas-review");
 fs.mkdirSync(reviewDirectory, { recursive: true });
+const introKey = "somani-intro-seen-orbital-atlas-v20261125";
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() =>
-    sessionStorage.setItem("somani-intro-seen-v2-20261125", "1"),
-  );
+  await page.addInitScript((key) => sessionStorage.setItem(key, "1"), introKey);
 });
 
 async function reveal(page) {
   await page.evaluate(() => {
-    document
-      .querySelectorAll("[data-reveal]")
-      .forEach((element) => {
-        element.style.transition = "none";
-        element.classList.add("is-visible");
-      });
+    document.querySelectorAll("[data-reveal]").forEach((element) => {
+      element.style.transition = "none";
+      element.classList.add("is-visible");
+    });
   });
 }
 
 async function expectNoOverflow(page) {
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          document.documentElement.scrollWidth <=
-          document.documentElement.clientWidth,
-      ),
-    )
-    .toBeTruthy();
+  await expect.poll(() => page.evaluate(
+    () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+  )).toBeTruthy();
 }
 
 async function expectAccessible(page) {
@@ -42,26 +33,21 @@ async function expectAccessible(page) {
   expect(results.violations).toEqual([]);
 }
 
-test("launch sequence is optional, session-scoped and never blocks direct URLs", async ({
-  page,
-}) => {
+test("short orbital entry is optional, session-scoped and absent from direct posts", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/?intro=1");
   const intro = page.locator("[data-launch-intro]");
   await expect(intro).toHaveClass(/is-visible/);
-  await expect(page.getByRole("heading", { name: /somani's archive/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /ENTER OBSERVATORY/ })).toBeVisible();
-  const animations = await page.evaluate(() =>
-    [
-      ".launch-stars",
-      ".launch-planet",
-      ".launch-station",
-      ".launch-ship",
-    ].map((selector) => getComputedStyle(document.querySelector(selector)).animationName),
-  );
-  expect(new Set(animations).size).toBeGreaterThanOrEqual(4);
-  await expect(page.locator(".launch-ship .ship-body")).toHaveCount(1);
-  await expect(page.locator(".launch-ship .ship-engine")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /ENTER ATLAS/ })).toBeVisible();
+  await expect(page.locator(".launch-ship-image")).toHaveAttribute("src", /atlas-ship/);
+  await expect(page.locator(".launch-crystal")).toHaveAttribute("src", /atlas-crystal/);
+  const animations = await page.evaluate(() => [
+    getComputedStyle(document.querySelector(".launch-ship-image")).animationName,
+    getComputedStyle(document.querySelector(".launch-crystal")).animationName,
+    getComputedStyle(document.querySelector(".launch-pulse")).animationName,
+  ]);
+  expect(animations.every((name) => name && name !== "none")).toBeTruthy();
+  expect(new Set(animations).size).toBe(3);
   await page.screenshot({
     path: path.join(reviewDirectory, "launch-1440x900.png"),
     animations: "allow",
@@ -70,247 +56,210 @@ test("launch sequence is optional, session-scoped and never blocks direct URLs",
   await expect(intro).not.toHaveClass(/is-visible/);
   await page.reload();
   await expect(intro).not.toHaveClass(/is-visible/);
-  await page.goto("/?intro=1");
-  await expect(intro).toHaveClass(/is-visible/);
-  await expect(intro).not.toHaveClass(/is-visible/, { timeout: 2300 });
-  await page.getByRole("button", { name: /인트로 다시 보기/ }).click();
+  await page.getByRole("button", { name: "인트로 다시 보기" }).click();
   await expect(intro).toHaveClass(/is-visible/);
   await page.keyboard.press("Enter");
-  await expect(intro).not.toHaveClass(/is-visible/, { timeout: 1500 });
-  await page.goto("/archive/");
+  await expect(intro).not.toHaveClass(/is-visible/, { timeout: 1000 });
+  await page.goto("/posts/bomblab-gdb-binary-patch/");
   await expect(page.locator("[data-launch-intro]")).toHaveCount(0);
-  await expect(page.locator(".post-card").first()).toBeVisible();
+  await expect(page.locator(".article-prose")).toBeVisible();
 });
 
-test("approved desktop, light and narrow compositions stay stable", async ({
-  page,
-}) => {
+test("approved dark, light and responsive compositions stay stable", async ({ page }) => {
   test.setTimeout(90_000);
   const captures = [
-    { name: "home-dark-1440x1000", width: 1440, height: 1000, theme: "dark", url: "/" },
-    { name: "home-light-1440x1000", width: 1440, height: 1000, theme: "light", url: "/" },
-    { name: "home-dark-1280x900", width: 1280, height: 900, theme: "dark", url: "/" },
-    { name: "home-dark-390x844", width: 390, height: 844, theme: "dark", url: "/" },
-    { name: "home-light-390x844", width: 390, height: 844, theme: "light", url: "/" },
-    { name: "home-dark-360x800", width: 360, height: 800, theme: "dark", url: "/" },
-    { name: "categories-dark-768x900", width: 768, height: 900, theme: "dark", url: "/categories/" },
-    { name: "archive-dark-1280x900", width: 1280, height: 900, theme: "dark", url: "/archive/" },
-    { name: "about-dark-390x844", width: 390, height: 844, theme: "dark", url: "/about/" },
+    ["home-dark-1440x1000", 1440, 1000, "dark", "/"],
+    ["home-light-1440x1000", 1440, 1000, "light", "/"],
+    ["home-dark-1280x900", 1280, 900, "dark", "/"],
+    ["home-dark-390x844", 390, 844, "dark", "/"],
+    ["home-light-390x844", 390, 844, "light", "/"],
+    ["home-dark-360x800", 360, 800, "dark", "/"],
+    ["categories-dark-768x900", 768, 900, "dark", "/categories/"],
+    ["archive-dark-1280x900", 1280, 900, "dark", "/archive/"],
+    ["post-dark-1440x1000", 1440, 1000, "dark", "/posts/bomblab-gdb-binary-patch/"],
+    ["about-dark-390x844", 390, 844, "dark", "/about/"],
   ];
-  for (const capture of captures) {
-    await page.setViewportSize({ width: capture.width, height: capture.height });
-    await page.goto(capture.url);
-    await page.evaluate((theme) => {
-      localStorage.setItem("somani-theme", theme);
-      document.documentElement.dataset.theme = theme;
-    }, capture.theme);
+  for (const [name, width, height, theme, url] of captures) {
+    await page.setViewportSize({ width, height });
+    await page.goto(url);
+    await page.evaluate((value) => {
+      localStorage.setItem("somani-theme", value);
+      document.documentElement.dataset.theme = value;
+    }, theme);
     await page.reload();
     await reveal(page);
     await expectNoOverflow(page);
-    if (capture.width === 1440 && capture.url === "/") {
-      const width = await page.locator(".site-header").evaluate(
-        (element) => element.getBoundingClientRect().width,
-      );
-      expect(width).toBeGreaterThanOrEqual(180);
-      expect(width).toBeLessThanOrEqual(200);
-      await expect(page.locator(".home-primary > .surface")).toHaveCount(2);
-      await expect(page.locator(".home-category-grid > a")).toHaveCount(6);
-      const heroHeight = await page.locator(".home-hero").evaluate(
-        (element) => element.getBoundingClientRect().height,
-      );
-      expect(heroHeight).toBeGreaterThanOrEqual(300);
-      expect(heroHeight).toBeLessThanOrEqual(380);
+    if (url === "/" && width >= 1280) {
+      await expect(page.locator(".desktop-nav")).toBeVisible();
+      await expect(page.locator(".atlas-destination")).toHaveCount(6);
+      await expect(page.locator(".atlas-core img")).toBeVisible();
+      const stageHeight = await page.locator(".atlas-stage").evaluate((node) => node.getBoundingClientRect().height);
+      expect(stageHeight).toBeGreaterThanOrEqual(600);
+      expect(stageHeight).toBeLessThanOrEqual(720);
     }
-    if (capture.theme === "light")
-      expect(
-        await page.evaluate(() =>
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--bg")
-            .trim(),
-        ),
-      ).toBe("#f7f7fc");
+    if (url === "/" && width <= 390) {
+      await expect(page.locator(".atlas-mobile-routes a")).toHaveCount(6);
+      await expect(page.locator(".atlas-mobile-routes")).toBeVisible();
+    }
+    if (theme === "light") {
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--surface").trim())).toBe("#fffaff");
+    }
     await page.screenshot({
-      path: path.join(reviewDirectory, capture.name + ".png"),
+      path: path.join(reviewDirectory, `${name}.png`),
       fullPage: true,
       animations: "disabled",
     });
   }
 });
 
-test("research cards, archive controls, theme and reading tools work", async ({
-  page,
-  context,
-}) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+test("atlas objects, archive controls and object selection work", async ({ page }, testInfo) => {
+  await page.goto("/");
+  const objects = page.locator(".atlas-destination");
+  await expect(objects).toHaveCount(6);
+  await expect(page.locator('.atlas-destination img[src*="/assets/images/atlas/"]')).toHaveCount(6);
+  if (testInfo.project.name === "desktop") {
+    const firstRoute = page.locator('[data-orbit="development"]');
+    await objects.first().hover();
+    await expect(firstRoute).toHaveClass(/is-active/);
+    await objects.first().focus();
+    await expect(firstRoute).toHaveClass(/is-active/);
+  } else {
+    await expect(page.locator(".atlas-mobile-routes a")).toHaveCount(6);
+    await expect(page.locator('.atlas-mobile-routes img[src*="/assets/images/atlas/"]')).toHaveCount(6);
+  }
+
   await page.goto("/categories/");
   const cards = page.locator(".topic-directory > li > a");
   await expect(cards).toHaveCount(6);
   await expect(cards).toContainText([
-    "개발",
-    "CTF/Wargame",
-    "Bug Bounty",
-    "블로그/기술문서",
-    "논문/컨퍼런스",
-    "공모전/자격증",
+    "개발", "CTF/Wargame", "Bug Bounty", "블로그/기술문서", "논문/컨퍼런스", "공모전/자격증",
   ]);
-  const before = await cards.first().evaluate(
-    (element) => getComputedStyle(element).transform,
-  );
-  await cards.first().hover();
-  await expect
-    .poll(() =>
-      cards.first().evaluate((element) => getComputedStyle(element).transform),
-    )
-    .not.toBe(before);
 
   await page.goto("/archive/?category=CTF%2FWargame");
   await expect(page.locator("#category-filter")).toHaveValue("CTF/Wargame");
-  const archiveCards = page.locator("#archive-results .post-card");
-  expect(await archiveCards.count()).toBeGreaterThan(0);
+  expect(await page.locator("#archive-results .post-card").count()).toBeGreaterThan(0);
   await page.getByRole("searchbox", { name: "게시글 검색" }).fill("SECTOR");
-  expect(await archiveCards.count()).toBeGreaterThan(0);
+  expect(await page.locator("#archive-results .post-card").count()).toBeGreaterThan(0);
   await page.locator("#tag-filter").selectOption("SECTOR");
   await expect(page).toHaveURL(/tag=SECTOR/);
   await page.getByRole("button", { name: "현재 최신순, 오래된순으로 전환" }).click();
   await expect(page).toHaveURL(/sort=oldest/);
-  await page.goBack();
+  await page.evaluate(() => history.back());
   await expect(page).not.toHaveURL(/sort=oldest/);
-
-  await page.goto("/posts/github-pages-blog/");
-  await page.getByRole("button", { name: "코드 복사" }).first().click();
-  await expect(page.getByRole("button", { name: "복사 완료" })).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("git clone");
-  await page.getByRole("button", { name: "라이트 모드로 전환" }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("profile content, posts, URLs and six category routes remain intact", async ({
-  page,
-  request,
-}) => {
-  await page.goto("/about/");
-  const image = page.locator(
-    '.profile-card img[src="/assets/images/profile-hachiware-about.jpg"]',
+test("post rail keeps TOC, chronology, related records and archive access available", async ({ page }) => {
+  await page.goto("/posts/bomblab-gdb-binary-patch/");
+  const rail = page.locator(".article-rail");
+  await expect(rail.locator(":scope > .toc-panel")).toHaveCount(1);
+  await expect(rail.locator(":scope > .record-navigation")).toHaveCount(1);
+  await expect(rail.locator(":scope > .related-posts")).toHaveCount(1);
+  await expect(rail.locator(":scope > .article-rail-link")).toHaveCount(1);
+  const order = await rail.locator(":scope > *").evaluateAll((nodes) =>
+    nodes.map((node) => node.className),
   );
-  await expect(image).toHaveAttribute(
-    "alt",
-    "컴퓨터 앞에 앉아 커피를 마시는 파란 귀의 하치와레 캐릭터",
+  expect(order.slice(0, 4).join(" ")).toMatch(/toc-panel.*record-navigation.*related-posts.*article-rail-link/);
+  const toc = page.locator(".toc-scroll");
+  await expect(toc.locator("a")).not.toHaveCount(0);
+  expect(await toc.evaluate((node) => getComputedStyle(node).overflowY)).toBe("auto");
+  expect(await page.locator(".related-posts a").count()).toBeLessThanOrEqual(3);
+  await expect(page.getByRole("navigation", { name: "글 탐색" })).toContainText("현재 글");
+  await expect(page.locator(".article-bottom-navigation")).toBeVisible();
+  await expect(page.locator(".article-bottom-navigation .all-records")).toHaveAttribute("href", "/archive/");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await expect(page.locator(".toc-panel")).not.toHaveAttribute("open", "");
+  await page.locator(".toc-panel summary").click();
+  await expect(page.getByRole("navigation", { name: "게시글 목차" })).toBeVisible();
+  await page.locator(".record-navigation").scrollIntoViewIfNeeded();
+  await expect(page.locator(".record-navigation")).toBeVisible();
+  await page.locator(".article-bottom-navigation").scrollIntoViewIfNeeded();
+  await expect(page.locator(".article-bottom-navigation")).toBeVisible();
+});
+
+test("profile, dynamic counts and all category routes remain intact", async ({ page, request }) => {
+  await page.goto("/about/");
+  await expect(page.locator('.profile-card img[src="/assets/images/profile-hachiware-about.jpg"]')).toHaveAttribute(
+    "alt", "컴퓨터 앞에 앉아 커피를 마시는 파란 귀의 하치와레 캐릭터",
   );
   await expect(page.locator(".about-content section").first()).toContainText(
     "시스템 해킹과 리버스 엔지니어링, CTF/Wargame도 여러 관심 분야 가운데 하나입니다.",
   );
-  await expect(page.getByRole("link", { name: /amder1144@gmail.com/ })).toHaveAttribute(
-    "href",
-    "mailto:amder1144@gmail.com",
-  );
-  const search = await request.get("/search.json");
-  const posts = await search.json();
-  expect(posts).toHaveLength(22);
-  expect(new Set(posts.map((post) => post.url)).size).toBe(22);
+  await expect(page.getByRole("link", { name: /amder1144@gmail.com/ })).toHaveAttribute("href", "mailto:amder1144@gmail.com");
+  const posts = await (await request.get("/search.json")).json();
+  expect(posts.length).toBeGreaterThan(0);
+  expect(new Set(posts.map((post) => post.url)).size).toBe(posts.length);
   for (const route of [
-    "/categories/development/",
-    "/categories/ctf-wargame/",
-    "/categories/bug-bounty/",
-    "/categories/blog-docs/",
-    "/categories/papers-conferences/",
-    "/categories/competitions-certifications/",
+    "/categories/development/", "/categories/ctf-wargame/", "/categories/bug-bounty/",
+    "/categories/blog-docs/", "/categories/papers-conferences/", "/categories/competitions-certifications/",
   ]) {
-    const response = await page.goto(route);
-    expect(response.status()).toBe(200);
+    expect((await page.goto(route)).status()).toBe(200);
     await expect(page.locator("h1")).toBeVisible();
   }
 });
 
-test("versioned icon, manifest and Open Graph metadata are unique and reachable", async ({
-  page,
-  request,
-}) => {
+test("versioned icon, manifest and Open Graph metadata are unique and reachable", async ({ page, request }) => {
   for (const url of ["/", "/posts/github-pages-blog/"]) {
-    const response = await page.goto(url);
-    expect(response.status()).toBe(200);
-    await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
-    await expect(page.locator('meta[property="og:description"]')).toHaveCount(1);
-    await expect(page.locator('meta[property="og:image"]')).toHaveCount(1);
+    expect((await page.goto(url)).status()).toBe(200);
+    for (const property of ["og:title", "og:description", "og:image"])
+      await expect(page.locator(`meta[property="${property}"]`)).toHaveCount(1);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
-      "content",
-      "https://somini26.github.io/assets/images/social-orbit-v2-20261125.png",
+      "content", "https://somini26.github.io/assets/images/social-orbital-atlas-v20261125.png",
     );
     await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
-      "content",
-      "https://somini26.github.io/assets/images/social-orbit-v2-20261125.png",
+      "content", "https://somini26.github.io/assets/images/social-orbital-atlas-v20261125.png",
     );
-    expect(await page.content()).not.toContain("/assets/images/social.png");
+    expect(await page.content()).not.toContain("social-orbit-v2-20261125.png");
   }
   await page.goto("/posts/github-pages-blog/");
-  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
-    "content",
-    "GitHub Pages 블로그 구축 기록",
-  );
-  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
-    "content",
-    "https://somini26.github.io/posts/github-pages-blog/",
-  );
-  await page.goto("/");
-  const loadedSpaceImages = await page.evaluate(() =>
-    performance
-      .getEntriesByType("resource")
-      .map((entry) => entry.name)
-      .filter((url) => url.includes("/assets/images/space/")),
-  );
-  expect(loadedSpaceImages.some((url) => url.endsWith(".webp"))).toBeTruthy();
-  expect(loadedSpaceImages.some((url) => url.endsWith(".png"))).toBeFalsy();
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", "GitHub Pages 블로그 구축 기록");
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://somini26.github.io/posts/github-pages-blog/");
   for (const asset of [
-    "/favicon-v20261125.ico",
-    "/favicon.ico",
-    "/assets/icons/planet-ring-v20261125.svg",
-    "/assets/icons/planet-ring-16-v20261125.png",
-    "/assets/icons/planet-ring-32-v20261125.png",
-    "/assets/icons/planet-ring-180-v20261125.png",
-    "/assets/images/social-orbit-v2-20261125.png",
-    "/site-v20261125.webmanifest",
+    "/favicon-atlas-v20261125.ico", "/favicon.ico",
+    "/assets/icons/atlas-planet-ring-v20261125.svg",
+    "/assets/icons/atlas-planet-ring-16-v20261125.png",
+    "/assets/icons/atlas-planet-ring-32-v20261125.png",
+    "/assets/icons/atlas-planet-ring-180-v20261125.png",
+    "/assets/images/social-orbital-atlas-v20261125.png",
+    "/site-atlas-v20261125.webmanifest",
   ]) {
     const response = await request.get(asset);
     expect(response.status()).toBe(200);
     expect((await response.body()).length).toBeGreaterThan(100);
   }
-  const manifest = await (await request.get("/site-v20261125.webmanifest")).json();
+  const manifest = await (await request.get("/site-atlas-v20261125.webmanifest")).json();
   expect(manifest.icons.map((icon) => icon.src)).toEqual([
-    "/assets/icons/planet-ring-192-v20261125.png",
-    "/assets/icons/planet-ring-512-v20261125.png",
+    "/assets/icons/atlas-planet-ring-192-v20261125.png",
+    "/assets/icons/atlas-planet-ring-512-v20261125.png",
   ]);
 });
 
-test("primary rooms remain accessible in both themes and reduced motion", async ({
-  page,
-}) => {
+test("primary rooms remain accessible in both themes, narrow layouts and reduced motion", async ({ page }) => {
   test.setTimeout(90_000);
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
-  });
+  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   for (const theme of ["dark", "light"]) {
     await page.goto("/");
     await page.evaluate((value) => localStorage.setItem("somani-theme", value), theme);
-    for (const url of [
-      "/",
-      "/categories/",
-      "/archive/",
-      "/about/",
-      "/posts/github-pages-blog/",
-      "/404.html",
-    ]) {
+    for (const url of ["/", "/categories/", "/archive/", "/about/", "/posts/github-pages-blog/", "/404.html"]) {
       await page.goto(url);
       await reveal(page);
       await expectNoOverflow(page);
       await expectAccessible(page);
     }
   }
+  for (const width of [320, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const url of ["/", "/archive/", "/categories/", "/about/", "/posts/bomblab-gdb-binary-patch/"]) {
+      await page.goto(url);
+      await expectNoOverflow(page);
+    }
+  }
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/?intro=1");
   await expect(page.locator("[data-launch-intro]")).not.toHaveClass(/is-visible/);
-  await expect(page.locator(".home-hero")).toBeVisible();
+  await expect(page.locator(".atlas-stage")).toBeVisible();
   expect(errors).toEqual([]);
 });

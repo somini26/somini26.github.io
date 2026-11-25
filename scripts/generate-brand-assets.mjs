@@ -5,61 +5,24 @@ import { chromium } from "@playwright/test";
 const root = process.cwd();
 const iconDir = path.join(root, "src/assets/icons");
 const imageDir = path.join(root, "src/assets/images");
-const svgPath = path.join(iconDir, "planet-ring-v20261125.svg");
-const backgroundPath = path.join(
-  imageDir,
-  "space/orbit-observatory-dark-v20261125.png",
-);
+const atlasDir = path.join(imageDir, "atlas");
+const svgPath = path.join(iconDir, "atlas-planet-ring-v20261125.svg");
 const svg = fs.readFileSync(svgPath, "utf8");
-const background = fs.readFileSync(backgroundPath).toString("base64");
+const asset = (name) =>
+  `data:image/webp;base64,${fs.readFileSync(path.join(atlasDir, name)).toString("base64")}`;
+const crystal = asset("atlas-crystal-v20261125.webp");
+const development = asset("atlas-development-v20261125.webp");
+const ctf = asset("atlas-ctf-wargame-v20261125.webp");
+const documents = asset("atlas-blog-docs-v20261125.webp");
 const browser = await chromium.launch({ headless: true });
 
-async function renderWebp(input, output, quality = 0.84) {
-  const source = fs.readFileSync(input).toString("base64");
-  const context = await browser.newContext({ viewport: { width: 32, height: 32 } });
-  const page = await context.newPage();
-  await page.setContent(`<img src="data:image/png;base64,${source}">`);
-  const encoded = await page.locator("img").evaluate(
-    async (image, imageQuality) => {
-      if (!image.complete) await image.decode();
-      const canvas = document.createElement("canvas");
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
-      canvas.getContext("2d").drawImage(image, 0, 0);
-      return canvas.toDataURL("image/webp", imageQuality).split(",")[1];
-    },
-    quality,
-  );
-  fs.writeFileSync(output, Buffer.from(encoded, "base64"));
-  await context.close();
-}
-
-for (const name of [
-  "station-launch-v20261125",
-  "station-bridge-dark-v20261125",
-  "station-bridge-light-v20261125",
-  "orbit-observatory-dark-v20261125",
-  "orbit-observatory-light-v20261125",
-]) {
-  await renderWebp(
-    path.join(imageDir, `space/${name}.png`),
-    path.join(imageDir, `space/${name}.webp`),
-  );
-}
-
 async function renderIcon(size) {
-  const context = await browser.newContext({
-    viewport: { width: size, height: size },
-    deviceScaleFactor: 1,
-  });
+  const context = await browser.newContext({ viewport: { width: size, height: size } });
   const page = await context.newPage();
   await page.setContent(
     `<style>*{box-sizing:border-box}html,body{margin:0;width:${size}px;height:${size}px;background:transparent}svg{display:block;width:100%;height:100%;padding:${Math.max(0, Math.round(size * 0.055))}px}</style>${svg}`,
   );
-  const output = path.join(
-    iconDir,
-    `planet-ring-${size}-v20261125.png`,
-  );
+  const output = path.join(iconDir, `atlas-planet-ring-${size}-v20261125.png`);
   await page.screenshot({ path: output, omitBackground: true });
   await context.close();
   return fs.readFileSync(output);
@@ -77,10 +40,7 @@ header.writeUInt16LE(1, 2);
 header.writeUInt16LE(2, 4);
 const entries = Buffer.alloc(32);
 let offset = 6 + entries.length;
-for (const [index, [size, png]] of [
-  [16, png16],
-  [32, png32],
-].entries()) {
+for (const [index, [size, png]] of [[16, png16], [32, png32]].entries()) {
   const base = index * 16;
   entries.writeUInt8(size, base);
   entries.writeUInt8(size, base + 1);
@@ -93,23 +53,22 @@ for (const [index, [size, png]] of [
   offset += png.length;
 }
 const ico = Buffer.concat([header, entries, png16, png32]);
-fs.writeFileSync(path.join(root, "src/favicon-v20261125.ico"), ico);
-// Keep the conventional root fallback for user agents that never inspect <link>.
+fs.writeFileSync(path.join(root, "src/favicon-atlas-v20261125.ico"), ico);
+// Keep the conventional fallback synchronized for user agents that skip <link>.
 fs.writeFileSync(path.join(root, "src/favicon.ico"), ico);
 
-const context = await browser.newContext({
-  viewport: { width: 1200, height: 630 },
-  deviceScaleFactor: 1,
-});
+const context = await browser.newContext({ viewport: { width: 1200, height: 630 } });
 const page = await context.newPage();
 await page.setContent(`<!doctype html><html lang="ko"><style>
-*{box-sizing:border-box}html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#090b16;color:#eef0f8;font-family:Arial,"Malgun Gothic",sans-serif}
-.scene{position:absolute;inset:0;background:url(data:image/png;base64,${background}) center/cover no-repeat}
-.shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,11,22,.99) 0%,rgba(9,11,22,.96) 38%,rgba(9,11,22,.26) 72%,rgba(9,11,22,.02) 100%)}
-.content{position:absolute;left:76px;top:70px;width:625px}.mark{display:flex;align-items:center;gap:16px;color:#adb4c8;font-size:15px;font-weight:700;letter-spacing:.15em}.mark svg{width:56px;height:56px}.eyebrow{margin:72px 0 13px;color:#a695f5;font-size:15px;font-weight:700;letter-spacing:.17em}.title{margin:0;font-size:72px;line-height:1.03;letter-spacing:-.055em}.title em{color:#bcafff;font-style:normal}.desc{width:570px;margin:24px 0 0;color:#adb4c8;font-size:21px;line-height:1.55;word-break:keep-all}.line{position:absolute;left:76px;right:76px;bottom:55px;height:1px;background:rgba(166,149,245,.28)}
-</style><body><div class="scene"></div><div class="shade"></div><main class="content"><div class="mark">${svg}<span>ORBITAL OBSERVATORY</span></div><p class="eyebrow">SOMANI'S PERSONAL ARCHIVE</p><h1 class="title">somani's <em>archive</em></h1><p class="desc">개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부하며 새롭게 배운 내용과 직접 경험한 것을 기록합니다.</p></main><div class="line"></div></body></html>`);
-await page.screenshot({
-  path: path.join(imageDir, "social-orbit-v2-20261125.png"),
-});
+*{box-sizing:border-box}html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#17091f;color:#fbf7ff;font-family:Arial,"Malgun Gothic",sans-serif}
+body{background:radial-gradient(circle at 75% 46%,rgba(143,47,202,.23),transparent 315px),linear-gradient(145deg,#1c0b26,#0c0612)}
+.stars{position:absolute;inset:0;opacity:.42;background-image:radial-gradient(circle at 12% 21%,#fff 0 1px,transparent 1.4px),radial-gradient(circle at 88% 16%,#e9c9ff 0 1px,transparent 1.4px),radial-gradient(circle at 92% 75%,#fff 0 1px,transparent 1.4px);background-size:270px 240px,350px 310px,420px 360px}
+.header{position:absolute;left:62px;right:62px;top:36px;height:66px;display:flex;align-items:center;border-bottom:1px solid rgba(217,157,255,.28)}
+.header svg{width:48px;height:48px;margin-right:12px}.brand{font-size:23px;font-weight:700;letter-spacing:-.035em}.nav{margin-left:auto;color:#c9afd9;font-size:13px;letter-spacing:.08em;word-spacing:22px}
+.copy{position:absolute;left:70px;top:164px;width:510px}.eyebrow{margin:0 0 20px;color:#cc86ff;font-size:14px;font-weight:700;letter-spacing:.2em}.copy h1{margin:0;font-size:67px;line-height:1.06;letter-spacing:-.058em}.copy h1 span{display:block;color:#d5a2fb}.desc{width:470px;margin:25px 0 0;color:#ceb8da;font-size:19px;line-height:1.65;word-break:keep-all}.url{margin-top:33px;color:#bf76ef;font-size:14px;letter-spacing:.08em}
+.atlas{position:absolute;right:-18px;top:90px;width:650px;height:520px}.atlas svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.atlas ellipse,.atlas path{fill:none;stroke:#bc6cf0;stroke-width:1;opacity:.5}.atlas path{stroke-dasharray:5 8;opacity:.34}.crystal{position:absolute;left:182px;top:88px;width:300px;height:300px;object-fit:contain;filter:drop-shadow(0 0 28px rgba(189,79,255,.43))}.object{position:absolute;width:108px;height:108px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(180,74,245,.37))}.one{left:23px;top:140px}.two{right:6px;top:127px}.three{left:105px;bottom:8px}.node{position:absolute;width:7px;height:7px;border-radius:50%;background:#fff;border:2px solid #bc6cf0;box-shadow:0 0 13px #b84fff}.n1{left:110px;top:134px}.n2{right:106px;top:115px}.n3{left:197px;bottom:65px}
+.line{position:absolute;left:70px;bottom:46px;width:420px;height:1px;background:linear-gradient(90deg,#bc6cf0,transparent)}
+</style><body><div class="stars"></div><header class="header">${svg}<span class="brand">somani's archive</span><span class="nav">HOME CATEGORIES ARCHIVE ABOUT</span></header><main class="copy"><p class="eyebrow">ORBITAL ATLAS · PERSONAL ARCHIVE</p><h1>somani's <span>archive</span></h1><p class="desc">개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부하며 새롭게 배운 내용과 직접 경험한 것을 기록합니다.</p><p class="url">SOMINI26.GITHUB.IO</p></main><section class="atlas" aria-hidden="true"><svg viewBox="0 0 650 520"><ellipse cx="330" cy="265" rx="280" ry="130" transform="rotate(-10 330 265)"/><ellipse cx="330" cy="265" rx="225" ry="205" transform="rotate(22 330 265)"/><path d="M30 335C165 495 510 450 630 170"/></svg><img class="crystal" src="${crystal}"><img class="object one" src="${development}"><img class="object two" src="${ctf}"><img class="object three" src="${documents}"><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i></section><div class="line"></div></body></html>`);
+await page.screenshot({ path: path.join(imageDir, "social-orbital-atlas-v20261125.png") });
 await context.close();
 await browser.close();

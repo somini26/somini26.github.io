@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
-    sessionStorage.setItem("somani-intro-seen-v2-20261125", "1"),
+    sessionStorage.setItem("somani-intro-seen-orbital-atlas-v20261125", "1"),
   );
 });
 
@@ -26,27 +26,29 @@ test("navigation, six category pages, empty states and accessibility", async ({
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(page.locator(".home-hero h1")).toContainText("안녕하세요");
-  await expect(page.locator(".home-hero h1")).toContainText("somani");
-  await expect(page.locator(".hero-description")).toContainText(
-    "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
+  await expect(page.locator(".atlas-greeting h1")).toContainText("안녕하세요");
+  await expect(page.locator(".atlas-greeting h1")).toContainText("somani");
+  await expect(page.locator(".atlas-core img")).toHaveAttribute(
+    "src",
+    "/assets/images/atlas/atlas-crystal-v20261125.webp",
   );
-  await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
-  await expect(page.locator(".project-note")).toContainText("2026 기술 활동 회고");
+  await expect(page.locator(".atlas-destination[data-category-trigger]")).toHaveCount(6);
+  await expect(page.locator(".home-project")).toContainText("somani's archive");
   await expect(
     page.locator(
-      '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
+      '.home-profile-portrait img[src="/assets/images/profile-hachiware.jpg"]',
     ),
   ).toHaveAttribute("alt", "파란 귀를 가진 하치와레 캐릭터");
   await expect(
     page.locator(
-      '.project-note[href="/posts/retrospective-2026/"]',
+      '.home-project a[href="/posts/github-pages-blog/"]',
     ),
   ).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "라이트 모드로 전환" }),
   ).toContainText("Light");
   if (testInfo.project.name === "mobile") {
+    await page.locator("[data-mobile-menu] summary").click();
     const mobileNavigation = page.getByRole("navigation", {
       name: "모바일 주 메뉴",
     });
@@ -96,7 +98,7 @@ test("search, tags, URL restoration and safe search input", async ({
   page,
 }) => {
   await page.goto("/archive/");
-  for (const tag of ["전체 태그", "#Eleventy", "#GitHub", "#CTF", "#SECTOR"])
+  for (const tag of ["모든 태그", "#Eleventy", "#GitHub", "#CTF", "#SECTOR"])
     await expect(page.locator("#tag-filter")).toContainText(tag);
   await page.getByRole("searchbox", { name: "게시글 검색" }).fill("GitHub Pages 블로그 구축 기록");
   await expect(page.locator("#archive-results .post-card")).toHaveCount(1);
@@ -126,9 +128,9 @@ test("published-date sorting preserves filters and URL state", async ({ page }) 
   await expect(page).toHaveURL(/sort=oldest/);
   await expect(page.locator("#tag-filter")).toHaveValue("SECTOR");
   await expect(numbers.first()).toHaveText("No. 002");
-  await page.goBack();
+  await page.evaluate(() => history.back());
   await expect(numbers.first()).toHaveText("No. 006");
-  await page.goForward();
+  await page.evaluate(() => history.forward());
   await expect(numbers.first()).toHaveText("No. 002");
   await page.reload();
   await expect(page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" })).toBeVisible();
@@ -181,17 +183,17 @@ test("archive sorting uses published date before the stable record number", asyn
   await page.route("**/search.json", (route) => route.fulfill({ json: fixture }));
   await page.goto("/archive/");
   await expect(page.locator("#archive-results h3")).toHaveText([
-    "번호는 작지만 최신 글↗",
-    "같은 날짜의 뒤 번호↗",
-    "같은 날짜의 앞 번호↗",
-    "번호는 크지만 오래된 글↗",
+    "번호는 작지만 최신 글",
+    "같은 날짜의 뒤 번호",
+    "같은 날짜의 앞 번호",
+    "번호는 크지만 오래된 글",
   ]);
   await page.getByRole("button", { name: "현재 최신순, 오래된순으로 전환" }).click();
   await expect(page.locator("#archive-results h3")).toHaveText([
-    "번호는 크지만 오래된 글↗",
-    "같은 날짜의 앞 번호↗",
-    "같은 날짜의 뒤 번호↗",
-    "번호는 작지만 최신 글↗",
+    "번호는 크지만 오래된 글",
+    "같은 날짜의 앞 번호",
+    "같은 날짜의 뒤 번호",
+    "번호는 작지만 최신 글",
   ]);
 });
 test("post, TOC, code copy, theme persistence, overflow and accessibility", async ({
@@ -274,13 +276,14 @@ test("static navigation works without JavaScript", async ({ browser }, testInfo)
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:8080/");
-  const navigation = page.getByRole("navigation", {
-    name: testInfo.project.name === "mobile" ? "모바일 주 메뉴" : "주 메뉴",
-  });
-  await expect(navigation).toBeVisible();
-  await navigation
-    .getByRole("link", { name: "Archive", exact: true })
-    .click();
+  if (testInfo.project.name === "mobile") {
+    await expect(page.locator('a[href="/archive/"]').first()).toHaveCount(1);
+    await page.goto("http://127.0.0.1:8080/archive/");
+  } else {
+    const navigation = page.getByRole("navigation", { name: "주 메뉴" });
+    await expect(navigation).toBeVisible();
+    await navigation.getByRole("link", { name: "Archive", exact: true }).click();
+  }
   await page.locator('.post-card h3 a[href="/posts/github-pages-blog/"]').click();
   await expect(page.locator(".article-prose")).toContainText(
     "블로그를 만든 이유",

@@ -1,0 +1,7 @@
+{% if category.slug == 'development' %}{% set atlasAsset = 'development' %}
+{% elif category.slug == 'ctf-wargame' %}{% set atlasAsset = 'ctf-wargame' %}
+{% elif category.slug == 'bug-bounty' %}{% set atlasAsset = 'bug-bounty' %}
+{% elif category.slug == 'blog-docs' %}{% set atlasAsset = 'blog-docs' %}
+{% elif category.slug == 'papers-conferences' %}{% set atlasAsset = 'papers-conferences' %}
+{% else %}{% set atlasAsset = 'competitions-certifications' %}{% endif %}
+<img class="atlas-object-image" src="/assets/images/atlas/atlas-{{ atlasAsset }}-v20261125.webp" alt="" width="560" height="560" loading="{% if eagerAtlasObject %}eager{% else %}lazy{% endif %}" decoding="async">

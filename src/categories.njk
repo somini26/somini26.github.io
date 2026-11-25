@@ -4,20 +4,11 @@ title: Categories
 description: 학습하고 기록하는 6개의 연구 분야입니다.
 permalink: /categories/
 ---
-<header class="page-heading" data-reveal>
-  <p class="section-kicker">RESEARCH AREAS</p>
-  <h1>Categories</h1>
-  <p>{{ description }} 관심 있는 분야의 글을 모아 볼 수 있습니다.</p>
-</header>
-<ol class="topic-directory" data-reveal>
-  {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
-  <li>
-    <a href="/categories/{{ category.slug }}/">
-      <span class="topic-icon">{% include 'category-icon.njk' %}</span>
-      <span class="topic-name"><small>{{ category.label }}</small><strong>{{ category.name }}</strong><span>{{ category.description }}</span></span>
-      <span class="topic-count">{{ categoryPosts | length }}개의 기록</span>
-      <span class="topic-arrow" aria-hidden="true">›</span>
-    </a>
-  </li>
-  {% endfor %}
-</ol>
+<div class="atlas-page categories-page">
+  <header class="orbital-page-heading" data-reveal><div><p>Orbital Atlas / Categories</p><h1>Categories</h1><span>관심 있는 분야의 실제 기록을 목적지별로 탐색할 수 있습니다.</span></div><div class="heading-crystal" aria-hidden="true"><svg viewBox="0 0 360 180"><ellipse cx="180" cy="90" rx="155" ry="63"/><ellipse cx="180" cy="90" rx="105" ry="40"/></svg><img src="/assets/images/atlas/atlas-crystal-v20261125.webp" alt="" width="720" height="720"></div></header>
+  <ol class="topic-directory" data-reveal>
+    {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}{% set eagerAtlasObject = false %}
+    <li><a href="/categories/{{ category.slug }}/" data-category-trigger data-route="{{ category.slug }}"><span class="topic-object">{% include 'atlas-object.njk' %}</span><span class="topic-copy"><small>{{ category.label }}</small><strong>{{ category.name }}</strong><span>{{ category.description }}</span></span><span class="topic-count">{{ categoryPosts | length }}개의 기록</span><i aria-hidden="true">→</i></a></li>
+    {% endfor %}
+  </ol>
+</div>

@@ -20,6 +20,19 @@ const strip = (value) =>
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+const recordNumber = (post) => {
+  const value = Number(post?.data?.recordOrder ?? post?.recordOrder);
+  return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+};
+const postDate = (post) => {
+  const value = new Date(post?.date).getTime();
+  return Number.isFinite(value) ? value : 0;
+};
+const postUrl = (post) => String(post?.url || "");
+const comparePostsAscending = (a, b) =>
+  postDate(a) - postDate(b) ||
+  recordNumber(a) - recordNumber(b) ||
+  postUrl(a).localeCompare(postUrl(b));
 export default function (config) {
   config.setNunjucksEnvironmentOptions({ autoescape: true });
   config.addPassthroughCopy("src/assets");
@@ -30,7 +43,14 @@ export default function (config) {
     "src/favicon-v20261125.ico": "favicon-v20261125.ico",
   });
   config.addPassthroughCopy({
+    "src/favicon-atlas-v20261125.ico": "favicon-atlas-v20261125.ico",
+  });
+  config.addPassthroughCopy({
     "src/site-v20261125.webmanifest": "site-v20261125.webmanifest",
+  });
+  config.addPassthroughCopy({
+    "src/site-atlas-v20261125.webmanifest":
+      "site-atlas-v20261125.webmanifest",
   });
   const md = new MarkdownIt({
     html: false,
@@ -57,12 +77,7 @@ export default function (config) {
     api
       .getFilteredByGlob("src/posts/*.md")
       .filter((p) => !p.data.draft)
-      .sort(
-        (a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime() ||
-          Number(b.data.recordOrder) - Number(a.data.recordOrder) ||
-          a.url.localeCompare(b.url),
-      ),
+      .sort((a, b) => comparePostsAscending(b, a)),
   );
   config.addFilter("dateISO", (d) => new Date(d).toISOString().slice(0, 10));
   config.addFilter("dateRSS", (d) => new Date(d).toUTCString());
@@ -86,15 +101,35 @@ export default function (config) {
   config.addFilter("recordLabel", (value) =>
     String(Number(value) || 0).padStart(3, "0"),
   );
-  config.addFilter("previousRecord", (posts, recordOrder) =>
-    [...posts]
-      .filter((post) => Number(post.data.recordOrder) < Number(recordOrder))
-      .sort((a, b) => b.data.recordOrder - a.data.recordOrder)[0],
-  );
-  config.addFilter("nextRecord", (posts, recordOrder) =>
-    [...posts]
-      .filter((post) => Number(post.data.recordOrder) > Number(recordOrder))
-      .sort((a, b) => a.data.recordOrder - b.data.recordOrder)[0],
+  config.addFilter("previousRecord", (posts, currentUrl) => {
+    const ordered = [...posts].sort(comparePostsAscending);
+    const index = ordered.findIndex((post) => post.url === currentUrl);
+    return index > 0 ? ordered[index - 1] : undefined;
+  });
+  config.addFilter("nextRecord", (posts, currentUrl) => {
+    const ordered = [...posts].sort(comparePostsAscending);
+    const index = ordered.findIndex((post) => post.url === currentUrl);
+    return index >= 0 && index < ordered.length - 1
+      ? ordered[index + 1]
+      : undefined;
+  });
+  config.addFilter(
+    "relatedPosts",
+    (posts, currentCategories, currentUrl, previousUrl, nextUrl) => {
+      const categories = new Set(currentCategories || []);
+      const candidates = [...posts]
+        .filter(
+          (post) =>
+            post.url !== currentUrl &&
+            (post.data.categories || []).some((name) => categories.has(name)),
+        )
+        .sort((a, b) => comparePostsAscending(b, a));
+      const adjacent = new Set([previousUrl, nextUrl].filter(Boolean));
+      return [
+        ...candidates.filter((post) => !adjacent.has(post.url)),
+        ...candidates.filter((post) => adjacent.has(post.url)),
+      ].slice(0, 3);
+    },
   );
   config.addFilter("json", (value) =>
     JSON.stringify(value).replace(/</g, "\\u003c"),

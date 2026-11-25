@@ -3,7 +3,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { chromium } from "@playwright/test";
 
-const outputDirectory = path.resolve("test-results/v2-review");
+const outputDirectory = path.resolve("test-results/orbital-atlas-review");
 const temporaryDirectory = path.join(outputDirectory, "video-temp");
 fs.mkdirSync(temporaryDirectory, { recursive: true });
 const server = spawn("npm", ["run", "dev", "--", "--port=8080"], {
@@ -31,9 +31,11 @@ try {
     recordVideo: { dir: temporaryDirectory, size: { width: 1280, height: 720 } },
   });
   const page = await context.newPage();
+  await page.addInitScript(() => sessionStorage.removeItem("somani-intro-seen-orbital-atlas-v20261125"));
   await page.goto("http://127.0.0.1:8080/?intro=1");
-  await page.waitForTimeout(1900);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(1500);
+  await page.locator(".atlas-destination").first().hover();
+  await page.waitForTimeout(600);
   await page.getByRole("navigation", { name: "주 메뉴" }).getByRole("link", { name: "Categories" }).click();
   await page.waitForURL("**/categories/");
   await page.waitForTimeout(1000);
@@ -45,7 +47,7 @@ try {
   const video = page.video();
   await page.close();
   await context.close();
-  await video.saveAs(path.join(outputDirectory, "orbit-observatory-tour-v2-20261125.webm"));
+  await video.saveAs(path.join(outputDirectory, "orbital-atlas-tour-v20261125.webm"));
 } finally {
   await browser?.close();
   try {

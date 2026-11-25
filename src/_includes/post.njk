@@ -1,28 +1,23 @@
 ---
 layout: base.njk
 ---
+{% set previousPost = collections.posts | previousRecord(page.url) %}
+{% set nextPost = collections.posts | nextRecord(page.url) %}
+{% set related = collections.posts | relatedPosts(categories, page.url, previousPost.url, nextPost.url) %}
 <div class="reading-progress" aria-hidden="true"></div>
 <article class="article" data-article>
   <header class="article-header">
     <a class="article-back" href="/archive/">← 전체 기록</a>
-    <p class="article-label"><span>No. {{ recordOrder | recordLabel }}</span><time datetime="{{ date | dateISO }}">{{ date | dateISO }}</time></p>
-    <h1>{{ title }}</h1>
-    <p class="article-description">{{ description }}</p>
-    <div class="article-meta"><span>{{ content | readingTime }}분 읽기</span>{% for category in categories %}<a href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}</div>
-    <div class="article-tags">{% for tag in tags %}<a href="/archive/?tag={{ tag | urlencode }}">#{{ tag }}</a>{% endfor %}</div>
+    <div class="article-heading-grid"><div><h1>{{ title }}</h1><p class="article-label"><time datetime="{{ date | dateISO }}">{{ date | dateISO }}</time><span>·</span>{% for category in categories %}<a href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}<span>·</span><span>No. {{ recordOrder | recordLabel }}</span></p><div class="article-tags">{% for tag in tags %}<a href="/archive/?tag={{ tag | urlencode }}">#{{ tag }}</a>{% endfor %}</div></div><img src="/assets/images/atlas/atlas-blog-docs-v20261125.webp" alt="" width="560" height="560" aria-hidden="true"></div>
   </header>
   <div class="article-layout">
     <div class="article-prose" id="post-content" data-article-prose>{{ content | safe }}</div>
-    {% set previousPost = collections.posts | previousRecord(recordOrder) %}{% set nextPost = collections.posts | nextRecord(recordOrder) %}
     <aside class="article-rail" aria-label="게시글 보조 정보">
-      <details class="toc-panel" open><summary>목차 <span>이 글에서</span></summary><nav data-article-toc aria-label="게시글 목차"></nav></details>
-      <nav class="record-navigation" aria-label="글 탐색">
-        <div class="toc-heading"><span>글 탐색</span><span>전체 기록에서</span></div>
-        {% if previousPost %}<a href="{{ previousPost.url }}"><small>이전 글 · {{ previousPost.data.recordOrder | recordLabel }}</small><span>{{ previousPost.data.title }}</span></a>{% endif %}
-        <div class="current-record" aria-current="page"><small>현재 글 · {{ recordOrder | recordLabel }}</small><span>{{ title }}</span></div>
-        {% if nextPost %}<a href="{{ nextPost.url }}"><small>다음 글 · {{ nextPost.data.recordOrder | recordLabel }}</small><span>{{ nextPost.data.title }}</span></a>{% endif %}
-      </nav>
+      <details class="toc-panel" open><summary><strong>목차</strong><span>이 글에서</span></summary><nav class="toc-scroll" data-article-toc aria-label="게시글 목차"></nav></details>
+      <nav class="record-navigation" aria-label="글 탐색"><h2>글 탐색</h2>{% if previousPost %}<a href="{{ previousPost.url }}"><small>이전 글 · {{ previousPost.data.recordOrder | recordLabel }}</small><span>{{ previousPost.data.title }}</span><time datetime="{{ previousPost.date | dateISO }}">{{ previousPost.date | dateISO }}</time></a>{% endif %}<div class="current-record" aria-current="page"><small>현재 글 · {{ recordOrder | recordLabel }}</small><span>{{ title }}</span></div>{% if nextPost %}<a href="{{ nextPost.url }}"><small>다음 글 · {{ nextPost.data.recordOrder | recordLabel }}</small><span>{{ nextPost.data.title }}</span><time datetime="{{ nextPost.date | dateISO }}">{{ nextPost.date | dateISO }}</time></a>{% endif %}</nav>
+      <nav class="related-posts" aria-label="같은 카테고리의 다른 글"><h2>같은 카테고리의 다른 글</h2>{% for item in related %}<a href="{{ item.url }}"><span>{{ item.data.title }}</span><i aria-hidden="true">→</i></a>{% else %}<p>같은 카테고리의 다른 공개 글이 없습니다.</p>{% endfor %}</nav>
       <a class="article-rail-link" href="/archive/">전체 기록으로 돌아가기 →</a>
     </aside>
+    <nav class="article-bottom-navigation" aria-label="본문 아래 글 이동"><div>{% if previousPost %}<a href="{{ previousPost.url }}"><small>← 이전 글</small><strong>{{ previousPost.data.title }}</strong></a>{% endif %}</div><a class="all-records" href="/archive/">전체 기록</a><div>{% if nextPost %}<a href="{{ nextPost.url }}"><small>다음 글 →</small><strong>{{ nextPost.data.title }}</strong></a>{% endif %}</div></nav>
   </div>
 </article>

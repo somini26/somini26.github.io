@@ -1,6 +1,6 @@
-<article class="post-card">
-  <div class="post-meta"><span>No. {{ post.data.recordOrder | recordLabel }}</span><span>·</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><span>·</span><span>{{ post.templateContent | readingTime }}분 읽기</span></div>
-  <h3><a href="{{ post.url }}">{{ post.data.title }}<span aria-hidden="true">↗</span></a></h3>
-  <p>{{ post.data.description }}</p>
-  <div class="post-bottom"><div class="tags">{% for tag in post.data.tags %}<a href="/archive/?tag={{ tag | urlencode }}">#{{ tag }}</a>{% endfor %}</div><div class="category-links">{% for category in post.data.categories %}<a class="category-label" href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}</div></div>
+<article class="post-card" data-record-order="{{ post.data.recordOrder }}">
+  <time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time>
+  <div class="post-row-copy"><h3><a href="{{ post.url }}">{{ post.data.title }}</a></h3><div class="post-meta"><span>No. {{ post.data.recordOrder | recordLabel }}</span><span>{{ post.templateContent | readingTime }}분 읽기</span>{% for tag in post.data.tags | take(3) %}<a href="/archive/?tag={{ tag | urlencode }}">#{{ tag }}</a>{% endfor %}</div></div>
+  <div class="category-links">{% for category in post.data.categories %}<a href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}</div>
+  <a class="post-row-arrow" href="{{ post.url }}" aria-label="{{ post.data.title }} 읽기">→</a>
 </article>

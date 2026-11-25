@@ -1,20 +1,27 @@
-<header class="page-heading archive-heading" data-reveal>
-  <p class="section-kicker">{% if activeCategory %}CATEGORY ARCHIVE{% else %}WRITING ARCHIVE{% endif %}</p>
-  <h1>{{ title }}</h1>
-  <p>{{ description }}</p>
-</header>
-<section class="archive-content surface" data-archive data-category="{{ activeCategory or '' }}" data-reveal aria-label="게시글 목록">
-  <div class="archive-controls">
-    <form class="search-form" role="search"><label for="search" class="sr-only">게시글 검색</label><span aria-hidden="true">⌕</span><input id="search" name="q" type="search" placeholder="글 제목이나 내용을 검색해 보세요..." autocomplete="off"><button type="submit">검색</button></form>
-    <button class="sort-toggle" id="sort-toggle" type="button" aria-label="현재 최신순, 오래된순으로 전환">최신순 ↓</button>
-  </div>
-  <div class="filter-bar">
-    <div><label for="category-filter">카테고리</label><select id="category-filter"{% if activeCategory %} data-fixed-category="{{ activeCategory }}"{% endif %}><option value="">전체 카테고리</option>{% for category in topics %}<option value="{{ category.name }}"{% if activeCategory == category.name %} selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></div>
-    <div><label for="tag-filter">태그</label><select id="tag-filter"><option value="">전체 태그</option></select></div>
-    <button class="reset-button" type="button" hidden>필터 초기화 ↺</button>
-  </div>
-  <nav class="category-shortcuts" aria-label="카테고리 바로가기"><a href="/archive/"{% if not activeCategory %} aria-current="page"{% endif %}>전체</a>{% for category in topics %}<a href="/categories/{{ category.slug }}/"{% if activeCategory == category.name %} aria-current="page"{% endif %}>{{ category.name }}</a>{% endfor %}</nav>
-  <div class="results-meta"><span id="result-count" role="status" aria-live="polite">{% if activeCategory %}{{ collections.posts | inCategory(activeCategory) | length }}{% else %}{{ collections.posts | length }}{% endif %}개의 기록</span></div>
-  <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">◇</span><h2>아직 공개된 기록이 없습니다.</h2><a class="text-link" href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
-  <noscript><p class="notice">검색과 태그 필터를 사용하려면 JavaScript를 켜 주세요.</p></noscript>
-</section>
+<div class="atlas-page {% if activeCategory %}category-detail-page{% else %}archive-page{% endif %}">
+  {% if activeCategory %}
+  <header class="category-hero" data-reveal>
+    <div class="category-heading-copy"><p>Categories / {{ activeCategory }}</p><h1>{{ activeCategory }}</h1><strong>{{ collections.posts | inCategory(activeCategory) | length }}개의 기록</strong><span>{{ description }}</span></div>
+    <div class="category-hero-object" aria-hidden="true"><svg viewBox="0 0 700 280"><ellipse cx="350" cy="140" rx="310" ry="104"/><ellipse cx="350" cy="140" rx="220" ry="70"/><path d="M45 166C180 80 505 50 660 150"/></svg>{% for category in topics %}{% if category.name == activeCategory %}{% set eagerAtlasObject = true %}{% include 'atlas-object.njk' %}{% endif %}{% endfor %}</div>
+  </header>
+  <nav class="category-switcher" aria-label="카테고리 전환">{% for item in topics %}<a href="/categories/{{ item.slug }}/"{% if item.name == activeCategory %} aria-current="page"{% endif %}>{{ item.name }}</a>{% endfor %}</nav>
+  {% else %}
+  <header class="archive-hero" data-reveal><div><h1>Archive</h1><p><strong>{{ collections.posts | length }}</strong>개의 기록</p></div><div class="archive-hero-object" aria-hidden="true"><svg viewBox="0 0 420 210"><path d="M5 165C110 35 300 30 415 145"/><ellipse cx="305" cy="132" rx="92" ry="28"/></svg><img src="/assets/images/atlas/atlas-blog-docs-v20261125.webp" alt="" width="560" height="560"></div></header>
+  {% endif %}
+
+  <section class="archive-content" data-archive data-category="{{ activeCategory or '' }}" data-reveal aria-label="게시글 목록">
+    <div class="archive-controls">
+      <form class="search-form" role="search"><label for="search" class="sr-only">게시글 검색</label><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="search" name="q" type="search" placeholder="기록 검색" autocomplete="off"><button type="submit">검색</button></form>
+      <div class="archive-selects">
+        <div><label for="category-filter">카테고리</label><select id="category-filter"{% if activeCategory %} data-fixed-category="{{ activeCategory }}"{% endif %}><option value="">전체</option>{% for item in topics %}<option value="{{ item.name }}"{% if activeCategory == item.name %} selected{% endif %}>{{ item.name }}</option>{% endfor %}</select></div>
+        <div><label for="tag-filter">태그</label><select id="tag-filter"><option value="">모든 태그</option></select></div>
+        <button class="sort-toggle" id="sort-toggle" type="button" aria-label="현재 최신순, 오래된순으로 전환">최신순 ↓</button>
+        <button class="reset-button" type="button" aria-label="필터 초기화" hidden>초기화 ↺</button>
+      </div>
+    </div>
+    {% if not activeCategory %}<nav class="category-shortcuts" aria-label="카테고리 바로가기"><a href="/archive/" aria-current="page">전체</a>{% for item in topics %}<a href="/archive/?category={{ item.name | urlencode }}">{{ item.name }}</a>{% endfor %}</nav>{% endif %}
+    <div class="archive-list-heading"><h2>{% if activeCategory %}기록 목록{% else %}전체 기록{% endif %}</h2><span id="result-count" role="status" aria-live="polite">{% if activeCategory %}{{ collections.posts | inCategory(activeCategory) | length }}{% else %}{{ collections.posts | length }}{% endif %}개의 기록</span></div>
+    <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">◇</span><h2>아직 공개된 기록이 없습니다.</h2><a href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
+    <noscript><p class="notice">검색과 태그 필터를 사용하려면 JavaScript를 켜 주세요.</p></noscript>
+  </section>
+</div>

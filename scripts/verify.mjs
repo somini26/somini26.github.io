@@ -46,13 +46,14 @@ for (const file of html) {
   assert(ogImage?.startsWith("https://"), `${file}: absolute og:image`);
   assert(!ogImage.includes("/assets/images/social.png"), `${file}: stale og:image`);
   assert(!ogImage.includes("social-space-v20261125.png"), `${file}: old space card`);
+  assert(!ogImage.includes("social-orbit-v2-20261125.png"), `${file}: old v2 card`);
   assert(
     document.querySelector('meta[name="twitter:image"]')?.content === ogImage,
     `${file}: twitter:image`,
   );
   assert(
     document.querySelector('link[rel="manifest"]')?.href.endsWith(
-      "/site-v20261125.webmanifest",
+      "/site-atlas-v20261125.webmanifest",
     ),
     `${file}: manifest`,
   );
@@ -68,6 +69,21 @@ for (const file of html) {
         [...code.classList].some((name) => name.startsWith("language-")),
         `${file}: fenced code language missing`,
       );
+    const rail = document.querySelector(".article-rail");
+    const selectors = [
+      ".toc-panel",
+      ".record-navigation",
+      ".related-posts",
+      ".article-rail-link",
+    ];
+    assert(rail, `${file}: right rail missing`);
+    const positions = selectors.map((selector) =>
+      [...rail.children].findIndex((node) => node.matches(selector)),
+    );
+    assert(positions.every((position) => position >= 0), `${file}: right rail section missing`);
+    assert.deepEqual(positions, [...positions].sort((a, b) => a - b), `${file}: right rail order`);
+    assert(document.querySelector(".article-bottom-navigation"), `${file}: bottom navigation missing`);
+    assert(document.querySelectorAll(".related-posts a").length <= 3, `${file}: too many related posts`);
   }
   const ids = new Set();
   for (const node of document.querySelectorAll("[id]")) {
@@ -142,7 +158,12 @@ for (const post of posts) {
       post.categories.every((c) => typeof c === "string"),
   );
 }
-const chronological = [...posts].sort((a, b) => a.recordOrder - b.recordOrder);
+const chronological = [...posts].sort(
+  (a, b) =>
+    new Date(a.date).getTime() - new Date(b.date).getTime() ||
+    Number(a.recordOrder) - Number(b.recordOrder) ||
+    a.url.localeCompare(b.url),
+);
 for (const [index, post] of chronological.entries()) {
   const { document } = parseHTML(
     fs.readFileSync(path.join(root, post.url, "index.html"), "utf8"),
@@ -176,7 +197,7 @@ if (fs.existsSync(sample)) {
     "Syntax highlighting missing",
   );
   const { document } = parseHTML(sampleHtml);
-  const sequence = document.querySelector(".article-label span");
+  const sequence = [...document.querySelectorAll(".article-label span")].at(-1);
   const expectedSequence = String(
     posts.find((post) => post.url === "/posts/github-pages-blog/").recordOrder,
   ).padStart(3, "0");
@@ -187,21 +208,23 @@ if (fs.existsSync(sample)) {
   );
   assert(document.querySelector('.record-navigation[aria-label="글 탐색"]'));
 }
-assert(fs.existsSync(`${root}/assets/images/social-orbit-v2-20261125.png`));
-assert(fs.existsSync(`${root}/assets/icons/planet-ring-v20261125.svg`));
-assert(fs.existsSync(`${root}/assets/icons/planet-ring-16-v20261125.png`));
-assert(fs.existsSync(`${root}/assets/icons/planet-ring-32-v20261125.png`));
-assert(fs.existsSync(`${root}/assets/icons/planet-ring-180-v20261125.png`));
-assert(fs.existsSync(`${root}/assets/icons/planet-ring-192-v20261125.png`));
-assert(fs.existsSync(`${root}/assets/icons/planet-ring-512-v20261125.png`));
-assert(fs.existsSync(`${root}/assets/images/space/station-launch-v20261125.webp`));
-assert(fs.existsSync(`${root}/assets/images/space/station-bridge-dark-v20261125.webp`));
-assert(fs.existsSync(`${root}/assets/images/space/station-bridge-light-v20261125.webp`));
-assert(fs.existsSync(`${root}/assets/images/space/orbit-observatory-dark-v20261125.webp`));
-assert(fs.existsSync(`${root}/assets/images/space/orbit-observatory-light-v20261125.webp`));
+assert(fs.existsSync(`${root}/assets/images/social-orbital-atlas-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/icons/atlas-planet-ring-v20261125.svg`));
+for (const size of [16, 32, 180, 192, 512])
+  assert(fs.existsSync(`${root}/assets/icons/atlas-planet-ring-${size}-v20261125.png`));
+for (const asset of [
+  "atlas-crystal-v20261125.webp",
+  "atlas-ship-v20261125.webp",
+  "atlas-development-v20261125.webp",
+  "atlas-ctf-wargame-v20261125.webp",
+  "atlas-bug-bounty-v20261125.webp",
+  "atlas-blog-docs-v20261125.webp",
+  "atlas-papers-conferences-v20261125.webp",
+  "atlas-competitions-certifications-v20261125.webp",
+]) assert(fs.existsSync(`${root}/assets/images/atlas/${asset}`));
 assert(fs.existsSync(`${root}/favicon.ico`));
-assert(fs.existsSync(`${root}/favicon-v20261125.ico`));
-assert(fs.existsSync(`${root}/site-v20261125.webmanifest`));
+assert(fs.existsSync(`${root}/favicon-atlas-v20261125.ico`));
+assert(fs.existsSync(`${root}/site-atlas-v20261125.webmanifest`));
 assert(fs.existsSync(`${root}/.nojekyll`));
 const sitemap = fs.readFileSync(`${root}/sitemap.xml`, "utf8");
 assert(!sitemap.includes("/404.html"));
