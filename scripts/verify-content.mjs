@@ -37,9 +37,9 @@ try {
     fs
       .readFileSync("_site/posts/verification-only/index.html", "utf8")
       .includes(
-        `<span class="article-sequence" aria-hidden="true">${expectedSequence}</span>`,
+        `<span>No. ${expectedSequence}</span>`,
       ),
-    "게시글 배경 번호가 고정 작성 순번과 일치해야 합니다.",
+    "게시글 메타 번호가 고정 작성 순번과 일치해야 합니다.",
   );
   for (const slug of ["development", "ctf-wargame"]) {
     assert(

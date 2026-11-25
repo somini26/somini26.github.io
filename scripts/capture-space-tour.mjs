@@ -3,7 +3,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { chromium } from "@playwright/test";
 
-const outputDirectory = path.resolve("test-results/space-redesign");
+const outputDirectory = path.resolve("test-results/v2-review");
 const temporaryDirectory = path.join(outputDirectory, "video-temp");
 fs.mkdirSync(temporaryDirectory, { recursive: true });
 const server = spawn("npm", ["run", "dev", "--", "--port=8080"], {
@@ -32,9 +32,8 @@ try {
   });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:8080/?intro=1");
-  await page.waitForTimeout(1700);
-  await page.getByRole("button", { name: /ENTER STATION/ }).click();
-  await page.waitForTimeout(1100);
+  await page.waitForTimeout(1900);
+  await page.waitForTimeout(500);
   await page.getByRole("navigation", { name: "주 메뉴" }).getByRole("link", { name: "Categories" }).click();
   await page.waitForURL("**/categories/");
   await page.waitForTimeout(1000);
@@ -46,7 +45,7 @@ try {
   const video = page.video();
   await page.close();
   await context.close();
-  await video.saveAs(path.join(outputDirectory, "space-station-tour-v20261125.webm"));
+  await video.saveAs(path.join(outputDirectory, "orbit-observatory-tour-v2-20261125.webm"));
 } finally {
   await browser?.close();
   try {

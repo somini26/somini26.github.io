@@ -59,6 +59,7 @@ export default function (config) {
       .filter((p) => !p.data.draft)
       .sort(
         (a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime() ||
           Number(b.data.recordOrder) - Number(a.data.recordOrder) ||
           a.url.localeCompare(b.url),
       ),

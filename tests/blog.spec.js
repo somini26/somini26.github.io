@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
-    sessionStorage.setItem("somani-intro-seen-v20261125", "1"),
+    sessionStorage.setItem("somani-intro-seen-v2-20261125", "1"),
   );
 });
 
@@ -32,7 +32,7 @@ test("navigation, six category pages, empty states and accessibility", async ({
     "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
   );
   await expect(page.locator("[data-category-trigger]")).toHaveCount(6);
-  await expect(page.locator(".project-note")).toContainText("다른 최근 기록");
+  await expect(page.locator(".project-note")).toContainText("2026 기술 활동 회고");
   await expect(
     page.locator(
       '.portrait-frame img[src="/assets/images/profile-hachiware.jpg"]',
@@ -117,7 +117,7 @@ test("search, tags, URL restoration and safe search input", async ({
     "조건에 맞는 기록이 없습니다",
   );
 });
-test("record order sorting preserves filters and URL state", async ({ page }) => {
+test("published-date sorting preserves filters and URL state", async ({ page }) => {
   await page.goto("/archive/?tag=SECTOR");
   const numbers = page.locator("#archive-results .post-meta span:first-child");
   await expect(numbers.first()).toHaveText("No. 006");
@@ -161,6 +161,39 @@ test("gapped fixture keeps record numbers while reversing the list", async ({ pa
     "No. 012", "No. 008", "No. 003",
   ]);
 });
+
+test("archive sorting uses published date before the stable record number", async ({ page }) => {
+  const fixture = [
+    { title: "번호는 크지만 오래된 글", date: "2025-01-01", recordOrder: 30 },
+    { title: "번호는 작지만 최신 글", date: "2026-02-01", recordOrder: 4 },
+    { title: "같은 날짜의 앞 번호", date: "2026-01-01", recordOrder: 8 },
+    { title: "같은 날짜의 뒤 번호", date: "2026-01-01", recordOrder: 12 },
+  ].map((post) => ({
+    ...post,
+    description: "날짜 정렬 검사",
+    url: `/fixture/${post.recordOrder}/`,
+    categories: ["개발"],
+    tags: ["fixture"],
+    readingTime: 1,
+    categoryLinks: [{ name: "개발", slug: "development" }],
+    text: "fixture",
+  }));
+  await page.route("**/search.json", (route) => route.fulfill({ json: fixture }));
+  await page.goto("/archive/");
+  await expect(page.locator("#archive-results h3")).toHaveText([
+    "번호는 작지만 최신 글↗",
+    "같은 날짜의 뒤 번호↗",
+    "같은 날짜의 앞 번호↗",
+    "번호는 크지만 오래된 글↗",
+  ]);
+  await page.getByRole("button", { name: "현재 최신순, 오래된순으로 전환" }).click();
+  await expect(page.locator("#archive-results h3")).toHaveText([
+    "번호는 크지만 오래된 글↗",
+    "같은 날짜의 앞 번호↗",
+    "같은 날짜의 뒤 번호↗",
+    "번호는 작지만 최신 글↗",
+  ]);
+});
 test("post, TOC, code copy, theme persistence, overflow and accessibility", async ({
   page,
   context,
@@ -168,12 +201,15 @@ test("post, TOC, code copy, theme persistence, overflow and accessibility", asyn
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/posts/github-pages-blog/");
   await expect(page.locator(".article-prose .token").first()).toBeVisible();
+  if (testInfo.project.name === "mobile")
+    await page.locator(".toc-panel summary").click();
   await expect(
     page.getByRole("navigation", { name: "게시글 목차" }),
   ).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "글 탐색" })).toContainText(
-    "현재 글 · 001",
-  );
+  if (testInfo.project.name === "desktop")
+    await expect(page.getByRole("navigation", { name: "글 탐색" })).toContainText(
+      "현재 글 · 001",
+    );
   await page
     .getByRole("navigation", { name: "게시글 목차" })
     .getByRole("link", { name: "Markdown 글이 공개되기까지" })

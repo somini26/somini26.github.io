@@ -2,28 +2,19 @@
 layout: base.njk
 ---
 <div class="home-shell">
-  <section class="home-hero bridge-window" aria-labelledby="home-title" data-reveal>
+  <section class="home-hero" aria-labelledby="home-title" data-reveal>
     <div class="hero-copy">
-      <p class="panel-kicker">ORBITAL STATION — SOMANI'S ARCHIVE</p>
-      <h1 id="home-title">안녕하세요, <strong>somani</strong>입니다.</h1>
+      <p class="panel-kicker">PURPLE ORBIT OBSERVATORY</p>
+      <h1 id="home-title">안녕하세요, <span class="hero-name"><strong>somani</strong>입니다.</span></h1>
       <p class="hero-description">다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.</p>
       <ul class="interest-keywords" aria-label="관심 분야"><li>System Security</li><li>Reverse Engineering</li><li>CTF / Wargame</li><li>Development</li></ul>
-      <nav class="hero-actions" aria-label="빠른 탐색"><a class="button primary" href="/archive/">모든 기록 보기 <span aria-hidden="true">↗</span></a><a class="button ghost" href="/categories/">탐사 구역 보기 <span aria-hidden="true">→</span></a></nav>
+      <nav class="hero-actions" aria-label="빠른 탐색"><a class="button primary" href="/archive/">기록 둘러보기 <span aria-hidden="true">→</span></a><a class="button ghost" href="/categories/">카테고리 보기</a></nav>
     </div>
-    <div class="bridge-status" aria-label="실제 아카이브 정보">
-      <p>STATION STATUS</p>
-      <dl>
-        <div><dt>Archive</dt><dd><i aria-hidden="true"></i> Online</dd></div>
-        <div><dt>Public logs</dt><dd>{{ collections.posts | length }}</dd></div>
-        {% for post in collections.posts | take(1) %}<div><dt>Latest update</dt><dd>{{ post.date | dateISO }}</dd></div>{% endfor %}
-      </dl>
-    </div>
-    <span class="cockpit-console" aria-hidden="true"><i></i><i></i><i></i></span>
   </section>
 
-  <div class="bridge-grid" data-reveal>
-    <aside class="station-panel home-profile-panel" aria-label="{{ profile.nickname }} 프로필">
-      <div class="panel-heading"><span>CREW PROFILE</span><i aria-hidden="true"></i></div>
+  <div class="home-primary" data-reveal>
+    <aside class="surface home-profile-panel" aria-label="{{ profile.nickname }} 프로필">
+      <p class="section-kicker">PROFILE</p>
       <a class="profile-orbit" href="/about/">
         <span class="portrait-frame"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781"></span>
         <span class="profile-orbit-copy"><strong>{{ profile.nickname }}</strong><small>{{ profile.tagline }}</small></span>
@@ -36,38 +27,38 @@ layout: base.njk
       <nav class="profile-links" aria-label="프로필 링크"><a href="{{ site.github }}" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a><a href="{{ profile.tistory }}" target="_blank" rel="noopener noreferrer">Tistory <span aria-hidden="true">↗</span></a></nav>
     </aside>
 
-    <section class="station-panel recent-logs" aria-labelledby="recent-title">
-      <div class="panel-heading"><h2 id="recent-title">Recent Logs</h2><a href="/archive/">전체 보기 <span aria-hidden="true">→</span></a></div>
+    <section class="surface recent-logs" aria-labelledby="recent-title">
+      <div class="section-heading"><div><p class="section-kicker">LATEST WRITING</p><h2 id="recent-title">최근 기록</h2></div><a href="/archive/">전체 기록 <span aria-hidden="true">→</span></a></div>
       <div class="log-list">
         {% for post in collections.posts | take(3) %}
-        <a class="cluster-note log-row{% if loop.first %} latest-note{% elif loop.index == 2 %} project-note{% endif %}" href="{{ post.url }}">
-          <span class="log-icon" aria-hidden="true">{{ post.data.recordOrder | recordLabel }}</span>
-          <span class="log-copy"><small>{% if loop.first %}최근 기록{% elif loop.index == 2 %}다른 최근 기록{% else %}기록{% endif %} · {{ post.data.categories[0] }}</small><strong>{{ post.data.title }}</strong><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time></span>
-          <i aria-hidden="true">›</i>
-        </a>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section class="station-panel exploration-sectors" aria-labelledby="sectors-title" data-archive-switchboard>
-      <div class="panel-heading"><h2 id="sectors-title">Exploration Sectors</h2><a href="/categories/">연구실 <span aria-hidden="true">→</span></a></div>
-      <div class="sector-mini-grid">
-        {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
-        <a href="/categories/{{ category.slug }}/" data-category-trigger>
-          <span class="sector-glyph" aria-hidden="true">{% if category.slug == 'development' %}&lt;/&gt;{% elif category.slug == 'ctf-wargame' %}⚑{% elif category.slug == 'bug-bounty' %}◎{% elif category.slug == 'blog-docs' %}▤{% elif category.slug == 'papers-conferences' %}⌑{% else %}♢{% endif %}</span>
-          <span><strong>{{ category.name }}</strong><small>{{ categoryPosts | length }} logs</small></span>
+        <a class="log-row{% if loop.index == 2 %} project-note{% endif %}" href="{{ post.url }}">
+          <span class="log-copy"><strong>{{ post.data.title }}</strong><span class="log-meta"><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><span>{{ post.data.categories[0] }}</span><span>No. {{ post.data.recordOrder | recordLabel }}</span></span></span>
+          <span class="row-arrow" aria-hidden="true">→</span>
         </a>
         {% endfor %}
       </div>
     </section>
   </div>
 
+  <section class="home-categories" aria-labelledby="sectors-title" data-archive-switchboard data-reveal>
+    <div class="section-heading"><div><p class="section-kicker">RESEARCH AREAS</p><h2 id="sectors-title">카테고리</h2></div><a href="/categories/">모든 카테고리 <span aria-hidden="true">→</span></a></div>
+    <div class="home-category-grid">
+      {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
+      <a href="/categories/{{ category.slug }}/" data-category-trigger>
+        <span class="category-icon-wrap">{% include 'category-icon.njk' %}</span>
+        <span class="category-card-copy"><strong>{{ category.name }}</strong><small>{{ category.description }}</small></span>
+        <span class="category-count">{{ categoryPosts | length }}개</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
   {% for project in projects %}
-  <aside class="mission-strip">
-    <span class="panel-kicker">CURRENT PROJECT</span>
+  <aside class="mission-strip surface">
+    <span class="section-kicker">CURRENT PROJECT</span>
     <strong>{{ project.name }}</strong>
     <p>{{ project.description }}</p>
-    <a href="{{ project.post }}">구축 기록 보기 <span aria-hidden="true">↗</span></a>
+    <a href="{{ project.post }}">구축 기록 보기 <span aria-hidden="true">→</span></a>
   </aside>
   {% endfor %}
 </div>

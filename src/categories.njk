@@ -4,25 +4,19 @@ title: Categories
 description: 학습하고 기록하는 6개의 연구 분야입니다.
 permalink: /categories/
 ---
-<section class="research-hero scene-window" data-reveal>
-  <div>
-    <p class="panel-kicker">RESEARCH DECK</p>
-    <h1>Categories</h1>
-    <p>{{ description }}</p>
-  </div>
-  <aside aria-label="연구실 정보"><span>Sector C-02</span><strong>{{ topics | length }} research fields</strong><small><i aria-hidden="true"></i> Deck online</small></aside>
-</section>
-<ol class="topic-directory hologram-grid" data-reveal>
+<header class="page-heading" data-reveal>
+  <p class="section-kicker">RESEARCH AREAS</p>
+  <h1>Categories</h1>
+  <p>{{ description }} 관심 있는 분야의 글을 모아 볼 수 있습니다.</p>
+</header>
+<ol class="topic-directory" data-reveal>
   {% for category in topics %}{% set categoryPosts = collections.posts | inCategory(category.name) %}
   <li>
     <a href="/categories/{{ category.slug }}/">
-      <span class="hologram-corners" aria-hidden="true"></span>
-      <span class="topic-icon" aria-hidden="true">{% if category.slug == 'development' %}&lt;/&gt;{% elif category.slug == 'ctf-wargame' %}⚑{% elif category.slug == 'bug-bounty' %}◎{% elif category.slug == 'blog-docs' %}▤{% elif category.slug == 'papers-conferences' %}⌑{% else %}♢{% endif %}</span>
-      <span class="topic-index">0{{ loop.index }} / {{ category.label }}</span>
-      <span class="topic-name"><strong>{{ category.name }}</strong><small>{{ category.description }}</small></span>
+      <span class="topic-icon">{% include 'category-icon.njk' %}</span>
+      <span class="topic-name"><small>{{ category.label }}</small><strong>{{ category.name }}</strong><span>{{ category.description }}</span></span>
       <span class="topic-count">{{ categoryPosts | length }}개의 기록</span>
       <span class="topic-arrow" aria-hidden="true">›</span>
-      <i class="hologram-platform" aria-hidden="true"></i>
     </a>
   </li>
   {% endfor %}

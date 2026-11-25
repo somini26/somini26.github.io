@@ -4,9 +4,8 @@ layout: base.njk
 <div class="reading-progress" aria-hidden="true"></div>
 <article class="article" data-article>
   <header class="article-header">
-    <span class="article-sequence" aria-hidden="true">{{ recordOrder | recordLabel }}</span>
     <a class="article-back" href="/archive/">← 전체 기록</a>
-    <p class="article-label">기술 기록 · {{ date | dateISO }}</p>
+    <p class="article-label"><span>No. {{ recordOrder | recordLabel }}</span><time datetime="{{ date | dateISO }}">{{ date | dateISO }}</time></p>
     <h1>{{ title }}</h1>
     <p class="article-description">{{ description }}</p>
     <div class="article-meta"><span>{{ content | readingTime }}분 읽기</span>{% for category in categories %}<a href="/categories/{{ category | categorySlug }}/">{{ category }}</a>{% endfor %}</div>
@@ -16,7 +15,7 @@ layout: base.njk
     <div class="article-prose" id="post-content" data-article-prose>{{ content | safe }}</div>
     {% set previousPost = collections.posts | previousRecord(recordOrder) %}{% set nextPost = collections.posts | nextRecord(recordOrder) %}
     <aside class="article-rail" aria-label="게시글 보조 정보">
-      <div class="toc-panel"><div class="toc-heading"><span>목차</span><span>이 글에서</span></div><nav data-article-toc aria-label="게시글 목차"></nav></div>
+      <details class="toc-panel" open><summary>목차 <span>이 글에서</span></summary><nav data-article-toc aria-label="게시글 목차"></nav></details>
       <nav class="record-navigation" aria-label="글 탐색">
         <div class="toc-heading"><span>글 탐색</span><span>전체 기록에서</span></div>
         {% if previousPost %}<a href="{{ previousPost.url }}"><small>이전 글 · {{ previousPost.data.recordOrder | recordLabel }}</small><span>{{ previousPost.data.title }}</span></a>{% endif %}

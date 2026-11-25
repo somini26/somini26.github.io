@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { parseHTML } from "linkedom";
+import matter from "gray-matter";
 const root = path.resolve("_site");
 const categories = JSON.parse(fs.readFileSync("src/_data/topics.json", "utf8"));
 function walk(dir) {
@@ -44,6 +45,7 @@ for (const file of html) {
   const ogImage = document.querySelector('meta[property="og:image"]')?.content;
   assert(ogImage?.startsWith("https://"), `${file}: absolute og:image`);
   assert(!ogImage.includes("/assets/images/social.png"), `${file}: stale og:image`);
+  assert(!ogImage.includes("social-space-v20261125.png"), `${file}: old space card`);
   assert(
     document.querySelector('meta[name="twitter:image"]')?.content === ogImage,
     `${file}: twitter:image`,
@@ -104,11 +106,27 @@ for (const category of categories) {
   assert(text.includes(category.name));
 }
 const posts = JSON.parse(fs.readFileSync(`${root}/search.json`, "utf8"));
-assert.equal(posts.length, 22, "공개 글 수가 달라졌습니다.");
+const expectedPostCount = fs
+  .readdirSync("src/posts")
+  .filter((file) => file.endsWith(".md"))
+  .map((file) => matter(fs.readFileSync(path.join("src/posts", file), "utf8")).data)
+  .filter((data) => !data.draft).length;
+assert.equal(posts.length, expectedPostCount, "공개 글 수가 소스와 다릅니다.");
 const recordOrders = posts.map((post) => post.recordOrder);
 assert(recordOrders.every((value) => Number.isInteger(value) && value > 0));
 assert.equal(new Set(recordOrders).size, recordOrders.length, "recordOrder 중복");
-assert.deepEqual(recordOrders, [...recordOrders].sort((a, b) => b - a));
+assert.deepEqual(
+  posts.map(({ date, recordOrder, url }) => ({ date, recordOrder, url })),
+  [...posts]
+    .sort(
+      (a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime() ||
+        Number(b.recordOrder) - Number(a.recordOrder) ||
+        a.url.localeCompare(b.url),
+    )
+    .map(({ date, recordOrder, url }) => ({ date, recordOrder, url })),
+  "검색 인덱스가 실제 게시 날짜 최신순이 아닙니다.",
+);
 
 for (const post of posts) {
   assert(fs.existsSync(path.join(root, post.url, "index.html")));
@@ -158,19 +176,18 @@ if (fs.existsSync(sample)) {
     "Syntax highlighting missing",
   );
   const { document } = parseHTML(sampleHtml);
-  const sequence = document.querySelector(".article-sequence");
+  const sequence = document.querySelector(".article-label span");
   const expectedSequence = String(
     posts.find((post) => post.url === "/posts/github-pages-blog/").recordOrder,
   ).padStart(3, "0");
   assert.equal(
     sequence?.textContent.trim(),
-    expectedSequence,
+    `No. ${expectedSequence}`,
     "Post sequence missing",
   );
-  assert.equal(sequence?.getAttribute("aria-hidden"), "true");
   assert(document.querySelector('.record-navigation[aria-label="글 탐색"]'));
 }
-assert(fs.existsSync(`${root}/assets/images/social-space-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/images/social-orbit-v2-20261125.png`));
 assert(fs.existsSync(`${root}/assets/icons/planet-ring-v20261125.svg`));
 assert(fs.existsSync(`${root}/assets/icons/planet-ring-16-v20261125.png`));
 assert(fs.existsSync(`${root}/assets/icons/planet-ring-32-v20261125.png`));
@@ -180,6 +197,8 @@ assert(fs.existsSync(`${root}/assets/icons/planet-ring-512-v20261125.png`));
 assert(fs.existsSync(`${root}/assets/images/space/station-launch-v20261125.webp`));
 assert(fs.existsSync(`${root}/assets/images/space/station-bridge-dark-v20261125.webp`));
 assert(fs.existsSync(`${root}/assets/images/space/station-bridge-light-v20261125.webp`));
+assert(fs.existsSync(`${root}/assets/images/space/orbit-observatory-dark-v20261125.webp`));
+assert(fs.existsSync(`${root}/assets/images/space/orbit-observatory-light-v20261125.webp`));
 assert(fs.existsSync(`${root}/favicon.ico`));
 assert(fs.existsSync(`${root}/favicon-v20261125.ico`));
 assert(fs.existsSync(`${root}/site-v20261125.webmanifest`));

@@ -23,15 +23,15 @@
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="보라색 우주정거장과 행성 위에 표시된 somani's archive">
+  <meta property="og:image:alt" content="고요한 보랏빛 행성과 작은 궤도 관측소, somani's archive">
   {% if layout == 'post.njk' %}<meta property="article:published_time" content="{{ date | dateISO }}">{% endif %}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ metaTitle }}">
   <meta name="twitter:description" content="{{ metaDescription }}">
   <meta name="twitter:image" content="{{ metaImage | absoluteUrl }}">
-  <meta name="twitter:image:alt" content="보라색 우주정거장과 행성 위에 표시된 somani's archive">
-  <meta name="theme-color" content="#0b0920" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f6f3ff" media="(prefers-color-scheme: light)">
+  <meta name="twitter:image:alt" content="고요한 보랏빛 행성과 작은 궤도 관측소, somani's archive">
+  <meta name="theme-color" content="#090b16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
   <link rel="icon" href="/assets/icons/planet-ring-v20261125.svg" type="image/svg+xml">
   <link rel="icon" href="/assets/icons/planet-ring-32-v20261125.png" type="image/png" sizes="32x32">
   <link rel="icon" href="/assets/icons/planet-ring-16-v20261125.png" type="image/png" sizes="16x16">
@@ -54,20 +54,19 @@
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
 
   {% if page.url == '/' %}
-  <section class="launch-intro" data-launch-intro aria-hidden="true" aria-label="somani 우주정거장 진입 화면">
+  <section class="launch-intro" data-launch-intro aria-hidden="true" aria-label="somani 궤도 관측소 진입 화면">
     <div class="launch-scene" aria-hidden="true">
       <span class="launch-layer launch-stars"></span>
-      <span class="launch-layer launch-nebula"></span>
       <span class="launch-layer launch-planet"></span>
       <span class="launch-layer launch-station"></span>
-      <span class="launch-layer launch-ship"></span>
+      <span class="launch-layer launch-ship"><i class="ship-engine"></i><i class="ship-body"></i></span>
     </div>
     <button class="launch-skip" type="button" data-launch-skip>Skip intro <span aria-hidden="true">Esc</span></button>
     <div class="launch-copy">
       <img src="/assets/icons/planet-ring-v20261125.svg" alt="" width="82" height="82">
-      <p>ORBITAL SECURITY ARCHIVE</p>
-      <h1><span>somani's</span> Space Station</h1>
-      <button class="launch-enter" type="button" data-launch-enter>ENTER STATION <span aria-hidden="true">››</span></button>
+      <p>ORBITAL OBSERVATORY</p>
+      <h1><span>somani's</span> archive</h1>
+      <button class="launch-enter" type="button" data-launch-enter>ENTER OBSERVATORY <span aria-hidden="true">→</span></button>
       <small>Enter · Escape · 클릭 또는 터치로 바로 진입</small>
     </div>
   </section>
@@ -77,23 +76,19 @@
     <div class="site-header-inner">
       <a class="site-wordmark" href="/" aria-label="somani's archive 홈">
         <img class="wordmark-logo" src="/assets/icons/planet-ring-v20261125.svg" alt="" width="72" height="72">
-        <span><strong>somani's archive</strong><small>ORBITAL SECURITY LOG</small></span>
+        <span><strong>somani's archive</strong><small>ORBITAL OBSERVATORY</small></span>
       </a>
       <nav id="main-nav" class="desktop-nav" aria-label="주 메뉴">
         {% for label, href, icon in [['Home','/','⌂'],['Categories','/categories/','◇'],['Archive','/archive/','□'],['About','/about/','○']] %}
         <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and layout == 'post.njk') or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span>{{ label }}</a>
         {% endfor %}
       </nav>
-      <div class="station-mini-status" aria-label="아카이브 상태">
-        <span><i aria-hidden="true"></i> Archive online</span>
-        <span>{{ collections.posts | length }} public logs</span>
-      </div>
-      {% if page.url == '/' %}<button class="intro-replay" type="button" data-intro-replay>Launch 다시 보기 <span aria-hidden="true">↗</span></button>{% else %}<a class="intro-replay" href="/?intro=1">Launch 다시 보기 <span aria-hidden="true">↗</span></a>{% endif %}
+      {% if page.url == '/' %}<button class="intro-replay" type="button" data-intro-replay>인트로 다시 보기</button>{% else %}<a class="intro-replay" href="/?intro=1">인트로 다시 보기</a>{% endif %}
     </div>
   </header>
 
   <div class="station-topbar">
-    <p><span aria-hidden="true">◈</span> {% if room == 'bridge' %}BRIDGE{% elif room == 'research' %}RESEARCH DECK{% elif room == 'archive' %}ARCHIVE BAY{% elif room == 'quarters' %}CREW QUARTERS{% elif room == 'reading' %}READING CONSOLE{% else %}SIGNAL BEACON{% endif %}</p>
+    <p><a href="/">somani</a><span aria-hidden="true">/</span> {% if room == 'bridge' %}home{% elif room == 'research' %}categories{% elif room == 'archive' %}archive{% elif room == 'quarters' %}about{% elif room == 'reading' %}reading{% else %}404{% endif %}</p>
     <div class="topbar-actions">
       <form class="station-search" action="/archive/" role="search">
         <label class="sr-only" for="global-search">전체 글 검색</label>
@@ -103,7 +98,6 @@
     </div>
   </div>
 
-  <div class="space-vista" aria-hidden="true"><span></span><i></i></div>
   <div class="page-transition" aria-hidden="true"></div>
   <main id="main" class="site-main{% if page.url != '/' and layout != 'post.njk' %} content-main{% endif %}" tabindex="-1">{{ content | safe }}</main>
   <footer class="site-footer">

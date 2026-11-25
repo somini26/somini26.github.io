@@ -1,7 +1,6 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-const finePointer = matchMedia("(pointer: fine)");
 
 const themeButton = $(".theme-toggle");
 if (themeButton) themeButton.hidden = false;
@@ -49,30 +48,41 @@ function initLaunchIntro() {
   const replay = $("[data-intro-replay]");
   let open = false;
   let closing = false;
-  const key = "somani-intro-seen-v20261125";
+  let autoTimer = 0;
+  const key = "somani-intro-seen-v2-20261125";
 
   const finish = () => {
+    const restoreFocus = open;
     open = false;
     closing = false;
+    clearTimeout(autoTimer);
     intro.classList.remove("is-visible", "is-entering");
     intro.setAttribute("aria-hidden", "true");
     document.body.classList.remove("intro-open");
-    replay?.focus({ preventScroll: true });
+    if (restoreFocus) replay?.focus({ preventScroll: true });
   };
   const close = (travel = false) => {
     if (!open || closing) return;
     closing = true;
+    clearTimeout(autoTimer);
     try {
       sessionStorage.setItem(key, "1");
     } catch {}
     if (travel && !reducedMotion.matches) {
       intro.classList.add("is-entering");
-      setTimeout(finish, 580);
+      setTimeout(finish, 260);
     } else {
       finish();
     }
   };
-  const show = () => {
+  const show = (autoEnter = true) => {
+    if (reducedMotion.matches) {
+      try {
+        sessionStorage.setItem(key, "1");
+      } catch {}
+      finish();
+      return;
+    }
     closing = false;
     open = true;
     intro.classList.remove("is-entering");
@@ -80,13 +90,15 @@ function initLaunchIntro() {
     intro.setAttribute("aria-hidden", "false");
     document.body.classList.add("intro-open");
     requestAnimationFrame(() => enter?.focus({ preventScroll: true }));
+    clearTimeout(autoTimer);
+    if (autoEnter) autoTimer = setTimeout(() => close(true), 1450);
   };
 
   enter?.addEventListener("click", () => close(true));
   skip?.addEventListener("click", () => close(false));
-  replay?.addEventListener("click", show);
+  replay?.addEventListener("click", () => show(true));
   intro.addEventListener("pointerdown", (event) => {
-    if (event.target.closest("button, a, .launch-copy")) return;
+    if (event.target.closest("button, a")) return;
     close(true);
   });
   document.addEventListener("keydown", (event) => {
@@ -108,9 +120,9 @@ function initLaunchIntro() {
       "",
       `${location.pathname}${query ? `?${query}` : ""}${location.hash}`,
     );
-    show();
+    show(true);
   } else if (!seen) {
-    show();
+    show(true);
   }
 }
 initLaunchIntro();
@@ -143,7 +155,7 @@ function initPageTransitions() {
     document.body.classList.add("is-leaving");
     setTimeout(() => {
       location.href = next.href;
-    }, 310);
+    }, 220);
   });
   addEventListener("pageshow", () =>
     document.body.classList.remove("is-leaving"),
@@ -151,22 +163,6 @@ function initPageTransitions() {
 }
 initPageTransitions();
 
-if (!reducedMotion.matches && finePointer.matches) {
-  let frame = 0;
-  document.addEventListener(
-    "pointermove",
-    (event) => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const x = ((event.clientX / innerWidth) * 2 - 1) * -7;
-        const y = ((event.clientY / innerHeight) * 2 - 1) * -5;
-        document.documentElement.style.setProperty("--parallax-x", `${x}px`);
-        document.documentElement.style.setProperty("--parallax-y", `${y}px`);
-      });
-    },
-    { passive: true },
-  );
-}
 document.addEventListener("visibilitychange", () => {
   document.body.classList.toggle("is-paused", document.hidden);
 });
@@ -237,13 +233,11 @@ function initArticle(content) {
 
   const headings = $$("h2, h3", content);
   const nav = $("[data-article-toc]");
+  const tocDetails = $(".toc-panel");
+  if (tocDetails && matchMedia("(max-width: 767px)").matches)
+    tocDetails.removeAttribute("open");
   if (headings.length && nav) {
-    let section = 0;
     headings.forEach((heading) => {
-      if (heading.tagName === "H2") {
-        section += 1;
-        heading.dataset.sectionNumber = String(section).padStart(2, "0");
-      }
       const link = document.createElement("a");
       link.href = `#${heading.id}`;
       link.textContent = heading.textContent;
@@ -398,8 +392,14 @@ async function initArchive(root) {
               .includes(q)),
       )
       .sort((a, b) => {
-        const direction = sort === "latest" ? -1 : 1;
-        return direction * (Number(a.recordOrder) - Number(b.recordOrder));
+        const dateDifference =
+          new Date(a.date).getTime() - new Date(b.date).getTime();
+        if (dateDifference)
+          return sort === "latest" ? -dateDifference : dateDifference;
+        const orderDifference = Number(a.recordOrder) - Number(b.recordOrder);
+        if (orderDifference)
+          return sort === "latest" ? -orderDifference : orderDifference;
+        return a.url.localeCompare(b.url);
       });
     if (sync) syncURL(pushHistory);
     updateSortControl();

@@ -3,12 +3,12 @@ import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs";
 import path from "node:path";
 
-const reviewDirectory = path.resolve("test-results/space-redesign");
+const reviewDirectory = path.resolve("test-results/v2-review");
 fs.mkdirSync(reviewDirectory, { recursive: true });
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
-    sessionStorage.setItem("somani-intro-seen-v20261125", "1"),
+    sessionStorage.setItem("somani-intro-seen-v2-20261125", "1"),
   );
 });
 
@@ -45,31 +45,35 @@ async function expectAccessible(page) {
 test("launch sequence is optional, session-scoped and never blocks direct URLs", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1672, height: 941 });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/?intro=1");
   const intro = page.locator("[data-launch-intro]");
   await expect(intro).toHaveClass(/is-visible/);
-  await expect(page.getByRole("heading", { name: /Space Station/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /ENTER STATION/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /somani's archive/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /ENTER OBSERVATORY/ })).toBeVisible();
   const animations = await page.evaluate(() =>
     [
       ".launch-stars",
-      ".launch-nebula",
       ".launch-planet",
       ".launch-station",
       ".launch-ship",
     ].map((selector) => getComputedStyle(document.querySelector(selector)).animationName),
   );
   expect(new Set(animations).size).toBeGreaterThanOrEqual(4);
+  await expect(page.locator(".launch-ship .ship-body")).toHaveCount(1);
+  await expect(page.locator(".launch-ship .ship-engine")).toHaveCount(1);
   await page.screenshot({
-    path: path.join(reviewDirectory, "launch-1672x941.png"),
+    path: path.join(reviewDirectory, "launch-1440x900.png"),
     animations: "allow",
   });
   await page.keyboard.press("Escape");
   await expect(intro).not.toHaveClass(/is-visible/);
   await page.reload();
   await expect(intro).not.toHaveClass(/is-visible/);
-  await page.getByRole("button", { name: /Launch 다시 보기/ }).click();
+  await page.goto("/?intro=1");
+  await expect(intro).toHaveClass(/is-visible/);
+  await expect(intro).not.toHaveClass(/is-visible/, { timeout: 2300 });
+  await page.getByRole("button", { name: /인트로 다시 보기/ }).click();
   await expect(intro).toHaveClass(/is-visible/);
   await page.keyboard.press("Enter");
   await expect(intro).not.toHaveClass(/is-visible/, { timeout: 1500 });
@@ -83,13 +87,14 @@ test("approved desktop, light and narrow compositions stay stable", async ({
 }) => {
   test.setTimeout(90_000);
   const captures = [
-    { name: "home-dark-1672x941", width: 1672, height: 941, theme: "dark", url: "/" },
-    { name: "home-light-1536x1024", width: 1536, height: 1024, theme: "light", url: "/" },
+    { name: "home-dark-1440x1000", width: 1440, height: 1000, theme: "dark", url: "/" },
+    { name: "home-light-1440x1000", width: 1440, height: 1000, theme: "light", url: "/" },
+    { name: "home-dark-1280x900", width: 1280, height: 900, theme: "dark", url: "/" },
     { name: "home-dark-390x844", width: 390, height: 844, theme: "dark", url: "/" },
     { name: "home-light-390x844", width: 390, height: 844, theme: "light", url: "/" },
-    { name: "home-dark-320x760", width: 320, height: 760, theme: "dark", url: "/" },
-    { name: "categories-dark-1672x941", width: 1672, height: 941, theme: "dark", url: "/categories/" },
-    { name: "archive-dark-1672x941", width: 1672, height: 941, theme: "dark", url: "/archive/" },
+    { name: "home-dark-360x800", width: 360, height: 800, theme: "dark", url: "/" },
+    { name: "categories-dark-768x900", width: 768, height: 900, theme: "dark", url: "/categories/" },
+    { name: "archive-dark-1280x900", width: 1280, height: 900, theme: "dark", url: "/archive/" },
     { name: "about-dark-390x844", width: 390, height: 844, theme: "dark", url: "/about/" },
   ];
   for (const capture of captures) {
@@ -102,13 +107,19 @@ test("approved desktop, light and narrow compositions stay stable", async ({
     await page.reload();
     await reveal(page);
     await expectNoOverflow(page);
-    if (capture.width === 1672 && capture.url === "/") {
+    if (capture.width === 1440 && capture.url === "/") {
       const width = await page.locator(".site-header").evaluate(
         (element) => element.getBoundingClientRect().width,
       );
-      expect(width).toBeGreaterThanOrEqual(190);
-      expect(width).toBeLessThanOrEqual(230);
-      await expect(page.locator(".bridge-grid > .station-panel")).toHaveCount(3);
+      expect(width).toBeGreaterThanOrEqual(180);
+      expect(width).toBeLessThanOrEqual(200);
+      await expect(page.locator(".home-primary > .surface")).toHaveCount(2);
+      await expect(page.locator(".home-category-grid > a")).toHaveCount(6);
+      const heroHeight = await page.locator(".home-hero").evaluate(
+        (element) => element.getBoundingClientRect().height,
+      );
+      expect(heroHeight).toBeGreaterThanOrEqual(300);
+      expect(heroHeight).toBeLessThanOrEqual(380);
     }
     if (capture.theme === "light")
       expect(
@@ -117,7 +128,7 @@ test("approved desktop, light and narrow compositions stay stable", async ({
             .getPropertyValue("--bg")
             .trim(),
         ),
-      ).toBe("#f6f3ff");
+      ).toBe("#f7f7fc");
     await page.screenshot({
       path: path.join(reviewDirectory, capture.name + ".png"),
       fullPage: true,
@@ -224,11 +235,11 @@ test("versioned icon, manifest and Open Graph metadata are unique and reachable"
     await expect(page.locator('meta[property="og:image"]')).toHaveCount(1);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
-      "https://somini26.github.io/assets/images/social-space-v20261125.png",
+      "https://somini26.github.io/assets/images/social-orbit-v2-20261125.png",
     );
     await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
       "content",
-      "https://somini26.github.io/assets/images/social-space-v20261125.png",
+      "https://somini26.github.io/assets/images/social-orbit-v2-20261125.png",
     );
     expect(await page.content()).not.toContain("/assets/images/social.png");
   }
@@ -257,7 +268,7 @@ test("versioned icon, manifest and Open Graph metadata are unique and reachable"
     "/assets/icons/planet-ring-16-v20261125.png",
     "/assets/icons/planet-ring-32-v20261125.png",
     "/assets/icons/planet-ring-180-v20261125.png",
-    "/assets/images/social-space-v20261125.png",
+    "/assets/images/social-orbit-v2-20261125.png",
     "/site-v20261125.webmanifest",
   ]) {
     const response = await request.get(asset);
@@ -299,11 +310,7 @@ test("primary rooms remain accessible in both themes and reduced motion", async 
   }
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/?intro=1");
-  await expect(page.locator("[data-launch-intro]")).toHaveClass(/is-visible/);
-  const duration = await page.locator(".launch-ship").evaluate(
-    (element) => getComputedStyle(element).animationDuration,
-  );
-  expect(parseFloat(duration)).toBeLessThan(0.1);
-  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-launch-intro]")).not.toHaveClass(/is-visible/);
+  await expect(page.locator(".home-hero")).toBeVisible();
   expect(errors).toEqual([]);
 });

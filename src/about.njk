@@ -4,13 +4,9 @@ title: About
 description: 개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부하고 경험하며 기록하는 somani입니다.
 permalink: /about/
 ---
-<section class="quarters-hero scene-window" data-reveal>
-  <div><p class="panel-kicker">CREW QUARTERS</p><h1>About</h1><p>다양한 분야에 호기심을 가지고 배우며, 새롭게 알게 된 것과 직접 경험한 것을 기록합니다.</p></div>
-  <aside aria-label="선실 정보"><span>Crew profile</span><strong>{{ profile.name }} / {{ profile.nickname }}</strong><small><i aria-hidden="true"></i> Personal cabin</small></aside>
-</section>
+<header class="page-heading" data-reveal><p class="section-kicker">ABOUT SOMANI</p><h1>About</h1><p>다양한 분야에 호기심을 가지고 배우며, 새롭게 알게 된 것과 직접 경험한 것을 기록합니다.</p></header>
 <div class="about-layout" data-reveal>
-  <aside class="profile-card station-panel" aria-label="{{ profile.nickname }} 프로필">
-    <div class="panel-heading"><span>CREW IDENTITY</span><i aria-hidden="true"></i></div>
+  <aside class="profile-card surface" aria-label="{{ profile.nickname }} 프로필">
     <div class="avatar">
       {% if profile.aboutImage %}<img src="{{ profile.aboutImage }}" alt="{{ profile.aboutImageAlt }}" width="736" height="736">{% else %}<span aria-hidden="true">s.</span>{% endif %}
     </div>
@@ -20,9 +16,9 @@ permalink: /about/
     <dl class="profile-contact"><div><dt>Email</dt><dd><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></dd></div></dl>
     <nav class="profile-links" aria-label="프로필 링크"><a href="{{ site.github }}" target="_blank" rel="noopener noreferrer" aria-label="GitHub 프로필 (새 탭)">GitHub <span aria-hidden="true">↗</span></a><a href="{{ profile.tistory }}" target="_blank" rel="noopener noreferrer" aria-label="Tistory 블로그 (새 탭)">Tistory <span aria-hidden="true">↗</span></a></nav>
   </aside>
-  <div class="about-content station-panel">
+  <div class="about-content surface">
     <section>
-      <p class="panel-kicker">PERSONAL LOG</p>
+      <p class="section-kicker">INTRODUCTION</p>
       <h2>안녕하세요, somani입니다.</h2>
       <p>울산대학교 ICT융합학부에서 컴퓨터공학을 공부하고 있습니다. 보안뿐 아니라 다양한 분야에 경계를 두지 않고 폭넓게 배우고 싶습니다.</p>
       <p>시스템 해킹과 리버스 엔지니어링, CTF/Wargame도 여러 관심 분야 가운데 하나입니다. 배운 내용을 다시 설명할 수 있을 만큼 이해하고, 프로젝트와 학습 과정에서 직접 겪은 문제를 다음에 꺼내 볼 수 있는 기록으로 차근차근 쌓아 가고 싶습니다.</p>
