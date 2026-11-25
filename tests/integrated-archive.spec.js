@@ -11,15 +11,6 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript((key) => sessionStorage.setItem(key, "1"), introKey);
 });
 
-async function reveal(page) {
-  await page.evaluate(() => {
-    document.querySelectorAll("[data-reveal]").forEach((element) => {
-      element.style.transition = "none";
-      element.classList.add("is-visible");
-    });
-  });
-}
-
 async function expectNoOverflow(page) {
   await expect.poll(() => page.evaluate(
     () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -54,15 +45,98 @@ test("short orbital entry is optional, session-scoped and absent from direct pos
   });
   await page.keyboard.press("Escape");
   await expect(intro).not.toHaveClass(/is-visible/);
+  await expect(page.locator("body")).not.toHaveClass(/atlas-intro-arrived/);
   await page.reload();
   await expect(intro).not.toHaveClass(/is-visible/);
+  await expect(page.locator("body")).not.toHaveClass(/atlas-intro-arrived/);
+  await page.getByRole("button", { name: "인트로 다시 보기" }).click();
+  await expect(intro).toHaveClass(/is-visible/);
+  await page.getByRole("button", { name: /Skip/ }).click();
+  await expect(intro).not.toHaveClass(/is-visible/);
+  await expect(page.locator("body")).not.toHaveClass(/atlas-intro-arrived/);
   await page.getByRole("button", { name: "인트로 다시 보기" }).click();
   await expect(intro).toHaveClass(/is-visible/);
   await page.keyboard.press("Enter");
   await expect(intro).not.toHaveClass(/is-visible/, { timeout: 1000 });
+  await expect(page.locator("body")).toHaveClass(/atlas-intro-arrived/);
   await page.goto("/posts/bomblab-gdb-binary-patch/");
   await expect(page.locator("[data-launch-intro]")).toHaveCount(0);
+  await expect(page.locator("body")).not.toHaveClass(/atlas-intro-arrived/);
   await expect(page.locator(".article-prose")).toBeVisible();
+});
+
+test("ordinary navigation is immediate and content is never reveal-gated", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".page-transition, [data-reveal]")).toHaveCount(0);
+  const defaultWasPrevented = await page.evaluate(() => {
+    const link = document.createElement("a");
+    link.href = "/categories/";
+    link.textContent = "test navigation";
+    document.body.append(link);
+    let prevented = null;
+    const inspect = (event) => {
+      if (event.target === link) {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      }
+    };
+    document.addEventListener("click", inspect);
+    link.click();
+    document.removeEventListener("click", inspect);
+    link.remove();
+    return prevented;
+  });
+  expect(defaultWasPrevented).toBe(false);
+  if (await page.locator(".desktop-nav").isVisible())
+    await page.locator('.desktop-nav a[href="/categories/"]').click();
+  else {
+    await page.locator("[data-mobile-menu] summary").click();
+    await page.locator('.mobile-menu-panel a[href="/categories/"]').click();
+  }
+  await expect(page).toHaveURL(/\/categories\/$/);
+  await expect(page.locator("h1")).toBeVisible();
+});
+
+test("recent records use the current unique post collection in responsive order", async ({ page, request }) => {
+  const posts = await (await request.get("/search.json")).json();
+  await page.goto("/");
+  const cards = page.locator(".atlas-recent-grid .recent-record");
+  const expected = posts.slice(0, 3);
+  await expect(cards).toHaveCount(expected.length);
+  expect(await cards.evaluateAll((nodes) => new Set(nodes.map((node) => node.getAttribute("href"))).size)).toBe(expected.length);
+  expect(await cards.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")))).toEqual(expected.map((post) => post.url));
+  await expect(cards.locator("strong")).toHaveText(expected.map((post) => post.title));
+  if (expected[0]?.description)
+    await expect(cards.first().locator(".recent-record-description")).toHaveText(expected[0].description);
+  await expect(page.locator(".document-symbol")).toHaveCount(0);
+  if (page.viewportSize().width > 900) {
+    const desktopBoxes = await cards.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
+    expect(desktopBoxes[0].x).toBeLessThan(desktopBoxes[1].x);
+    expect(desktopBoxes[0].height).toBeGreaterThan(desktopBoxes[1].height);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  const mobileBoxes = await cards.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
+  expect(mobileBoxes.every((box, index) => index === 0 || box.y > mobileBoxes[index - 1].y)).toBeTruthy();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
+});
+
+test("About uses the transparent three-quarter helmet without a background plate", async ({ page, request }) => {
+  await page.goto("/about/");
+  const helmet = page.locator(".about-helmet");
+  await expect(helmet).toHaveAttribute("src", "/assets/images/atlas/atlas-helmet-v20261125.webp");
+  await expect.poll(() => helmet.evaluate((image) => [image.complete, image.naturalWidth, image.naturalHeight])).toEqual([true, 640, 640]);
+  await expect(page.locator(".about-orbit > span, .about-orbit .nav-icon")).toHaveCount(0);
+  const cornerAlpha = await helmet.evaluate((image) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    canvas.getContext("2d").drawImage(image, 0, 0, 1, 1, 0, 0, 1, 1);
+    return canvas.getContext("2d").getImageData(0, 0, 1, 1).data[3];
+  });
+  expect(cornerAlpha).toBeLessThan(8);
+  const response = await request.get("/assets/images/atlas/atlas-helmet-v20261125.webp");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("image/webp");
 });
 
 test("approved dark, light and responsive compositions stay stable", async ({ page }) => {
@@ -87,7 +161,6 @@ test("approved dark, light and responsive compositions stay stable", async ({ pa
       document.documentElement.dataset.theme = value;
     }, theme);
     await page.reload();
-    await reveal(page);
     await expectNoOverflow(page);
     if (url === "/" && width >= 1280) {
       await expect(page.locator(".desktop-nav")).toBeVisible();
@@ -102,7 +175,7 @@ test("approved dark, light and responsive compositions stay stable", async ({ pa
       await expect(page.locator(".atlas-mobile-routes")).toBeVisible();
     }
     if (theme === "light") {
-      expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--surface").trim())).toBe("#fffaff");
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--surface").trim())).toBe("#fff");
     }
     await page.screenshot({
       path: path.join(reviewDirectory, `${name}.png`),
@@ -245,7 +318,6 @@ test("primary rooms remain accessible in both themes, narrow layouts and reduced
     await page.evaluate((value) => localStorage.setItem("somani-theme", value), theme);
     for (const url of ["/", "/categories/", "/archive/", "/about/", "/posts/github-pages-blog/", "/404.html"]) {
       await page.goto(url);
-      await reveal(page);
       await expectNoOverflow(page);
       await expectAccessible(page);
     }

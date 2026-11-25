@@ -50,28 +50,29 @@ initMobileMenu();
 
 function initLaunchIntro() {
   const intro = $("[data-launch-intro]");
-  if (!intro) {
-    document.body.classList.add("atlas-arrived");
-    return;
-  }
+  if (!intro) return;
+  document.body.classList.add("atlas-ready");
   const enter = $("[data-launch-enter]", intro);
   const skip = $("[data-launch-skip]", intro);
   const replays = $$("[data-intro-replay]");
   const key = "somani-intro-seen-orbital-atlas-v20261125";
   let open = false;
   let closing = false;
+  let replayRequested = false;
   let timer = 0;
   const focusReplay = () => replays.find((item) => item.offsetParent !== null)?.focus({ preventScroll: true });
-  const finish = () => {
-    const restoreFocus = open;
+  const finish = (animateArrival = false) => {
+    const restoreFocus = open && replayRequested;
     open = false;
     closing = false;
     clearTimeout(timer);
     intro.classList.remove("is-visible", "is-entering");
     intro.setAttribute("aria-hidden", "true");
     document.body.classList.remove("intro-open");
-    document.body.classList.add("atlas-arrived");
+    document.body.classList.remove("atlas-intro-arrived");
+    if (animateArrival && !reducedMotion.matches) requestAnimationFrame(() => document.body.classList.add("atlas-intro-arrived"));
     if (restoreFocus) focusReplay();
+    replayRequested = false;
   };
   const close = (travel = false) => {
     if (!open || closing) return;
@@ -80,16 +81,17 @@ function initLaunchIntro() {
     try { sessionStorage.setItem(key, "1"); } catch {}
     if (travel && !reducedMotion.matches) {
       intro.classList.add("is-entering");
-      setTimeout(finish, 220);
-    } else finish();
+      setTimeout(() => finish(true), 220);
+    } else finish(false);
   };
-  const show = () => {
+  const show = (replay = false) => {
     if (reducedMotion.matches) {
       try { sessionStorage.setItem(key, "1"); } catch {}
-      finish();
+      finish(false);
       return;
     }
-    document.body.classList.remove("atlas-arrived");
+    document.body.classList.remove("atlas-intro-arrived");
+    replayRequested = replay;
     open = true;
     closing = false;
     intro.classList.remove("is-entering");
@@ -102,7 +104,7 @@ function initLaunchIntro() {
   };
   enter?.addEventListener("click", () => close(true));
   skip?.addEventListener("click", () => close(false));
-  replays.forEach((button) => button.addEventListener("click", show));
+  replays.forEach((button) => button.addEventListener("click", () => show(true)));
   intro.addEventListener("pointerdown", (event) => { if (!event.target.closest("button, a")) close(true); });
   document.addEventListener("keydown", (event) => {
     if (!open || !["Enter", "Escape"].includes(event.key)) return;
@@ -115,9 +117,9 @@ function initLaunchIntro() {
   if (params.get("intro") === "1") {
     params.delete("intro");
     history.replaceState(null, "", `${location.pathname}${params.size ? `?${params}` : ""}${location.hash}`);
-    show();
-  } else if (!seen) show();
-  else finish();
+    show(true);
+  } else if (!seen) show(false);
+  else finish(false);
 }
 initLaunchIntro();
 
@@ -134,37 +136,11 @@ function initAtlasSelection() {
     link.addEventListener("pointerleave", deactivate);
     link.addEventListener("focus", activate);
     link.addEventListener("blur", deactivate);
-    link.addEventListener("click", () => { link.classList.add("is-departing"); setActive(link.dataset.route, true); });
   });
 }
 initAtlasSelection();
 
-function initPageTransitions() {
-  if (reducedMotion.matches) return;
-  document.addEventListener("click", (event) => {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const anchor = event.target.closest("a[href]");
-    if (!anchor || anchor.target || anchor.hasAttribute("download")) return;
-    const href = anchor.getAttribute("href");
-    if (!href || href.startsWith("#") || href.startsWith("mailto:")) return;
-    const next = new URL(anchor.href, location.href);
-    if (next.origin !== location.origin) return;
-    if (next.pathname === location.pathname && next.search === location.search && next.hash) return;
-    event.preventDefault();
-    document.body.classList.add("is-leaving");
-    setTimeout(() => { location.href = next.href; }, 200);
-  });
-  addEventListener("pageshow", () => document.body.classList.remove("is-leaving"));
-}
-initPageTransitions();
-
 document.addEventListener("visibilitychange", () => document.body.classList.toggle("is-paused", document.hidden));
-const reveals = $$("[data-reveal]");
-if (reducedMotion.matches || !("IntersectionObserver" in window)) reveals.forEach((item) => item.classList.add("is-visible"));
-else {
-  const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); } }), { rootMargin: "0px 0px -4%", threshold: 0.04 });
-  reveals.forEach((item) => observer.observe(item));
-}
 
 const articleContent = $("[data-article-prose]");
 if (articleContent) initArticle(articleContent);

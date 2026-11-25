@@ -1,15 +1,15 @@
 <div class="atlas-page {% if activeCategory %}category-detail-page{% else %}archive-page{% endif %}">
   {% if activeCategory %}
-  <header class="category-hero" data-reveal>
+  <header class="category-hero">
     <div class="category-heading-copy"><p>Categories / {{ activeCategory }}</p><h1>{{ activeCategory }}</h1><strong>{{ collections.posts | inCategory(activeCategory) | length }}개의 기록</strong><span>{{ description }}</span></div>
     <div class="category-hero-object" aria-hidden="true"><svg viewBox="0 0 700 280"><ellipse cx="350" cy="140" rx="310" ry="104"/><ellipse cx="350" cy="140" rx="220" ry="70"/><path d="M45 166C180 80 505 50 660 150"/></svg>{% for category in topics %}{% if category.name == activeCategory %}{% set eagerAtlasObject = true %}{% include 'atlas-object.njk' %}{% endif %}{% endfor %}</div>
   </header>
   <nav class="category-switcher" aria-label="카테고리 전환">{% for item in topics %}<a href="/categories/{{ item.slug }}/"{% if item.name == activeCategory %} aria-current="page"{% endif %}>{{ item.name }}</a>{% endfor %}</nav>
   {% else %}
-  <header class="archive-hero" data-reveal><div><h1>Archive</h1><p><strong>{{ collections.posts | length }}</strong>개의 기록</p></div><div class="archive-hero-object" aria-hidden="true"><svg viewBox="0 0 420 210"><path d="M5 165C110 35 300 30 415 145"/><ellipse cx="305" cy="132" rx="92" ry="28"/></svg><img src="/assets/images/atlas/atlas-blog-docs-v20261125.webp" alt="" width="560" height="560"></div></header>
+  <header class="archive-hero"><div><h1>Archive</h1><p><strong>{{ collections.posts | length }}</strong>개의 기록</p></div><div class="archive-hero-object" aria-hidden="true"><svg viewBox="0 0 420 210"><path d="M5 165C110 35 300 30 415 145"/><ellipse cx="305" cy="132" rx="92" ry="28"/></svg><img src="/assets/images/atlas/atlas-blog-docs-v20261125.webp" alt="" width="560" height="560"></div></header>
   {% endif %}
 
-  <section class="archive-content" data-archive data-category="{{ activeCategory or '' }}" data-reveal aria-label="게시글 목록">
+  <section class="archive-content" data-archive data-category="{{ activeCategory or '' }}" aria-label="게시글 목록">
     <div class="archive-controls">
       <form class="search-form" role="search"><label for="search" class="sr-only">게시글 검색</label><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="search" name="q" type="search" placeholder="기록 검색" autocomplete="off"><button type="submit">검색</button></form>
       <div class="archive-selects">

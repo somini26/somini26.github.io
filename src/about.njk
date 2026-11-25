@@ -4,8 +4,8 @@ title: About
 description: 개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부하고 경험하며 기록하는 somani입니다.
 permalink: /about/
 ---
-<header class="about-heading" data-reveal><h1>About</h1><div class="about-orbit" aria-hidden="true"><svg viewBox="0 0 600 180"><path d="M10 145C165 18 440 20 590 105"/><ellipse cx="505" cy="104" rx="67" ry="19"/></svg><span>{% set navKey = 'about' %}{% include 'nav-icon.njk' %}</span></div></header>
-<div class="about-layout" data-reveal>
+<header class="about-heading"><h1>About</h1><div class="about-orbit" aria-hidden="true"><svg viewBox="0 0 600 180"><path d="M35 142C190 36 378 32 505 87"/></svg><img class="about-helmet" src="/assets/images/atlas/atlas-helmet-v20261125.webp" alt="" width="640" height="640"></div></header>
+<div class="about-layout">
   <aside class="profile-card" aria-label="{{ profile.nickname }} 프로필">
     <div class="avatar">
       {% if profile.aboutImage %}<img src="{{ profile.aboutImage }}" alt="{{ profile.aboutImageAlt }}" width="736" height="736">{% else %}<span aria-hidden="true">s.</span>{% endif %}

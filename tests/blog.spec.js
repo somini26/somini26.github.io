@@ -7,16 +7,6 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-const waitForReveals = async (page) => {
-  await page.evaluate(() => {
-    document.querySelectorAll("[data-reveal]").forEach((element) => {
-      element.style.transition = "none";
-      element.classList.add("is-visible");
-    });
-    window.scrollTo(0, 0);
-  });
-};
-
 test("navigation, six category pages, empty states and accessibility", async ({
   page,
 }, testInfo) => {
@@ -55,7 +45,6 @@ test("navigation, six category pages, empty states and accessibility", async ({
     await expect(mobileNavigation).toBeVisible();
     await expect(mobileNavigation.getByRole("link")).toHaveCount(4);
   }
-  await waitForReveals(page);
   const accessibility = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
@@ -316,7 +305,6 @@ test("all primary pages remain accessible in both themes and narrow layouts", as
       "/404.html",
     ]) {
       await page.goto(url);
-      await waitForReveals(page);
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
         .analyze();

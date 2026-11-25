@@ -2,7 +2,7 @@
 layout: base.njk
 ---
 <div class="atlas-home">
-  <section class="atlas-stage" aria-labelledby="home-title" data-atlas-map data-reveal>
+  <section class="atlas-stage" aria-labelledby="home-title" data-atlas-map>
     <div class="atlas-greeting">
       <h1 id="home-title">안녕하세요, <strong>somani</strong>입니다.</h1>
       <p>CTF · Security · Development</p>
@@ -36,16 +36,20 @@ layout: base.njk
     {% endfor %}
   </nav>
 
-  <section class="atlas-recent" aria-labelledby="recent-title" data-reveal>
-    <header><span class="section-star" aria-hidden="true">✦</span><h2 id="recent-title">최근 기록</h2><span class="heading-rule"></span><a href="/archive/">전체 기록 →</a></header>
-    <div class="atlas-log-list">
+  <section class="atlas-recent" aria-labelledby="recent-title">
+    <header><div><p class="eyebrow">LATEST LOGS</p><h2 id="recent-title">최근 기록</h2></div><a href="/archive/">전체 기록 →</a></header>
+    <div class="atlas-recent-grid">
       {% for post in collections.posts | take(3) %}
-      <a href="{{ post.url }}"><span class="document-symbol" aria-hidden="true">▤</span><strong>{{ post.data.title }}</strong><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><i aria-hidden="true">→</i></a>
+      <a class="recent-record{% if loop.first %} recent-record-featured{% else %} recent-record-secondary{% endif %}" href="{{ post.url }}">
+        <span class="recent-record-copy"><span class="recent-record-meta"><span>{{ post.data.categories | join(' · ') }}</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time></span><strong>{{ post.data.title }}</strong>{% if loop.first and post.data.description %}<span class="recent-record-description">{{ post.data.description }}</span>{% endif %}</span>
+        {% if loop.first %}<img src="/assets/images/atlas/atlas-blog-docs-v20261125.webp" alt="" width="560" height="560" loading="lazy" aria-hidden="true">{% endif %}
+        <i aria-hidden="true">→</i>
+      </a>
       {% endfor %}
     </div>
   </section>
 
-  <section class="home-profile-continuation" aria-label="somani 프로필" data-reveal>
+  <section class="home-profile-continuation" aria-label="somani 프로필">
     <a class="home-profile-portrait" href="/about/"><img src="{{ profile.image }}" alt="{{ profile.imageAlt }}" width="736" height="781" loading="lazy"></a>
     <div><p class="eyebrow">PROFILE</p><h2>{{ profile.name }} / {{ profile.nickname }}</h2><p>{{ profile.affiliation }}</p><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></div>
     <nav aria-label="프로필 링크"><a href="{{ site.github }}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{{ profile.tistory }}" target="_blank" rel="noopener noreferrer">Tistory ↗</a><a href="/about/">About →</a></nav>
