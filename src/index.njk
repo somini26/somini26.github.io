@@ -37,13 +37,14 @@ layout: base.njk
   </nav>
 
   <section class="atlas-recent" aria-labelledby="recent-title">
-    <header><div><p class="eyebrow">LATEST LOGS</p><h2 id="recent-title">최근 기록</h2></div><a href="/archive/">전체 기록 →</a></header>
+    <header><h2 id="recent-title">최근 기록</h2><a href="/archive/">전체 기록 →</a></header>
     <div class="atlas-recent-grid">
       {% for post in collections.posts | take(3) %}
-      <a class="recent-record{% if loop.first %} recent-record-featured{% else %} recent-record-secondary{% endif %}" href="{{ post.url }}">
-        <span class="recent-record-copy"><span class="recent-record-meta"><span>{{ post.data.categories | join(' · ') }}</span><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time></span><strong>{{ post.data.title }}</strong>{% if loop.first and post.data.description %}<span class="recent-record-description">{{ post.data.description }}</span>{% endif %}</span>
-        {% if loop.first %}<img src="/assets/images/atlas/atlas-blog-docs-v20261125.webp" alt="" width="560" height="560" loading="lazy" aria-hidden="true">{% endif %}
-        <i aria-hidden="true">→</i>
+      <a class="recent-record" href="{{ post.url }}">
+        <span class="recent-record-category">{{ post.data.categories | join(' · ') }}</span>
+        <strong>{{ post.data.title }}</strong>
+        {% if post.data.description %}<span class="recent-record-description">{{ post.data.description }}</span>{% endif %}
+        <span class="recent-record-footer"><time datetime="{{ post.date | dateISO }}">{{ post.date | dateISO }}</time><i aria-hidden="true">→</i></span>
       </a>
       {% endfor %}
     </div>

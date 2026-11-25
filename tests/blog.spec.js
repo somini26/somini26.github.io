@@ -110,26 +110,26 @@ test("search, tags, URL restoration and safe search input", async ({
 });
 test("published-date sorting preserves filters and URL state", async ({ page }) => {
   await page.goto("/archive/?tag=SECTOR");
-  const numbers = page.locator("#archive-results .post-meta span:first-child");
-  await expect(numbers.first()).toHaveText("No. 006");
+  const sequences = page.locator("#archive-results .result-sequence");
+  await expect(sequences).toHaveText(["01", "02", "03", "04", "05"]);
   await page.getByRole("button", { name: "현재 최신순, 오래된순으로 전환" }).click();
   await expect(page).toHaveURL(/tag=SECTOR/);
   await expect(page).toHaveURL(/sort=oldest/);
   await expect(page.locator("#tag-filter")).toHaveValue("SECTOR");
-  await expect(numbers.first()).toHaveText("No. 002");
+  await expect(sequences).toHaveText(["01", "02", "03", "04", "05"]);
   await page.evaluate(() => history.back());
-  await expect(numbers.first()).toHaveText("No. 006");
+  await expect(sequences.first()).toHaveText("01");
   await page.evaluate(() => history.forward());
-  await expect(numbers.first()).toHaveText("No. 002");
+  await expect(sequences.first()).toHaveText("01");
   await page.reload();
   await expect(page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" })).toBeVisible();
-  await expect(numbers.first()).toHaveText("No. 002");
+  await expect(sequences.first()).toHaveText("01");
   await page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" }).press("Enter");
-  await expect(numbers.first()).toHaveText("No. 006");
+  await expect(sequences.first()).toHaveText("01");
   await expect(page).not.toHaveURL(/sort=oldest/);
 });
 
-test("gapped fixture keeps record numbers while reversing the list", async ({ page }) => {
+test("gapped fixture keeps record data while recalculating display sequences", async ({ page }) => {
   const fixture = [3, 8, 12].map((recordOrder) => ({
     title: `기록 ${recordOrder}`,
     description: "격리된 정렬 검사",
@@ -144,13 +144,11 @@ test("gapped fixture keeps record numbers while reversing the list", async ({ pa
   }));
   await page.route("**/search.json", (route) => route.fulfill({ json: fixture }));
   await page.goto("/archive/?sort=oldest");
-  await expect(page.locator("#archive-results .post-meta span:first-child")).toHaveText([
-    "No. 003", "No. 008", "No. 012",
-  ]);
+  await expect(page.locator("#archive-results .result-sequence")).toHaveText(["01", "02", "03"]);
+  expect(await page.locator("#archive-results .post-card").evaluateAll((nodes) => nodes.map((node) => node.dataset.recordOrder))).toEqual(["3", "8", "12"]);
   await page.getByRole("button", { name: "현재 오래된순, 최신순으로 전환" }).click();
-  await expect(page.locator("#archive-results .post-meta span:first-child")).toHaveText([
-    "No. 012", "No. 008", "No. 003",
-  ]);
+  await expect(page.locator("#archive-results .result-sequence")).toHaveText(["01", "02", "03"]);
+  expect(await page.locator("#archive-results .post-card").evaluateAll((nodes) => nodes.map((node) => node.dataset.recordOrder))).toEqual(["12", "8", "3"]);
 });
 
 test("archive sorting uses published date before the stable record number", async ({ page }) => {
@@ -177,6 +175,7 @@ test("archive sorting uses published date before the stable record number", asyn
     "같은 날짜의 앞 번호",
     "번호는 크지만 오래된 글",
   ]);
+  await expect(page.locator("#archive-results .result-sequence")).toHaveText(["01", "02", "03", "04"]);
   await page.getByRole("button", { name: "현재 최신순, 오래된순으로 전환" }).click();
   await expect(page.locator("#archive-results h3")).toHaveText([
     "번호는 크지만 오래된 글",
@@ -273,6 +272,11 @@ test("static navigation works without JavaScript", async ({ browser }, testInfo)
     await expect(navigation).toBeVisible();
     await navigation.getByRole("link", { name: "Archive", exact: true }).click();
   }
+  const staticCards = page.locator("#archive-results .post-card");
+  const staticCount = await staticCards.count();
+  expect(staticCount).toBeGreaterThan(0);
+  await expect(page.locator("#archive-results .result-sequence").first()).toHaveText("01");
+  await expect(page.locator("#archive-results .result-sequence").last()).toHaveText(String(staticCount).padStart(2, "0"));
   await page.locator('.post-card h3 a[href="/posts/github-pages-blog/"]').click();
   await expect(page.locator(".article-prose")).toContainText(
     "블로그를 만든 이유",

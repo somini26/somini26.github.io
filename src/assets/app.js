@@ -221,11 +221,11 @@ async function initArchive(root) {
     const found = posts.filter((post) => (!category || post.categories.includes(category)) && (!tag || post.tags.includes(tag)) && (!q || [post.title, post.description, post.text, ...post.tags, ...post.categories].join(" ").toLocaleLowerCase("ko").includes(q))).sort((a, b) => sort === "latest" ? compareAscending(b, a) : compareAscending(a, b));
     if (sync) syncURL(push); updateSort(); results.replaceChildren(); count.textContent = `${found.length}개의 기록`; reset.hidden = !q && !tag && (!categories.value || fixedCategory);
     if (!found.length) { const empty = create("div", "empty-state"); empty.append(create("span", "", "◇"), create("h2", "", q || tag || (!fixedCategory && category) ? "조건에 맞는 기록이 없습니다." : "아직 공개된 기록이 없습니다.")); results.append(empty); return; }
-    found.forEach((post) => {
+    found.forEach((post, index) => {
       const card = create("article", "post-card"); card.dataset.recordOrder = post.recordOrder;
       const time = create("time", "", post.date); time.dateTime = post.date;
       const copy = create("div", "post-row-copy"); const heading = create("h3"); const titleLink = create("a", "", post.title); titleLink.href = post.url; heading.append(titleLink);
-      const meta = create("div", "post-meta"); meta.append(create("span", "", `No. ${String(post.recordOrder).padStart(3, "0")}`), create("span", "", `${post.readingTime}분 읽기`)); post.tags.slice(0, 3).forEach((name) => { const link = create("a", "", `#${name}`); link.href = `/archive/?tag=${encodeURIComponent(name)}`; meta.append(link); }); copy.append(heading, meta);
+      const meta = create("div", "post-meta"); const sequence = create("span", "result-sequence", String(index + 1).padStart(2, "0")); sequence.setAttribute("aria-label", `목록 순번 ${String(index + 1).padStart(2, "0")}`); meta.append(sequence, create("span", "", `${post.readingTime}분 읽기`)); post.tags.slice(0, 3).forEach((name) => { const link = create("a", "", `#${name}`); link.href = `/archive/?tag=${encodeURIComponent(name)}`; meta.append(link); }); copy.append(heading, meta);
       const categoryLinks = create("div", "category-links"); post.categoryLinks.forEach((item) => { const link = create("a", "", item.name); link.href = `/categories/${item.slug}/`; categoryLinks.append(link); });
       const arrow = create("a", "post-row-arrow", "→"); arrow.href = post.url; arrow.setAttribute("aria-label", `${post.title} 읽기`); card.append(time, copy, categoryLinks, arrow); results.append(card);
     });

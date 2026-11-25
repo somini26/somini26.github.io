@@ -101,6 +101,9 @@ export default function (config) {
   config.addFilter("recordLabel", (value) =>
     String(Number(value) || 0).padStart(3, "0"),
   );
+  config.addFilter("sequenceLabel", (value) =>
+    String(Math.max(1, Number(value) || 1)).padStart(2, "0"),
+  );
   config.addFilter("previousRecord", (posts, currentUrl) => {
     const ordered = [...posts].sort(comparePostsAscending);
     const index = ordered.findIndex((post) => post.url === currentUrl);

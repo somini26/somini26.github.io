@@ -106,19 +106,66 @@ test("recent records use the current unique post collection in responsive order"
   expect(await cards.evaluateAll((nodes) => new Set(nodes.map((node) => node.getAttribute("href"))).size)).toBe(expected.length);
   expect(await cards.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")))).toEqual(expected.map((post) => post.url));
   await expect(cards.locator("strong")).toHaveText(expected.map((post) => post.title));
-  if (expected[0]?.description)
-    await expect(cards.first().locator(".recent-record-description")).toHaveText(expected[0].description);
+  for (let index = 0; index < expected.length; index += 1) {
+    const description = cards.nth(index).locator(".recent-record-description");
+    if (expected[index].description) await expect(description).toHaveText(expected[index].description);
+    else await expect(description).toHaveCount(0);
+  }
   await expect(page.locator(".document-symbol")).toHaveCount(0);
+  await expect(page.locator(".recent-record-featured, .recent-record-secondary, .recent-record img")).toHaveCount(0);
   if (page.viewportSize().width > 900) {
     const desktopBoxes = await cards.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
     expect(desktopBoxes[0].x).toBeLessThan(desktopBoxes[1].x);
-    expect(desktopBoxes[0].height).toBeGreaterThan(desktopBoxes[1].height);
+    expect(new Set(desktopBoxes.map((box) => Math.round(box.y))).size).toBe(1);
+    expect(Math.max(...desktopBoxes.map((box) => box.width)) - Math.min(...desktopBoxes.map((box) => box.width))).toBeLessThanOrEqual(1);
+    expect(Math.max(...desktopBoxes.map((box) => box.height)) - Math.min(...desktopBoxes.map((box) => box.height))).toBeLessThanOrEqual(1);
+    const footerBoxes = await cards.locator(".recent-record-footer").evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
+    expect(Math.max(...footerBoxes.map((box) => box.y)) - Math.min(...footerBoxes.map((box) => box.y))).toBeLessThanOrEqual(1);
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
   const mobileBoxes = await cards.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
   expect(mobileBoxes.every((box, index) => index === 0 || box.y > mobileBoxes[index - 1].y)).toBeTruthy();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
+});
+
+test("Space Grotesk and Pretendard load and use the requested roles", async ({ page, request }) => {
+  await page.goto("/");
+  await page.evaluate(async () => {
+    await Promise.all([
+      document.fonts.load('500 20px "Space Grotesk"'),
+      document.fonts.load('600 20px Pretendard'),
+    ]);
+    await document.fonts.ready;
+  });
+  const styles = await page.evaluate(() => {
+    const pick = (selector) => {
+      const style = getComputedStyle(document.querySelector(selector));
+      return { family: style.fontFamily, weight: style.fontWeight };
+    };
+    return {
+      wordmark: pick(".site-wordmark"),
+      greeting: pick(".atlas-greeting h1"),
+      subtitle: pick(".atlas-greeting p"),
+      menu: pick(".desktop-nav a"),
+      recentTitle: pick(".recent-record strong"),
+    };
+  });
+  expect(styles.wordmark.family).toContain("Space Grotesk");
+  expect(styles.wordmark.weight).toBe("500");
+  expect(styles.greeting.family).toContain("Pretendard");
+  expect(styles.greeting.weight).toBe("600");
+  expect(styles.subtitle.family).toContain("Space Grotesk");
+  expect(styles.subtitle.weight).toBe("400");
+  expect(styles.menu.family).toContain("Pretendard");
+  expect(styles.menu.weight).toBe("500");
+  expect(styles.recentTitle.family).toContain("Pretendard");
+  expect(styles.recentTitle.weight).toBe("500");
+  for (const path of ["/assets/fonts/PretendardVariable.woff2", "/assets/fonts/SpaceGroteskVariable.woff2"]) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("font/woff2");
+  }
 });
 
 test("About uses the approved transparent planet without a background plate", async ({ page, request }) => {

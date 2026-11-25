@@ -21,7 +21,7 @@
     </div>
     {% if not activeCategory %}<nav class="category-shortcuts" aria-label="카테고리 바로가기"><a href="/archive/" aria-current="page">전체</a>{% for item in topics %}<a href="/archive/?category={{ item.name | urlencode }}">{{ item.name }}</a>{% endfor %}</nav>{% endif %}
     <div class="archive-list-heading"><h2>{% if activeCategory %}기록 목록{% else %}전체 기록{% endif %}</h2><span id="result-count" role="status" aria-live="polite">{% if activeCategory %}{{ collections.posts | inCategory(activeCategory) | length }}{% else %}{{ collections.posts | length }}{% endif %}개의 기록</span></div>
-    <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">◇</span><h2>아직 공개된 기록이 없습니다.</h2><a href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
+    <div id="archive-results" class="post-list">{% if activeCategory %}{% set visiblePosts = collections.posts | inCategory(activeCategory) %}{% else %}{% set visiblePosts = collections.posts %}{% endif %}{% for post in visiblePosts %}{% set displayIndex = loop.index %}{% include 'post-card.njk' %}{% else %}<div class="empty-state"><span aria-hidden="true">◇</span><h2>아직 공개된 기록이 없습니다.</h2><a href="/archive/">전체 기록 보기 →</a></div>{% endfor %}</div>
     <noscript><p class="notice">검색과 태그 필터를 사용하려면 JavaScript를 켜 주세요.</p></noscript>
   </section>
 </div>
