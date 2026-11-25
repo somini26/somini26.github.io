@@ -121,22 +121,49 @@ test("recent records use the current unique post collection in responsive order"
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
 });
 
-test("About uses the transparent three-quarter helmet without a background plate", async ({ page, request }) => {
+test("About uses the approved transparent planet without a background plate", async ({ page, request }) => {
   await page.goto("/about/");
-  const helmet = page.locator(".about-helmet");
-  await expect(helmet).toHaveAttribute("src", "/assets/images/atlas/atlas-helmet-v20261125.webp");
-  await expect.poll(() => helmet.evaluate((image) => [image.complete, image.naturalWidth, image.naturalHeight])).toEqual([true, 640, 640]);
+  const planet = page.locator(".about-planet");
+  await expect(planet).toHaveAttribute("src", "/assets/images/atlas/atlas-about-planet-approved-v20261125.png");
+  await expect.poll(() => planet.evaluate((image) => [image.complete, image.naturalWidth, image.naturalHeight])).toEqual([true, 1521, 1034]);
+  await expect(page.locator(".about-helmet")).toHaveCount(0);
   await expect(page.locator(".about-orbit > span, .about-orbit .nav-icon")).toHaveCount(0);
-  const cornerAlpha = await helmet.evaluate((image) => {
+  const cornerAlpha = await planet.evaluate((image) => {
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
     canvas.getContext("2d").drawImage(image, 0, 0, 1, 1, 0, 0, 1, 1);
     return canvas.getContext("2d").getImageData(0, 0, 1, 1).data[3];
   });
   expect(cornerAlpha).toBeLessThan(8);
-  const response = await request.get("/assets/images/atlas/atlas-helmet-v20261125.webp");
+  const response = await request.get("/assets/images/atlas/atlas-about-planet-approved-v20261125.png");
   expect(response.status()).toBe(200);
-  expect(response.headers()["content-type"]).toContain("image/webp");
+  expect(response.headers()["content-type"]).toContain("image/png");
+});
+
+test("desktop and mobile navigation use the four decorative glass image assets", async ({ page }) => {
+  const expected = [
+    "/assets/images/atlas/atlas-nav-home-planet-v20261125.webp",
+    "/assets/images/atlas/atlas-nav-categories-v20261125.webp",
+    "/assets/images/atlas/atlas-nav-archive-v20261125.webp",
+    "/assets/images/atlas/atlas-nav-about-v20261125.webp",
+  ];
+  const routes = [["/", "/"], ["/categories/", "/categories/"], ["/archive/", "/archive/"], ["/about/", "/about/"]];
+  for (const [url, current] of routes) {
+    await page.goto(url);
+    const icons = page.locator(".desktop-nav .nav-icon");
+    await expect(icons).toHaveCount(4);
+    expect(await icons.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src")))).toEqual(expected);
+    expect(await icons.evaluateAll((nodes) => nodes.every((node) => node.alt === "" && node.getAttribute("aria-hidden") === "true"))).toBe(true);
+    await expect.poll(() => icons.evaluateAll((nodes) => nodes.map((node) => [node.complete, node.naturalWidth, node.naturalHeight]))).toEqual(expected.map(() => [true, 320, 320]));
+    await expect(page.locator(`.desktop-nav a[href="${current}"]`)).toHaveAttribute("aria-current", "page");
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/about/");
+  await page.locator("[data-mobile-menu] summary").click();
+  const mobileIcons = page.locator(".mobile-menu-panel .nav-icon");
+  await expect(mobileIcons).toHaveCount(4);
+  expect(await mobileIcons.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src")))).toEqual(expected);
+  await expect(page.locator('.mobile-menu-panel a[href="/about/"]')).toHaveAttribute("aria-current", "page");
 });
 
 test("approved dark, light and responsive compositions stay stable", async ({ page }) => {
