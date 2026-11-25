@@ -1,174 +1,199 @@
 const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-const theme = $(".theme-toggle");
-if (theme) theme.hidden = false;
-function updateTheme() {
-  if (!theme) return;
+const finePointer = matchMedia("(pointer: fine)");
+
+const themeButton = $(".theme-toggle");
+if (themeButton) themeButton.hidden = false;
+function updateThemeControl() {
+  if (!themeButton) return;
   const dark = document.documentElement.dataset.theme !== "light";
-  theme.setAttribute(
+  themeButton.setAttribute(
     "aria-label",
     dark ? "라이트 모드로 전환" : "다크 모드로 전환",
   );
-  $(".theme-icon", theme).textContent = dark ? "☼" : "☾";
-  $(".theme-label", theme).textContent = dark ? "Light" : "Dark";
+  $(".theme-icon", themeButton).textContent = dark ? "☼" : "☾";
+  $(".theme-label", themeButton).textContent = dark ? "Light" : "Dark";
 }
-updateTheme();
-theme?.addEventListener("click", () => {
+updateThemeControl();
+themeButton?.addEventListener("click", () => {
   const next =
     document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
   try {
     localStorage.setItem("somani-theme", next);
   } catch {}
-  updateTheme();
+  updateThemeControl();
 });
 
-const cluster = $(".home-hero");
-const clusterLinks = $("[data-cluster-links]", cluster || document);
-if (cluster && clusterLinks) {
-  let connectionFrame = 0;
-  const setConnection = (name, start, end, controls) => {
-    const path = $(`[data-link-path="${name}"]`, clusterLinks);
-    const startNode = $(`[data-link-start="${name}"]`, clusterLinks);
-    const endNode = $(`[data-link-end="${name}"]`, clusterLinks);
-    path?.setAttribute(
-      "d",
-      `M ${start.x} ${start.y} C ${controls[0].x} ${controls[0].y}, ${controls[1].x} ${controls[1].y}, ${end.x} ${end.y}`,
-    );
-    for (const [node, point] of [[startNode, start], [endNode, end]]) {
-      node?.setAttribute("cx", point.x);
-      node?.setAttribute("cy", point.y);
+document.addEventListener("keydown", (event) => {
+  if (
+    event.key !== "/" ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.altKey ||
+    ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)
+  )
+    return;
+  const search = $("#global-search");
+  if (!search) return;
+  event.preventDefault();
+  search.focus();
+});
+
+function initLaunchIntro() {
+  const intro = $("[data-launch-intro]");
+  if (!intro) return;
+  const enter = $("[data-launch-enter]", intro);
+  const skip = $("[data-launch-skip]", intro);
+  const replay = $("[data-intro-replay]");
+  let open = false;
+  let closing = false;
+  const key = "somani-intro-seen-v20261125";
+
+  const finish = () => {
+    open = false;
+    closing = false;
+    intro.classList.remove("is-visible", "is-entering");
+    intro.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("intro-open");
+    replay?.focus({ preventScroll: true });
+  };
+  const close = (travel = false) => {
+    if (!open || closing) return;
+    closing = true;
+    try {
+      sessionStorage.setItem(key, "1");
+    } catch {}
+    if (travel && !reducedMotion.matches) {
+      intro.classList.add("is-entering");
+      setTimeout(finish, 580);
+    } else {
+      finish();
     }
   };
-  const updateConnections = () => {
-    cancelAnimationFrame(connectionFrame);
-    connectionFrame = requestAnimationFrame(() => {
-      if (innerWidth <= 1024) return;
-      const area = cluster.getBoundingClientRect();
-      const portrait = $(".portrait-frame", cluster)?.getBoundingClientRect();
-      const latest = $(".latest-note", cluster)?.getBoundingClientRect();
-      const project = $(".project-note", cluster)?.getBoundingClientRect();
-      if (!area.width || !portrait || !latest || !project) return;
-      clusterLinks.setAttribute("viewBox", `0 0 ${area.width} ${area.height}`);
-      const local = (x, y) => ({
-        x: Math.round((x - area.left) * 10) / 10,
-        y: Math.round((y - area.top) * 10) / 10,
-      });
-
-      const projectStart = local(
-        portrait.right + 5,
-        portrait.top + portrait.height * 0.3,
-      );
-      const projectEnd = local(
-        project.left - 2,
-        project.top + project.height * 0.36,
-      );
-      const projectDistance = Math.max(30, projectEnd.x - projectStart.x);
-      setConnection("project", projectStart, projectEnd, [
-        { x: projectStart.x + projectDistance * 0.48, y: projectStart.y },
-        { x: projectEnd.x - projectDistance * 0.42, y: projectEnd.y },
-      ]);
-
-      const latestStart = local(
-        latest.right + 2,
-        latest.top + latest.height * 0.54,
-      );
-      const latestEnd = local(
-        portrait.left - 7,
-        portrait.top + portrait.height * 0.74,
-      );
-      const latestDistance = Math.max(80, latestEnd.x - latestStart.x);
-      const verticalBend = Math.max(24, Math.abs(latestStart.y - latestEnd.y) * 0.2);
-      setConnection("latest", latestStart, latestEnd, [
-        { x: latestStart.x + latestDistance * 0.58, y: latestStart.y },
-        {
-          x: latestEnd.x - latestDistance * 0.25,
-          y: latestEnd.y + verticalBend,
-        },
-      ]);
-    });
+  const show = () => {
+    closing = false;
+    open = true;
+    intro.classList.remove("is-entering");
+    intro.classList.add("is-visible");
+    intro.setAttribute("aria-hidden", "false");
+    document.body.classList.add("intro-open");
+    requestAnimationFrame(() => enter?.focus({ preventScroll: true }));
   };
-  const connectionObserver = new ResizeObserver(updateConnections);
-  connectionObserver.observe(cluster);
-  [$(".portrait-frame", cluster), $(".latest-note", cluster), $(".project-note", cluster)]
-    .filter(Boolean)
-    .forEach((element) => {
-      connectionObserver.observe(element);
-      element.addEventListener("transitionend", (event) => {
-        if (event.propertyName === "transform") updateConnections();
-      });
-      element.addEventListener("focus", updateConnections);
-      element.addEventListener("blur", updateConnections);
-    });
-  addEventListener("resize", updateConnections, { passive: true });
-  document.fonts?.ready.then(updateConnections);
-  updateConnections();
-}
 
-const switchboard = $("[data-archive-switchboard]");
-if (switchboard) {
-  const triggers = [...switchboard.querySelectorAll("[data-category-trigger]")];
-  const panels = [...switchboard.querySelectorAll("[data-category-panel]")];
-  const selectedTopic = $("[data-selected-topic]", switchboard);
-  const grid = $(".switchboard-grid", switchboard);
-  let activeTrigger = triggers[0];
-  const positionSignal = (trigger) => {
-    if (!grid || innerWidth <= 820) return;
-    const row = trigger.getBoundingClientRect();
-    const area = grid.getBoundingClientRect();
-    switchboard.style.setProperty(
-      "--signal-y",
-      `${row.top - area.top + row.height / 2}px`,
-    );
-  };
-  const activateCategory = (trigger) => {
-    activeTrigger = trigger;
-    const targetId = trigger.dataset.previewId;
-    triggers.forEach((item) => {
-      const active = item === trigger;
-      item.closest("li")?.classList.toggle("is-active", active);
-      if (active) item.dataset.active = "true";
-      else delete item.dataset.active;
-    });
-    panels.forEach((panel) => {
-      const active = panel.id === targetId;
-      panel.hidden = !active;
-      if (active && !reducedMotion.matches)
-        panel.animate(
-          [
-            { opacity: 0, transform: "translateY(12px) scale(.985)" },
-            { opacity: 1, transform: "none" },
-          ],
-          { duration: 280, easing: "cubic-bezier(.2,.75,.2,1)" },
-        );
-    });
-    selectedTopic.textContent = $(".switch-title strong", trigger).textContent;
-    switchboard.dataset.focus = trigger.dataset.index;
-    positionSignal(trigger);
-  };
-  triggers.forEach((trigger, index) => {
-    trigger.addEventListener("mouseenter", () => activateCategory(trigger));
-    trigger.addEventListener("focus", () => activateCategory(trigger));
-    trigger.addEventListener("keydown", (event) => {
-      if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
-      event.preventDefault();
-      let next = index;
-      if (event.key === "ArrowUp") next = (index - 1 + triggers.length) % triggers.length;
-      if (event.key === "ArrowDown") next = (index + 1) % triggers.length;
-      if (event.key === "Home") next = 0;
-      if (event.key === "End") next = triggers.length - 1;
-      triggers[next].focus();
-    });
+  enter?.addEventListener("click", () => close(true));
+  skip?.addEventListener("click", () => close(false));
+  replay?.addEventListener("click", show);
+  intro.addEventListener("pointerdown", (event) => {
+    if (event.target.closest("button, a, .launch-copy")) return;
+    close(true);
   });
-  requestAnimationFrame(() => positionSignal(activeTrigger));
-  addEventListener("resize", () => positionSignal(activeTrigger), { passive: true });
+  document.addEventListener("keydown", (event) => {
+    if (!open || !["Enter", "Escape"].includes(event.key)) return;
+    event.preventDefault();
+    close(event.key === "Enter");
+  });
+
+  const params = new URLSearchParams(location.search);
+  let seen = false;
+  try {
+    seen = sessionStorage.getItem(key) === "1";
+  } catch {}
+  if (params.get("intro") === "1") {
+    params.delete("intro");
+    const query = params.toString();
+    history.replaceState(
+      null,
+      "",
+      `${location.pathname}${query ? `?${query}` : ""}${location.hash}`,
+    );
+    show();
+  } else if (!seen) {
+    show();
+  }
+}
+initLaunchIntro();
+
+function initPageTransitions() {
+  if (reducedMotion.matches) return;
+  document.addEventListener("click", (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const anchor = event.target.closest("a[href]");
+    if (!anchor || anchor.target || anchor.hasAttribute("download")) return;
+    const href = anchor.getAttribute("href");
+    if (!href || href.startsWith("#") || href.startsWith("mailto:")) return;
+    const next = new URL(anchor.href, location.href);
+    if (next.origin !== location.origin) return;
+    if (
+      next.pathname === location.pathname &&
+      next.search === location.search &&
+      next.hash
+    )
+      return;
+    event.preventDefault();
+    document.body.classList.add("is-leaving");
+    setTimeout(() => {
+      location.href = next.href;
+    }, 310);
+  });
+  addEventListener("pageshow", () =>
+    document.body.classList.remove("is-leaving"),
+  );
+}
+initPageTransitions();
+
+if (!reducedMotion.matches && finePointer.matches) {
+  let frame = 0;
+  document.addEventListener(
+    "pointermove",
+    (event) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const x = ((event.clientX / innerWidth) * 2 - 1) * -7;
+        const y = ((event.clientY / innerHeight) * 2 - 1) * -5;
+        document.documentElement.style.setProperty("--parallax-x", `${x}px`);
+        document.documentElement.style.setProperty("--parallax-y", `${y}px`);
+      });
+    },
+    { passive: true },
+  );
+}
+document.addEventListener("visibilitychange", () => {
+  document.body.classList.toggle("is-paused", document.hidden);
+});
+
+const reveals = $$("[data-reveal]");
+if (reducedMotion.matches || !("IntersectionObserver" in window)) {
+  reveals.forEach((element) => element.classList.add("is-visible"));
+} else {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: "0px 0px -5%", threshold: 0.06 },
+  );
+  reveals.forEach((element) => observer.observe(element));
 }
 
-const content = $("[data-article-prose]");
-if (content) {
-  for (const [index, pre] of [...content.querySelectorAll("pre")].entries()) {
+const articleContent = $("[data-article-prose]");
+if (articleContent) initArticle(articleContent);
+function initArticle(content) {
+  $$("pre", content).forEach((pre, index) => {
     const code = $("code", pre);
-    if (!code) continue;
+    if (!code) return;
     const button = document.createElement("button");
     button.type = "button";
     button.className = "copy-button";
@@ -176,7 +201,8 @@ if (content) {
     button.setAttribute("aria-label", `${index + 1}번째 코드 복사`);
     button.addEventListener("click", async () => {
       try {
-        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(code.textContent);
+        if (navigator.clipboard?.writeText)
+          await navigator.clipboard.writeText(code.textContent);
         else {
           const area = document.createElement("textarea");
           area.value = code.textContent;
@@ -198,8 +224,8 @@ if (content) {
       }, 2000);
     });
     pre.prepend(button);
-  }
-  for (const table of content.querySelectorAll("table")) {
+  });
+  $$("table", content).forEach((table) => {
     const wrap = document.createElement("div");
     wrap.className = "table-scroll";
     wrap.tabIndex = 0;
@@ -207,10 +233,11 @@ if (content) {
     wrap.setAttribute("aria-label", "표 · 가로 스크롤 가능");
     table.before(wrap);
     wrap.append(table);
-  }
-  const headings = [...content.querySelectorAll("h2, h3")];
+  });
+
+  const headings = $$("h2, h3", content);
   const nav = $("[data-article-toc]");
-  if (headings.length) {
+  if (headings.length && nav) {
     let section = 0;
     headings.forEach((heading) => {
       if (heading.tagName === "H2") {
@@ -221,239 +248,258 @@ if (content) {
       link.href = `#${heading.id}`;
       link.textContent = heading.textContent;
       link.dataset.level = heading.tagName.slice(1);
-      link.dataset.number = heading.tagName === "H2" ? String(section).padStart(2, "0") : "·";
       nav.append(link);
     });
     if ("IntersectionObserver" in window) {
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              nav
-                .querySelectorAll("a")
-                .forEach((a) => a.removeAttribute("aria-current"));
-              [...nav.querySelectorAll("a")]
-                .find(
-                  (a) =>
-                    a.hash === `#${encodeURIComponent(entry.target.id)}` ||
-                    decodeURIComponent(a.hash) === `#${entry.target.id}`,
-                )
-                ?.setAttribute("aria-current", "location");
-            }
+            if (!entry.isIntersecting) return;
+            $$("a", nav).forEach((link) =>
+              link.removeAttribute("aria-current"),
+            );
+            $$("a", nav)
+              .find(
+                (link) =>
+                  link.hash === `#${encodeURIComponent(entry.target.id)}` ||
+                  decodeURIComponent(link.hash) === `#${entry.target.id}`,
+              )
+              ?.setAttribute("aria-current", "location");
           });
         },
         { rootMargin: "-15% 0px -65% 0px" },
       );
-      headings.forEach((h) => observer.observe(h));
+      headings.forEach((heading) => observer.observe(heading));
     }
   }
+
   const progress = $(".reading-progress");
-  const update = () => {
+  const updateProgress = () => {
     const article = $("[data-article]");
-    const start = article.offsetTop;
-    const distance = article.offsetHeight - window.innerHeight;
-    const value = distance > 0 ? ((scrollY - start) / distance) * 100 : 100;
+    if (!article || !progress) return;
+    const distance = article.offsetHeight - innerHeight;
+    const value =
+      distance > 0 ? ((scrollY - article.offsetTop) / distance) * 100 : 100;
     progress.style.width = `${Math.min(100, Math.max(0, value))}%`;
   };
-  window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("resize", update);
-  update();
+  addEventListener("scroll", updateProgress, { passive: true });
+  addEventListener("resize", updateProgress);
+  updateProgress();
 }
 
-const reveals = [...document.querySelectorAll("[data-reveal]")];
-if (reducedMotion.matches || !("IntersectionObserver" in window)) {
-  reveals.forEach((element) => element.classList.add("is-visible"));
-} else {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add("is-visible");
-      observer.unobserve(entry.target);
-    });
-  }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
-  reveals.forEach((element) => observer.observe(element));
-}
-
-if (!reducedMotion.matches && matchMedia("(pointer: fine)").matches) {
-  let animationFrame = 0;
-  document.addEventListener("pointermove", (event) => {
-    cancelAnimationFrame(animationFrame);
-    animationFrame = requestAnimationFrame(() => {
-      document.body.style.setProperty("--pointer-x", `${event.clientX}px`);
-      document.body.style.setProperty("--pointer-y", `${event.clientY}px`);
-    });
-  }, { passive: true });
-}
 const archive = $("[data-archive]");
 if (archive) initArchive(archive);
 async function initArchive(root) {
-  const search = $("#search", root),
-    tags = $("#tag-filter", root),
-    results = $("#archive-results", root),
-    count = $("#result-count", root),
-    reset = $(".reset-button", root),
-    sortToggle = $("#sort-toggle", root);
+  const search = $("#search", root);
+  const tags = $("#tag-filter", root);
+  const categories = $("#category-filter", root);
+  const results = $("#archive-results", root);
+  const count = $("#result-count", root);
+  const reset = $(".reset-button", root);
+  const sortToggle = $("#sort-toggle", root);
   const form = $(".search-form", root);
+  const fixedCategory = root.dataset.category || "";
   let sort = "latest";
+  let posts = [];
+  let searchTimer = 0;
+
   try {
     const response = await fetch("/search.json");
     if (!response.ok) throw new Error("Search index unavailable");
-    const posts = await response.json();
-    const category = root.dataset.category;
-    const available = posts.filter(
-      (p) => !category || p.categories.includes(category),
-    );
-    const tagNames = [...new Set(available.flatMap((p) => p.tags))].sort(
-      (a, b) => a.localeCompare(b, "ko"),
-    );
-    for (const name of tagNames) {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = `#${name}`;
-      tags.append(option);
-    }
-    function readURL() {
-      const params = new URLSearchParams(location.search);
-      search.value = params.get("q") || "";
-      const selected = params.get("tag") || "";
-      if (selected && ![...tags.options].some((o) => o.value === selected)) {
-        const option = document.createElement("option");
-        option.value = selected;
-        option.textContent = `#${selected}`;
-        tags.append(option);
-      }
-      tags.value = selected;
-      sort = params.get("sort") === "oldest" ? "oldest" : "latest";
-      updateSortControl();
-    }
-    function updateSortControl() {
-      if (!sortToggle) return;
-      const latest = sort === "latest";
-      sortToggle.textContent = latest ? "최신순 ↓" : "오래된순 ↑";
-      sortToggle.setAttribute(
-        "aria-label",
-        latest
-          ? "현재 최신순, 오래된순으로 전환"
-          : "현재 오래된순, 최신순으로 전환",
-      );
-    }
-    function el(tag, className, text) {
-      const node = document.createElement(tag);
-      if (className) node.className = className;
-      if (text !== undefined) node.textContent = text;
-      return node;
-    }
-    function draw(syncURL = true, pushHistory = false) {
-      const q = search.value.trim().toLocaleLowerCase("ko"),
-        tag = tags.value;
-      const found = available
-        .filter(
-          (p) =>
-            (!tag || p.tags.includes(tag)) &&
-            (!q ||
-              [p.title, p.description, p.text, ...p.tags, ...p.categories]
-                .join(" ")
-                .toLocaleLowerCase("ko")
-                .includes(q)),
-        )
-        .sort((a, b) => {
-          const direction = sort === "latest" ? -1 : 1;
-          return direction * (Number(a.recordOrder) - Number(b.recordOrder));
-        });
-      if (syncURL) {
-        const url = new URL(location.href);
-        q
-          ? url.searchParams.set("q", search.value.trim())
-          : url.searchParams.delete("q");
-        tag ? url.searchParams.set("tag", tag) : url.searchParams.delete("tag");
-        sort === "oldest"
-          ? url.searchParams.set("sort", "oldest")
-          : url.searchParams.delete("sort");
-        history[pushHistory ? "pushState" : "replaceState"](null, "", url);
-      }
-      updateSortControl();
-      results.replaceChildren();
-      count.textContent = `${found.length}개의 기록`;
-      reset.hidden = !q && !tag;
-      if (!found.length) {
-        const empty = el("div", "empty-state");
-        empty.append(
-          el("span", "", "↳"),
-          el(
-            "h2",
-            "",
-            q || tag
-              ? "조건에 맞는 기록이 없습니다."
-              : "아직 공개된 기록이 없습니다.",
-          ),
-        );
-        results.append(empty);
-      }
-      for (const post of found) {
-        const article = el("article", "post-card"),
-          meta = el("div", "post-meta"),
-          time = el("time", "", post.date);
-        time.dateTime = post.date;
-        meta.append(
-          el("span", "", `No. ${String(post.recordOrder).padStart(3, "0")}`),
-          el("span", "", "·"),
-          time,
-          el("span", "", "·"),
-          el("span", "", `${post.readingTime}분 읽기`),
-        );
-        const h3 = el("h3"),
-          link = el("a", "", post.title);
-        link.href = post.url;
-        link.append(el("span", "", "↗"));
-        h3.append(link);
-        const bottom = el("div", "post-bottom"),
-          chips = el("div", "tags");
-        for (const name of post.tags) {
-          const a = el("a", "", `#${name}`);
-          const tagURL = new URL("/archive/", location.origin);
-          tagURL.searchParams.set("tag", name);
-          if (sort === "oldest") tagURL.searchParams.set("sort", "oldest");
-          a.href = `${tagURL.pathname}${tagURL.search}`;
-          chips.append(a);
-        }
-        const categoryLabels = el("div", "category-links");
-        for (const category of post.categoryLinks) {
-          const link = el("a", "category-label", category.name);
-          link.href = `/categories/${category.slug}/`;
-          categoryLabels.append(link);
-        }
-        bottom.append(chips, categoryLabels);
-        article.append(meta, h3, el("p", "", post.description), bottom);
-        results.append(article);
-      }
-    }
-    readURL();
-    draw(false);
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      draw();
-    });
-    search.addEventListener("input", () => draw());
-    tags.addEventListener("change", () => draw());
-    sortToggle?.addEventListener("click", () => {
-      sort = sort === "latest" ? "oldest" : "latest";
-      draw(true, true);
-    });
-    reset.addEventListener("click", () => {
-      search.value = "";
-      tags.value = "";
-      draw();
-      search.focus();
-    });
-    window.addEventListener("popstate", () => {
-      readURL();
-      draw(false);
-    });
+    posts = await response.json();
   } catch {
-    form.addEventListener("submit", (e) => e.preventDefault());
+    form?.classList.add("search-unavailable");
     search.disabled = true;
     tags.disabled = true;
-    count.textContent =
-      "검색을 불러오지 못했습니다. 게시글 목록이나 카테고리를 이용해 주세요.";
+    categories.disabled = true;
+    sortToggle.disabled = true;
+    search.placeholder = "검색 인덱스를 불러오지 못했습니다";
+    return;
   }
+
+  const allTagNames = [...new Set(posts.flatMap((post) => post.tags))].sort(
+    (a, b) => a.localeCompare(b, "ko"),
+  );
+  allTagNames.forEach((name) => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = `#${name}`;
+    tags.append(option);
+  });
+
+  function readURL() {
+    const params = new URLSearchParams(location.search);
+    search.value = params.get("q") || "";
+    const selectedTag = params.get("tag") || "";
+    if (
+      selectedTag &&
+      !$$("option", tags).some((option) => option.value === selectedTag)
+    ) {
+      const option = document.createElement("option");
+      option.value = selectedTag;
+      option.textContent = `#${selectedTag}`;
+      tags.append(option);
+    }
+    tags.value = selectedTag;
+    categories.value = fixedCategory || params.get("category") || "";
+    sort = params.get("sort") === "oldest" ? "oldest" : "latest";
+    updateSortControl();
+  }
+  function updateSortControl() {
+    const latest = sort === "latest";
+    sortToggle.textContent = latest ? "최신순 ↓" : "오래된순 ↑";
+    sortToggle.setAttribute(
+      "aria-label",
+      latest
+        ? "현재 최신순, 오래된순으로 전환"
+        : "현재 오래된순, 최신순으로 전환",
+    );
+  }
+  function create(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== undefined) element.textContent = text;
+    return element;
+  }
+  function syncURL(pushHistory) {
+    const url = new URL(location.href);
+    const q = search.value.trim();
+    q ? url.searchParams.set("q", q) : url.searchParams.delete("q");
+    tags.value
+      ? url.searchParams.set("tag", tags.value)
+      : url.searchParams.delete("tag");
+    if (!fixedCategory && categories.value)
+      url.searchParams.set("category", categories.value);
+    else url.searchParams.delete("category");
+    sort === "oldest"
+      ? url.searchParams.set("sort", "oldest")
+      : url.searchParams.delete("sort");
+    history[pushHistory ? "pushState" : "replaceState"](null, "", url);
+  }
+  function draw(sync = true, pushHistory = false) {
+    const q = search.value.trim().toLocaleLowerCase("ko");
+    const tag = tags.value;
+    const category = fixedCategory || categories.value;
+    const found = posts
+      .filter(
+        (post) =>
+          (!category || post.categories.includes(category)) &&
+          (!tag || post.tags.includes(tag)) &&
+          (!q ||
+            [
+              post.title,
+              post.description,
+              post.text,
+              ...post.tags,
+              ...post.categories,
+            ]
+              .join(" ")
+              .toLocaleLowerCase("ko")
+              .includes(q)),
+      )
+      .sort((a, b) => {
+        const direction = sort === "latest" ? -1 : 1;
+        return direction * (Number(a.recordOrder) - Number(b.recordOrder));
+      });
+    if (sync) syncURL(pushHistory);
+    updateSortControl();
+    results.replaceChildren();
+    count.textContent = `${found.length}개의 기록`;
+    reset.hidden = !q && !tag && (!categories.value || fixedCategory);
+    if (!found.length) {
+      const empty = create("div", "empty-state");
+      empty.append(
+        create("span", "", "◇"),
+        create(
+          "h2",
+          "",
+          q || tag || (!fixedCategory && category)
+            ? "조건에 맞는 기록이 없습니다."
+            : "아직 공개된 기록이 없습니다.",
+        ),
+      );
+      results.append(empty);
+      return;
+    }
+    found.forEach((post) => {
+      const card = create("article", "post-card");
+      const meta = create("div", "post-meta");
+      const time = create("time", "", post.date);
+      time.dateTime = post.date;
+      meta.append(
+        create(
+          "span",
+          "",
+          `No. ${String(post.recordOrder).padStart(3, "0")}`,
+        ),
+        create("span", "", "·"),
+        time,
+        create("span", "", "·"),
+        create("span", "", `${post.readingTime}분 읽기`),
+      );
+      const heading = create("h3");
+      const link = create("a", "", post.title);
+      link.href = post.url;
+      link.append(create("span", "", "↗"));
+      heading.append(link);
+      const description = create("p", "", post.description);
+      const bottom = create("div", "post-bottom");
+      const tagLinks = create("div", "tags");
+      post.tags.forEach((name) => {
+        const tagLink = create("a", "", `#${name}`);
+        const tagURL = new URL("/archive/", location.origin);
+        tagURL.searchParams.set("tag", name);
+        if (sort === "oldest") tagURL.searchParams.set("sort", "oldest");
+        tagLink.href = `${tagURL.pathname}${tagURL.search}`;
+        tagLinks.append(tagLink);
+      });
+      const categoryLinks = create("div", "category-links");
+      post.categoryLinks.forEach((item) => {
+        const categoryLink = create("a", "category-label", item.name);
+        categoryLink.href = `/categories/${item.slug}/`;
+        categoryLinks.append(categoryLink);
+      });
+      bottom.append(tagLinks, categoryLinks);
+      card.append(meta, heading, description, bottom);
+      results.append(card);
+    });
+  }
+
+  readURL();
+  draw(false);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    draw(true, true);
+  });
+  search.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => draw(true), 120);
+  });
+  tags.addEventListener("change", () => draw(true, true));
+  categories.addEventListener("change", () => {
+    if (fixedCategory && categories.value !== fixedCategory) {
+      const url = new URL("/archive/", location.origin);
+      if (categories.value)
+        url.searchParams.set("category", categories.value);
+      location.href = `${url.pathname}${url.search}`;
+      return;
+    }
+    draw(true, true);
+  });
+  sortToggle.addEventListener("click", () => {
+    sort = sort === "latest" ? "oldest" : "latest";
+    draw(true, true);
+  });
+  reset.addEventListener("click", () => {
+    search.value = "";
+    tags.value = "";
+    categories.value = fixedCategory;
+    sort = "latest";
+    draw(true, true);
+    search.focus();
+  });
+  addEventListener("popstate", () => {
+    readURL();
+    draw(false);
+  });
 }

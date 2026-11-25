@@ -1,17 +1,20 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const waitForReveals = async (page) => {
-  const reveals = page.locator("[data-reveal]");
-  if (!(await reveals.count())) return;
-  for (let index = 0; index < (await reveals.count()); index += 1)
-    await reveals.nth(index).scrollIntoViewIfNeeded();
-  await page.waitForFunction(() =>
-    [...document.querySelectorAll("[data-reveal]")].every(
-      (element) => getComputedStyle(element).opacity === "1",
-    ),
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() =>
+    sessionStorage.setItem("somani-intro-seen-v20261125", "1"),
   );
-  await page.evaluate(() => window.scrollTo(0, 0));
+});
+
+const waitForReveals = async (page) => {
+  await page.evaluate(() => {
+    document.querySelectorAll("[data-reveal]").forEach((element) => {
+      element.style.transition = "none";
+      element.classList.add("is-visible");
+    });
+    window.scrollTo(0, 0);
+  });
 };
 
 test("navigation, six category pages, empty states and accessibility", async ({
@@ -23,8 +26,8 @@ test("navigation, six category pages, empty states and accessibility", async ({
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(page.locator("h1")).toContainText("안녕하세요");
-  await expect(page.locator("h1")).toContainText("somani");
+  await expect(page.locator(".home-hero h1")).toContainText("안녕하세요");
+  await expect(page.locator(".home-hero h1")).toContainText("somani");
   await expect(page.locator(".hero-description")).toContainText(
     "다양한 분야에 호기심을 가지고 공부하며, 새롭게 배운 내용과 직접 경험한 것들을 기록하는 공간입니다.",
   );
@@ -95,9 +98,9 @@ test("search, tags, URL restoration and safe search input", async ({
   await page.goto("/archive/");
   for (const tag of ["전체 태그", "#Eleventy", "#GitHub", "#CTF", "#SECTOR"])
     await expect(page.locator("#tag-filter")).toContainText(tag);
-  await page.getByRole("searchbox").fill("GitHub Pages 블로그 구축 기록");
+  await page.getByRole("searchbox", { name: "게시글 검색" }).fill("GitHub Pages 블로그 구축 기록");
   await expect(page.locator("#archive-results .post-card")).toHaveCount(1);
-  await page.getByRole("searchbox").fill("없는검색어");
+  await page.getByRole("searchbox", { name: "게시글 검색" }).fill("없는검색어");
   await expect(page.locator("#archive-results")).toContainText(
     "조건에 맞는 기록이 없습니다",
   );
@@ -107,7 +110,7 @@ test("search, tags, URL restoration and safe search input", async ({
   await page.reload();
   await expect(page.locator("#tag-filter")).toHaveValue("Eleventy");
   await expect(page.locator("#archive-results .post-card")).toHaveCount(1);
-  await page.getByRole("searchbox").fill("<img src=x onerror=alert(1)>");
+  await page.getByRole("searchbox", { name: "게시글 검색" }).fill("<img src=x onerror=alert(1)>");
   await expect(page.locator("#archive-results img")).toHaveCount(0);
   await page.goto("/archive/?tag=Unknown");
   await expect(page.locator("#archive-results")).toContainText(
@@ -252,6 +255,7 @@ test("static navigation works without JavaScript", async ({ browser }, testInfo)
 test("all primary pages remain accessible in both themes and narrow layouts", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {

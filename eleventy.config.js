@@ -25,6 +25,10 @@ export default function (config) {
   config.addPassthroughCopy("src/assets");
   config.addPassthroughCopy({ "src/robots.txt": "robots.txt" });
   config.addPassthroughCopy({ "src/.nojekyll": ".nojekyll" });
+  config.addPassthroughCopy({ "src/favicon.ico": "favicon.ico" });
+  config.addPassthroughCopy({
+    "src/site-v20261125.webmanifest": "site-v20261125.webmanifest",
+  });
   const md = new MarkdownIt({
     html: false,
     linkify: true,
@@ -59,6 +63,11 @@ export default function (config) {
   config.addFilter("dateISO", (d) => new Date(d).toISOString().slice(0, 10));
   config.addFilter("dateRSS", (d) => new Date(d).toUTCString());
   config.addFilter("plain", strip);
+  config.addFilter("absoluteUrl", (value) => {
+    const url = String(value || "");
+    if (/^https:\/\//i.test(url)) return url;
+    return `https://somini26.github.io${url.startsWith("/") ? url : `/${url}`}`;
+  });
   config.addFilter("readingTime", (content) =>
     Math.max(1, Math.ceil(strip(content).length / 700)),
   );

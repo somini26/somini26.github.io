@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="보라색 고리 행성">
+  <defs>
+    <linearGradient id="planet" x1="18" y1="13" x2="47" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d8c5ff"/>
+      <stop offset=".5" stop-color="#8b64e6"/>
+      <stop offset="1" stop-color="#5b35b8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="18" fill="url(#planet)"/>
+  <path d="M8.5 39.5c4.2 7.2 18.4 5.8 31.8-.9C53.7 31.8 60.8 22 56.6 15c-2-3.4-7-4.3-13.4-2.8 3.8.2 6.5 1.2 7.6 3.1 2.7 4.5-3.6 12-14 17.2-10.4 5.2-21.1 5.9-23.8 1.4-1.1-1.9-.6-4.4 1.1-7.1-5.1 4.1-7.6 9.3-5.6 12.7Z" fill="#f5efff"/>
+  <path d="M15.2 27.7c5.8-4.3 14.3-8.5 21.3-10.4" fill="none" stroke="#7a50d1" stroke-width="2.4" stroke-linecap="round" opacity=".78"/>
+  <circle cx="27" cy="25" r="4.3" fill="#eadfff" opacity=".5"/>
+</svg>

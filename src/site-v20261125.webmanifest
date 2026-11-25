@@ -1,0 +1,23 @@
+{
+  "name": "somani's archive",
+  "short_name": "somani",
+  "description": "개발, 보안, AI, 데이터 등 다양한 기술 분야를 공부하며 기록하는 개인 블로그",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0920",
+  "theme_color": "#7b5ac4",
+  "icons": [
+    {
+      "src": "/assets/icons/planet-ring-192-v20261125.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/planet-ring-512-v20261125.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

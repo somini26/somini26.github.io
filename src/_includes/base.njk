@@ -4,59 +4,115 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
+  {% set metaTitle = title or site.name %}
+  {% set metaDescription = description or site.description %}
+  {% set metaImage = socialImage or ogImage or site.socialImage %}
   <title>{% if title %}{{ title }} · {% endif %}{{ site.name }}</title>
-  <meta name="description" content="{{ description or site.description }}">
+  <meta name="description" content="{{ metaDescription }}">
   <meta name="author" content="{{ site.author }}">
   {% if noindex %}<meta name="robots" content="noindex">{% endif %}
   <link rel="canonical" href="{{ site.url }}{{ page.url }}">
   <meta property="og:site_name" content="{{ site.name }}">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="{% if layout == 'post.njk' %}article{% else %}website{% endif %}">
-  <meta property="og:title" content="{{ title or site.name }}">
-  <meta property="og:description" content="{{ description or site.description }}">
+  <meta property="og:title" content="{{ metaTitle }}">
+  <meta property="og:description" content="{{ metaDescription }}">
   <meta property="og:url" content="{{ site.url }}{{ page.url }}">
-  <meta property="og:image" content="{{ site.url }}/assets/images/social.png">
+  <meta property="og:image" content="{{ metaImage | absoluteUrl }}">
+  <meta property="og:image:secure_url" content="{{ metaImage | absoluteUrl }}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="보라색 우주정거장과 행성 위에 표시된 somani's archive">
   {% if layout == 'post.njk' %}<meta property="article:published_time" content="{{ date | dateISO }}">{% endif %}
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <meta name="twitter:title" content="{{ metaTitle }}">
+  <meta name="twitter:description" content="{{ metaDescription }}">
+  <meta name="twitter:image" content="{{ metaImage | absoluteUrl }}">
+  <meta name="twitter:image:alt" content="보라색 우주정거장과 행성 위에 표시된 somani's archive">
+  <meta name="theme-color" content="#0b0920" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f3ff" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="/assets/icons/planet-ring-v20261125.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/icons/planet-ring-32-v20261125.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="/assets/icons/planet-ring-16-v20261125.png" type="image/png" sizes="16x16">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/assets/icons/planet-ring-180-v20261125.png" sizes="180x180">
+  <link rel="manifest" href="/site-v20261125.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS" href="/feed.xml">
   <link rel="preload" href="/assets/fonts/WantedSansVariable.woff2" as="font" type="font/woff2" crossorigin>
   <script src="/assets/theme.js"></script>
   <link rel="stylesheet" href="/assets/site.css">
   <script src="/assets/app.js" defer></script>
 </head>
-<body class="site-page{% if page.url == '/' %} home-page{% endif %}{% if layout == 'post.njk' %} article-page{% endif %}">
+{% set room = 'bridge' %}
+{% if page.url and '/categories/' in page.url %}{% set room = 'research' %}{% endif %}
+{% if page.url == '/archive/' %}{% set room = 'archive' %}{% endif %}
+{% if page.url == '/about/' %}{% set room = 'quarters' %}{% endif %}
+{% if layout == 'post.njk' %}{% set room = 'reading' %}{% endif %}
+{% if page.url == '/404.html' %}{% set room = 'beacon' %}{% endif %}
+<body class="site-page room-{{ room }}{% if page.url == '/' %} home-page{% endif %}{% if layout == 'post.njk' %} article-page{% endif %}" data-room="{{ room }}">
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+
+  {% if page.url == '/' %}
+  <section class="launch-intro" data-launch-intro aria-hidden="true" aria-label="somani 우주정거장 진입 화면">
+    <div class="launch-scene" aria-hidden="true">
+      <span class="launch-layer launch-stars"></span>
+      <span class="launch-layer launch-nebula"></span>
+      <span class="launch-layer launch-planet"></span>
+      <span class="launch-layer launch-station"></span>
+      <span class="launch-layer launch-ship"></span>
+    </div>
+    <button class="launch-skip" type="button" data-launch-skip>Skip intro <span aria-hidden="true">Esc</span></button>
+    <div class="launch-copy">
+      <img src="/assets/icons/planet-ring-v20261125.svg" alt="" width="82" height="82">
+      <p>ORBITAL SECURITY ARCHIVE</p>
+      <h1><span>somani's</span> Space Station</h1>
+      <button class="launch-enter" type="button" data-launch-enter>ENTER STATION <span aria-hidden="true">››</span></button>
+      <small>Enter · Escape · 클릭 또는 터치로 바로 진입</small>
+    </div>
+  </section>
+  {% endif %}
+
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-wordmark" href="/" aria-label="{{ site.author }} 홈">
-        <span class="wordmark-logo" aria-hidden="true">
-          <strong>somani</strong>
-          <svg viewBox="0 0 108 46" focusable="false">
-            <ellipse cx="54" cy="23" rx="50" ry="15.5" transform="rotate(-9 54 23)"></ellipse>
-            <path d="M95 5.5l1.25 3.25L99.5 10l-3.25 1.25L95 14.5l-1.25-3.25L90.5 10l3.25-1.25z"></path>
-            <circle cx="14" cy="33" r="1.8"></circle>
-          </svg>
-        </span>
+      <a class="site-wordmark" href="/" aria-label="somani's archive 홈">
+        <img class="wordmark-logo" src="/assets/icons/planet-ring-v20261125.svg" alt="" width="72" height="72">
+        <span><strong>somani's archive</strong><small>ORBITAL SECURITY LOG</small></span>
       </a>
       <nav id="main-nav" class="desktop-nav" aria-label="주 메뉴">
-        {% for label, href in [['Home','/'],['Archive','/archive/'],['Categories','/categories/'],['About','/about/']] %}
-        <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}>{{ label }}</a>
+        {% for label, href, icon in [['Home','/','⌂'],['Categories','/categories/','◇'],['Archive','/archive/','□'],['About','/about/','○']] %}
+        <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and layout == 'post.njk') or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span>{{ label }}</a>
         {% endfor %}
       </nav>
-      <div class="header-actions">
-        <button class="theme-toggle" type="button" aria-label="라이트 모드로 전환" hidden><span class="theme-icon" aria-hidden="true">☼</span><span class="theme-label" aria-hidden="true">Light</span></button>
+      <div class="station-mini-status" aria-label="아카이브 상태">
+        <span><i aria-hidden="true"></i> Archive online</span>
+        <span>{{ collections.posts | length }} public logs</span>
       </div>
+      {% if page.url == '/' %}<button class="intro-replay" type="button" data-intro-replay>Launch 다시 보기 <span aria-hidden="true">↗</span></button>{% else %}<a class="intro-replay" href="/?intro=1">Launch 다시 보기 <span aria-hidden="true">↗</span></a>{% endif %}
     </div>
   </header>
+
+  <div class="station-topbar">
+    <p><span aria-hidden="true">◈</span> {% if room == 'bridge' %}BRIDGE{% elif room == 'research' %}RESEARCH DECK{% elif room == 'archive' %}ARCHIVE BAY{% elif room == 'quarters' %}CREW QUARTERS{% elif room == 'reading' %}READING CONSOLE{% else %}SIGNAL BEACON{% endif %}</p>
+    <div class="topbar-actions">
+      <form class="station-search" action="/archive/" role="search">
+        <label class="sr-only" for="global-search">전체 글 검색</label>
+        <span aria-hidden="true">⌕</span><input id="global-search" name="q" type="search" placeholder="기록 검색..." autocomplete="off"><kbd>/</kbd>
+      </form>
+      <button class="theme-toggle" type="button" aria-label="라이트 모드로 전환" hidden><span class="theme-icon" aria-hidden="true">☼</span><span class="theme-label" aria-hidden="true">Light</span></button>
+    </div>
+  </div>
+
+  <div class="space-vista" aria-hidden="true"><span></span><i></i></div>
+  <div class="page-transition" aria-hidden="true"></div>
   <main id="main" class="site-main{% if page.url != '/' and layout != 'post.njk' %} content-main{% endif %}" tabindex="-1">{{ content | safe }}</main>
   <footer class="site-footer">
-    <div><a class="footer-brand" href="/">somani<span>.</span></a><p>새롭게 배운 내용과 직접 경험한 것을 오래 남기는 개인 아카이브</p></div>
+    <div><a class="footer-brand" href="/">somani's archive</a><p>새롭게 배운 내용과 직접 경험한 것을 오래 남기는 개인 아카이브</p></div>
     <nav aria-label="푸터 메뉴"><a href="/archive/">Archive</a><a href="/about/">About</a><a href="/feed.xml">RSS ↗</a><a href="{{ site.github }}">GitHub ↗</a></nav>
   </footer>
   <nav class="mobile-dock" aria-label="모바일 주 메뉴">
-    {% for label, href, icon in [['Home','/','⌂'],['Archive','/archive/','◫'],['Categories','/categories/','⌗'],['About','/about/','◌']] %}
-    <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and page.url and '/posts/' in page.url) or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span><strong>{{ label }}</strong></a>
+    {% for label, href, icon in [['Home','/','⌂'],['Categories','/categories/','◇'],['Archive','/archive/','□'],['About','/about/','○']] %}
+    <a href="{{ href }}"{% if page.url == href or (href == '/archive/' and layout == 'post.njk') or (href == '/categories/' and page.url and '/categories/' in page.url) %} aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span><strong>{{ label }}</strong></a>
     {% endfor %}
   </nav>
 </body>

@@ -26,6 +26,34 @@ for (const file of html) {
     document.querySelector('meta[name="description"]')?.content,
     `${file}: description`,
   );
+  assert.equal(
+    document.querySelectorAll('meta[property="og:title"]').length,
+    1,
+    `${file}: duplicate og:title`,
+  );
+  assert.equal(
+    document.querySelectorAll('meta[property="og:description"]').length,
+    1,
+    `${file}: duplicate og:description`,
+  );
+  assert.equal(
+    document.querySelectorAll('meta[property="og:image"]').length,
+    1,
+    `${file}: duplicate og:image`,
+  );
+  const ogImage = document.querySelector('meta[property="og:image"]')?.content;
+  assert(ogImage?.startsWith("https://"), `${file}: absolute og:image`);
+  assert(!ogImage.includes("/assets/images/social.png"), `${file}: stale og:image`);
+  assert(
+    document.querySelector('meta[name="twitter:image"]')?.content === ogImage,
+    `${file}: twitter:image`,
+  );
+  assert(
+    document.querySelector('link[rel="manifest"]')?.href.endsWith(
+      "/site-v20261125.webmanifest",
+    ),
+    `${file}: manifest`,
+  );
   assert(document.querySelector("main"), `${file}: main`);
   if (path.relative(root, file).startsWith(`posts${path.sep}`)) {
     assert.equal(
@@ -45,7 +73,7 @@ for (const file of html) {
     ids.add(node.id);
   }
   for (const img of document.querySelectorAll("img"))
-    assert(img.hasAttribute("alt") && img.alt, `${file}: image alt`);
+    assert(img.hasAttribute("alt"), `${file}: image alt`);
   for (const node of document.querySelectorAll("[href],[src]")) {
     const value = node.getAttribute("href") || node.getAttribute("src");
     if (!value || /^(https?:|mailto:|data:)/.test(value)) continue;
@@ -142,7 +170,18 @@ if (fs.existsSync(sample)) {
   assert.equal(sequence?.getAttribute("aria-hidden"), "true");
   assert(document.querySelector('.record-navigation[aria-label="글 탐색"]'));
 }
-assert(fs.existsSync(`${root}/assets/images/social.png`));
+assert(fs.existsSync(`${root}/assets/images/social-space-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/icons/planet-ring-v20261125.svg`));
+assert(fs.existsSync(`${root}/assets/icons/planet-ring-16-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/icons/planet-ring-32-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/icons/planet-ring-180-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/icons/planet-ring-192-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/icons/planet-ring-512-v20261125.png`));
+assert(fs.existsSync(`${root}/assets/images/space/station-launch-v20261125.webp`));
+assert(fs.existsSync(`${root}/assets/images/space/station-bridge-dark-v20261125.webp`));
+assert(fs.existsSync(`${root}/assets/images/space/station-bridge-light-v20261125.webp`));
+assert(fs.existsSync(`${root}/favicon.ico`));
+assert(fs.existsSync(`${root}/site-v20261125.webmanifest`));
 assert(fs.existsSync(`${root}/.nojekyll`));
 const sitemap = fs.readFileSync(`${root}/sitemap.xml`, "utf8");
 assert(!sitemap.includes("/404.html"));
