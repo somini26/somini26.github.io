@@ -251,6 +251,7 @@ test("versioned icon, manifest and Open Graph metadata are unique and reachable"
   expect(loadedSpaceImages.some((url) => url.endsWith(".webp"))).toBeTruthy();
   expect(loadedSpaceImages.some((url) => url.endsWith(".png"))).toBeFalsy();
   for (const asset of [
+    "/favicon-v20261125.ico",
     "/favicon.ico",
     "/assets/icons/planet-ring-v20261125.svg",
     "/assets/icons/planet-ring-16-v20261125.png",

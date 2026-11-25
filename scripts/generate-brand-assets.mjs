@@ -90,10 +90,10 @@ for (const [index, [size, png]] of [
   entries.writeUInt32LE(offset, base + 12);
   offset += png.length;
 }
-fs.writeFileSync(
-  path.join(root, "src/favicon.ico"),
-  Buffer.concat([header, entries, png16, png32]),
-);
+const ico = Buffer.concat([header, entries, png16, png32]);
+fs.writeFileSync(path.join(root, "src/favicon-v20261125.ico"), ico);
+// Keep the conventional root fallback for user agents that never inspect <link>.
+fs.writeFileSync(path.join(root, "src/favicon.ico"), ico);
 
 const context = await browser.newContext({
   viewport: { width: 1200, height: 630 },

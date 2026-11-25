@@ -181,6 +181,7 @@ assert(fs.existsSync(`${root}/assets/images/space/station-launch-v20261125.webp`
 assert(fs.existsSync(`${root}/assets/images/space/station-bridge-dark-v20261125.webp`));
 assert(fs.existsSync(`${root}/assets/images/space/station-bridge-light-v20261125.webp`));
 assert(fs.existsSync(`${root}/favicon.ico`));
+assert(fs.existsSync(`${root}/favicon-v20261125.ico`));
 assert(fs.existsSync(`${root}/site-v20261125.webmanifest`));
 assert(fs.existsSync(`${root}/.nojekyll`));
 const sitemap = fs.readFileSync(`${root}/sitemap.xml`, "utf8");

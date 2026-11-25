@@ -27,6 +27,9 @@ export default function (config) {
   config.addPassthroughCopy({ "src/.nojekyll": ".nojekyll" });
   config.addPassthroughCopy({ "src/favicon.ico": "favicon.ico" });
   config.addPassthroughCopy({
+    "src/favicon-v20261125.ico": "favicon-v20261125.ico",
+  });
+  config.addPassthroughCopy({
     "src/site-v20261125.webmanifest": "site-v20261125.webmanifest",
   });
   const md = new MarkdownIt({
